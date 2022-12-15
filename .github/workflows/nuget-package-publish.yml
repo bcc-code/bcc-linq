@@ -19,7 +19,7 @@ env:
   CSPROJ_PATH: src/RuleFilterParser/RuleFilterParser.csproj
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
 
     steps:
