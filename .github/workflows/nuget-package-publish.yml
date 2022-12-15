@@ -1,13 +1,13 @@
 name: Publish to nuget
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
     paths:
       - "src/**"
       - ".github/workflows/nuget-package-publish.yml"
   
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
     paths:
       - "src/**"
       - ".github/workflows/nuget-package-publish.yml"
