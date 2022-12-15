@@ -41,6 +41,7 @@ jobs:
           else
              echo "VERSION=${{ env.NUGET_PACKAGE_VERSION_BASE }}.${{ github.run_number}}-beta" >> "$GITHUB_ENV"
           fi
+          
       - name: Run Tests
         run: dotnet test ${{ env.CSPROJ_PATH }}
 
