@@ -49,5 +49,5 @@ jobs:
         run: dotnet pack -p:PackageVersion=${{ env.VERSION }} -c Release -o . ${{ env.CSPROJ_PATH }}
 
       - name: Publish
-        run: dotnet nuget push *.nupkg -k ${{ env.API_KEY }} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push *.nupkg -k ${{ env.API_KEY }} -s "https://api.nuget.org/v3/index.json"
         
