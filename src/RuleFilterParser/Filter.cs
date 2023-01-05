@@ -99,7 +99,7 @@ public class Filter
 
     public Filter GetInvertedFilter() => FilterInverter.Invert(this);
 
-    public void RemoveFieldFromFilter(string field)
+    public void RemoveFieldFromFilter(string field, string path = "", string history = "")
     {
         if (_properties.Count == 0)
         {
@@ -108,7 +108,7 @@ public class Filter
 
         foreach (var key in _properties.Keys.ToList())
         {
-            if (key == field)
+            if (key == field && (path == "" || history.Contains(path)))
             {
                 _properties.Remove(field);
                 return;
@@ -119,11 +119,12 @@ public class Filter
                 continue;
             }
 
-            filter.RemoveFieldFromFilter(field);
+            history = $"{history}.{key}";
+            filter.RemoveFieldFromFilter(field, path, history);
         }
     }
 
-    public void RenameFieldInFilter(string oldField, string newField)
+    public void RenameFieldInFilter(string oldField, string newField, string path = "", string history = "")
     {
         if (_properties.Count == 0)
         {
@@ -132,7 +133,7 @@ public class Filter
 
         foreach (var key in _properties.Keys.ToList())
         {
-            if (key == oldField)
+            if (key == oldField && (path == "" || history.Contains(path)))
             {
                 _properties.RenameKey(oldField, newField);
                 return;
@@ -143,7 +144,8 @@ public class Filter
                 continue;
             }
 
-            filter.RenameFieldInFilter(oldField, newField);
+            history = $"{history}.{key}";
+            filter.RenameFieldInFilter(oldField, newField, path, history);
         }
     }
 }

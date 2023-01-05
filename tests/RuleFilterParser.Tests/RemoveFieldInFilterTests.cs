@@ -21,7 +21,7 @@ public class RemoveFieldFromFilterTests
             new Filter(
                 "{\"test1\":{\"deeper\":{\"_eq\":\"lorem\"},\"leave\":{\"_eq\":\"x\"}},\"test2\":{\"_eq\":\"ipsum\"}}");
         var expected = new Filter("{\"test1\":{\"leave\":{\"_eq\":\"x\"}},\"test2\":{\"_eq\":\"ipsum\"}}");
-        filter.RemoveFieldFromFilter("deeper");
+        filter.RemoveFieldFromFilter("deeper", "test1");
 
         Assert.True(
             (expected.Properties["test1"] as Filter).Properties.Keys.SequenceEqual(
@@ -33,7 +33,7 @@ public class RemoveFieldFromFilterTests
     {
         var filter = new Filter("{\"_and\":[{\"test1\":{\"_eq\":\"lorem\"}},{\"test2\":{\"_eq\":\"ipsum\"}}]}");
         var expected = new Filter("{\"_and\":[{\"test2\":{\"_eq\":\"ipsum\"}}]}");
-        filter.RemoveFieldFromFilter("test1");
+        filter.RemoveFieldFromFilter("test1", "_and");
 
         Assert.True(
             (expected.Properties["_and"] as Filter).Properties.Keys.SequenceEqual(

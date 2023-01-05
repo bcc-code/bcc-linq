@@ -19,7 +19,7 @@ public class RenameFieldInFilterTests
     {
         var filter = new Filter("{\"test1\":{\"test2\":{\"_eq\":\"ipsum\"}}}");
         var expected = new Filter("{\"test1\":{\"test100\":{\"_eq\":\"ipsum\"}}}");
-        filter.RenameFieldInFilter("test2", "test100");
+        filter.RenameFieldInFilter("test2", "test100", "test1");
 
         Assert.True(
             (expected.Properties["test1"] as Filter).Properties.Keys.SequenceEqual(
@@ -31,7 +31,7 @@ public class RenameFieldInFilterTests
     {
         var filter = new Filter("{\"_and\":[{\"test2\":{\"_eq\":\"xyz\"}}]}");
         var expected = new Filter("{\"_and\":[{\"test100\":{\"_eq\":\"xyz\"}}]}");
-        filter.RenameFieldInFilter("test2", "test100");
+        filter.RenameFieldInFilter("test2", "test100", "_and");
 
         Assert.True(
             (expected.Properties["_and"] as Filter).Properties.Keys.SequenceEqual(
