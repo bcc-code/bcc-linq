@@ -91,4 +91,63 @@ public class Filter
 
         _properties = deserializedJson;
     }
+
+    public Filter GetInvertedFilter()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void RemoveFieldFromFilter(string field, string filterPath = "")
+    {
+        if (_properties.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var (key, value) in _properties)
+        {
+            if (value is Dictionary<string, object>)
+            {
+            }
+        }
+    }
+
+    public void RenameFieldInFilter(string oldField, string newField, string filterPath = "", string history = "")
+    {
+        if (_properties.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var key in _properties.Keys.ToList())
+        {
+            if (key == oldField && (history == "" || history.Contains(filterPath)))
+            {
+                _properties.RenameKey(oldField, newField);
+                return;
+                
+            }
+            
+            if (_properties[key] is not Filter filter)
+            {
+                continue;
+            }
+
+            if (new[] { "_and", "_or" }.Contains(key))
+            {
+                foreach (var (chKey, chValue) in filter.Properties)
+                {
+                    if (chValue is Filter chValueFilter)
+                    {
+                        chValueFilter.RenameFieldInFilter(
+                            oldField, newField, filterPath, $"{history}.{key}[{chKey}]");
+                    }
+                }
+
+                return;
+            }
+            
+            filter.RenameFieldInFilter(oldField, newField, filterPath, history);
+        }
+    }
 }
