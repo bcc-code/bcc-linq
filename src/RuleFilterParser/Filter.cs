@@ -108,7 +108,7 @@ public class Filter
 
         foreach (var key in _properties.Keys.ToList())
         {
-            if (key == field && (path == "" || history.Contains(path)))
+            if (key == field && (path == "" || history.EndsWith(path)))
             {
                 _properties.Remove(field);
                 return;
@@ -133,7 +133,7 @@ public class Filter
 
         foreach (var key in _properties.Keys.ToList())
         {
-            if (key == oldField && (path == "" || history.Contains(path)))
+            if (key == oldField && (path == "" || history.EndsWith(path)))
             {
                 _properties.RenameKey(oldField, newField);
                 return;
