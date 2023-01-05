@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RuleFilterParser.Exceptions;
 
 namespace RuleFilterParser;
 
@@ -9,6 +11,10 @@ public class Filter
 
     public Dictionary<string, object> Properties => _properties;
 
+    public Filter() : this("{}")
+    {
+    }    
+    
     public Filter(string json) => Parse(json);
 
     private Filter(object obj) : this(JsonConvert.SerializeObject(obj))
@@ -92,27 +98,9 @@ public class Filter
         _properties = deserializedJson;
     }
 
-    public Filter GetInvertedFilter()
-    {
-        throw new NotImplementedException();
-    }
+    public Filter GetInvertedFilter() => FilterInverter.Invert(this);
 
-    public void RemoveFieldFromFilter(string field, string filterPath = "")
-    {
-        if (_properties.Count == 0)
-        {
-            return;
-        }
-
-        foreach (var (key, value) in _properties)
-        {
-            if (value is Dictionary<string, object>)
-            {
-            }
-        }
-    }
-
-    public void RenameFieldInFilter(string oldField, string newField, string filterPath = "", string history = "")
+    public void RemoveFieldFromFilter(string field)
     {
         if (_properties.Count == 0)
         {
@@ -121,33 +109,42 @@ public class Filter
 
         foreach (var key in _properties.Keys.ToList())
         {
-            if (key == oldField && (history == "" || history.Contains(filterPath)))
+            if (key == field)
             {
-                _properties.RenameKey(oldField, newField);
+                _properties.Remove(field);
                 return;
-                
             }
-            
+
             if (_properties[key] is not Filter filter)
             {
                 continue;
             }
 
-            if (new[] { "_and", "_or" }.Contains(key))
-            {
-                foreach (var (chKey, chValue) in filter.Properties)
-                {
-                    if (chValue is Filter chValueFilter)
-                    {
-                        chValueFilter.RenameFieldInFilter(
-                            oldField, newField, filterPath, $"{history}.{key}[{chKey}]");
-                    }
-                }
+            filter.RemoveFieldFromFilter(field);
+        }
+    }
 
+    public void RenameFieldInFilter(string oldField, string newField)
+    {
+        if (_properties.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var key in _properties.Keys.ToList())
+        {
+            if (key == oldField)
+            {
+                _properties.RenameKey(oldField, newField);
                 return;
             }
-            
-            filter.RenameFieldInFilter(oldField, newField, filterPath, history);
+
+            if (_properties[key] is not Filter filter)
+            {
+                continue;
+            }
+
+            filter.RenameFieldInFilter(oldField, newField);
         }
     }
 }
