@@ -1,4 +1,5 @@
-﻿using RuleFilterParser.Exceptions;
+﻿using System.Text.RegularExpressions;
+using RuleFilterParser.Exceptions;
 
 namespace RuleFilterParser;
 
@@ -14,11 +15,13 @@ public static class FilterInverter
             {
                 case "_and":
                     inverted.Properties.Add("_or",
-                        (filter.Properties[key] as Filter)?.GetInvertedFilter() ?? throw new ObjectIsNotFilterException());
+                        (filter.Properties[key] as Filter)?.GetInvertedFilter() ??
+                        throw new ObjectIsNotFilterException());
                     break;
                 case "_or":
                     inverted.Properties.Add("_and",
-                        (filter.Properties[key] as Filter)?.GetInvertedFilter() ?? throw new ObjectIsNotFilterException());
+                        (filter.Properties[key] as Filter)?.GetInvertedFilter() ??
+                        throw new ObjectIsNotFilterException());
                     break;
                 case "_eq":
                     inverted.Properties.Add("_neq", filter.Properties[key]);
@@ -84,15 +87,26 @@ public static class FilterInverter
                     inverted.Properties.Add("_submitted", !Convert.ToBoolean(filter.Properties[key]));
                     break;
                 case "_regex":
-                    throw new NotImplementedException();
+                    inverted.Properties.Add("_regex", InvertRegex(filter.Properties[key].ToString() ?? string.Empty));
                     break;
                 default:
                     inverted.Properties.Add(key,
-                        (filter.Properties[key] as Filter)?.GetInvertedFilter() ?? throw new ObjectIsNotFilterException());
+                        (filter.Properties[key] as Filter)?.GetInvertedFilter() ??
+                        throw new ObjectIsNotFilterException());
                     break;
             }
         }
 
         return inverted;
+    }
+
+    private static string InvertRegex(string pattern)
+    {
+        var flags = Regex.Match(pattern, @"/([gimuy]*)$").Groups[1].Value;
+
+        pattern = Regex.Replace(pattern, @"/[gimuy]*$", "");
+        pattern = pattern.StartsWith("^") ? pattern[1..] : "^" + pattern;
+
+        return flags != "" ? $"/{pattern}/{flags}" : pattern;
     }
 }
