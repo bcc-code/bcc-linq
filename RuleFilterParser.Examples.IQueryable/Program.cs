@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RuleFilterParser;
 using RuleFilterParser.Examples.IQueryable;
+using RuleFilterParser.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +31,12 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/persons", async (PersonsContext db) => await db.Persons.ToListAsync());
+// Filter example
+// { }
+// "{ "age": { "_between": [2, 4] } }";
+app.MapGet("/persons", async ([FromQuery] string jsonFilter, PersonsContext db) => await db.Persons
+        .ApplyRuleFilter(new Filter(jsonFilter))
+        .ToListAsync());
 
 app.MapPost("/persons/seed", async (PersonsContext db) =>
 {
