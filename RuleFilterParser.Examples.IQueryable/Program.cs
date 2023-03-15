@@ -13,7 +13,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<PersonsContext>(options => options.UseInMemoryDatabase("persons"));
+var inMemoryDb = builder.Configuration.GetValue<bool>("Database:UseInMemoryDatabase");
+if (inMemoryDb)
+{
+    builder.Services.AddDbContext<PersonsContext>(options =>
+        options.UseInMemoryDatabase("persons"));
+}
+else
+{
+    var connectionString = builder.Configuration.GetValue<string>("Database:Postgres");
+    builder.Services.AddDbContext<PersonsContext>(options =>
+        options.UseNpgsql(connectionString));
+}
 
 
 var app = builder.Build();
@@ -32,9 +43,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Filter example
-// { }
 // "{ "age": { "_between": [2, 4] } }";
-app.MapGet("/persons", async ([FromQuery] string jsonFilter, PersonsContext db) => await db.Persons
+app.MapGet("/persons", async ([FromQuery] string jsonFilter, PersonsContext db) =>
+    await db.Persons
         .ApplyRuleFilter(new Filter(jsonFilter))
         .ToListAsync());
 
