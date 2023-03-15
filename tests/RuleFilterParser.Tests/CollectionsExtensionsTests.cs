@@ -1,9 +1,10 @@
 ﻿using RuleFilterParser;
+using RuleFilterParser.Extensions;
 using RuleToLinqParser.Tests.Helpers;
 
 namespace RuleToLinqParser.Tests;
 
-public class ExtensionsTests
+public class CollectionsExtensionsTests
 {
     [Fact]
     public void should_get_same_result_as_using_parser_directly()

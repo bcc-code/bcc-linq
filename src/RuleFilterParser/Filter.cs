@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RuleFilterParser.Extensions;
 
 namespace RuleFilterParser;
 
@@ -9,6 +10,10 @@ public class Filter
 
     public Dictionary<string, object> Properties => _properties;
 
+    public Filter() : this("{}")
+    {
+    }    
+    
     public Filter(string json) => Parse(json);
 
     private Filter(object obj) : this(JsonConvert.SerializeObject(obj))
@@ -90,5 +95,57 @@ public class Filter
         }
 
         _properties = deserializedJson;
+    }
+
+    public Filter GetInvertedFilter() => FilterInverter.Invert(this);
+
+    public void RemoveFieldFromFilter(string field, string path = "", string history = "")
+    {
+        if (_properties.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var key in _properties.Keys.ToList())
+        {
+            if (key == field && (path == "" || history.EndsWith(path)))
+            {
+                _properties.Remove(field);
+                return;
+            }
+
+            if (_properties[key] is not Filter filter)
+            {
+                continue;
+            }
+
+            history = $"{history}.{key}";
+            filter.RemoveFieldFromFilter(field, path, history);
+        }
+    }
+
+    public void RenameFieldInFilter(string oldField, string newField, string path = "", string history = "")
+    {
+        if (_properties.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var key in _properties.Keys.ToList())
+        {
+            if (key == oldField && (path == "" || history.EndsWith(path)))
+            {
+                _properties.RenameKey(oldField, newField);
+                return;
+            }
+
+            if (_properties[key] is not Filter filter)
+            {
+                continue;
+            }
+
+            history = $"{history}.{key}";
+            filter.RenameFieldInFilter(oldField, newField, path, history);
+        }
     }
 }
