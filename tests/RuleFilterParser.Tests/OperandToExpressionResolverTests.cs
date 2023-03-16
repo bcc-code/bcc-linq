@@ -280,6 +280,21 @@ public class OperandToExpressionResolverTests
     }
 
     [Fact]
+    public void should_return_between_expression_for_date_time_tuple()
+    {
+        var parameter = Expression.Parameter(typeof(TestClass), "x");
+        var prop = Expression.Property(parameter, "numberIntergerProp");
+
+        var exp = OperandToExpressionResolver.GetExpressionForRule(
+            prop, "_between", new ValueTuple<DateTime, DateTime>(DateTime.UtcNow, DateTime.UtcNow));
+        var binaryExpression = (BinaryExpression)exp;
+
+        Assert.Equal(ExpressionType.AndAlso, exp.NodeType);
+        Assert.Equal(ExpressionType.GreaterThanOrEqual, binaryExpression.Left.NodeType);
+        Assert.Equal(ExpressionType.LessThanOrEqual, binaryExpression.Right.NodeType);
+    }
+
+    [Fact]
     public void should_return_not_between_expression()
     {
         var parameter = Expression.Parameter(typeof(TestClass), "x");

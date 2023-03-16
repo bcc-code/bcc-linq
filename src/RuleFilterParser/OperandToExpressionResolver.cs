@@ -99,23 +99,31 @@ public static class OperandToExpressionResolver
                         Convert.ToDouble(stringTuple.Item2));
                 }
 
-                if (value is not ValueTuple<double, double> tuple)
+                if (value is ValueTuple<DateTime, DateTime> dtTuple)
                 {
-                    throw new IncorrectTypeForOperandException(operand, "a tuple");
+                    property = ConvertPropertyToDateTime(property);
+                    value = new ValueTuple<DateTime, DateTime>(
+                        Convert.ToDateTime(dtTuple.Item1),
+                        Convert.ToDateTime(dtTuple.Item2));
                 }
 
-                var (left, right) = tuple;
-
-                if (operand == "_nbetween")
+                switch (value)
                 {
-                    return Expression.AndAlso(
-                        Expression.LessThan(property, Expression.Constant(left)),
-                        Expression.GreaterThan(property, Expression.Constant(right)));
+                    case ValueTuple<double, double> doubleTuple:
+                    {
+                        var (left, right) = doubleTuple;
+                        return GetBetweenExpression(property, operand, left, right);
+                    }
+                    case ValueTuple<DateTime, DateTime> dateTimeTuple:
+                    {
+                        var (left, right) = dateTimeTuple;
+                        return GetBetweenExpression(property, operand, left, right);
+                    }
+                    default:
+                    {
+                        throw new IncorrectTypeForOperandException(operand, "a tuple of numbers or dates");
+                    }
                 }
-
-                return Expression.AndAlso(
-                    Expression.GreaterThanOrEqual(property, Expression.Constant(left)),
-                    Expression.LessThanOrEqual(property, Expression.Constant(right)));
             }
             case "_gt" or "_gte" or "_lt" or "_lte":
             {
@@ -159,6 +167,20 @@ public static class OperandToExpressionResolver
             default:
                 throw new ArgumentOutOfRangeException($"There is no resolver for {operand}");
         }
+    }
+
+    private static Expression GetBetweenExpression(Expression property, string operand, object left, object right)
+    {
+        if (operand == "_nbetween")
+        {
+            return Expression.AndAlso(
+                Expression.LessThan(property, Expression.Constant(left)),
+                Expression.GreaterThan(property, Expression.Constant(right)));
+        }
+
+        return Expression.AndAlso(
+            Expression.GreaterThanOrEqual(property, Expression.Constant(left)),
+            Expression.LessThanOrEqual(property, Expression.Constant(right)));
     }
 
     private static MethodCallExpression GetStringMethodExpression(
