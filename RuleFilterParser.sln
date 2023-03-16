@@ -10,7 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuleFilterParser.Tests", "t
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{D321CBDA-E958-4207-AE58-AAB8E06ED9A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuleFilterParser.Examples.IQueryable", "RuleFilterParser.Examples.IQueryable\RuleFilterParser.Examples.IQueryable.csproj", "{473D2E22-9B13-49E3-881A-28CEC928AEB5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuleFilterParser.Examples.IQueryable", "examples\RuleFilterParser.Examples.IQueryable\RuleFilterParser.Examples.IQueryable.csproj", "{473D2E22-9B13-49E3-881A-28CEC928AEB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

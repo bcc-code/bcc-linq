@@ -18,7 +18,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\RuleFilterParser\RuleFilterParser.csproj" />
+      <ProjectReference Include="..\..\src\RuleFilterParser\RuleFilterParser.csproj" />
     </ItemGroup>
-
 </Project>
