@@ -79,6 +79,16 @@ public class FilterTests
         var value = ((Filter)filter.Properties["test"]).Properties["_between"];
         Assert.IsType<(double, double)>(value);
     }
+    
+    [Fact]
+    public void should_cast_value_to_datetime_tuple()
+    {
+        var json = @"{ ""test"": { ""_between"": [""2023-01-01T00:00:00.0000000"", ""2023-03-01T00:00:00.0000000""] } }";
+        var filter = new Filter(json);
+
+        var value = ((Filter)filter.Properties["test"]).Properties["_between"];
+        Assert.IsType<(DateTime, DateTime)>(value);
+    }
 
     [Fact]
     public void should_throw_exception_on_not_pair_value()
