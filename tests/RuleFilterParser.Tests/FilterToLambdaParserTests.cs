@@ -9,8 +9,14 @@ public class FilterToLambdaParserTests
 {
     public static readonly List<Person> PeopleList = new()
     {
-        new Person("test 1", 15, "Poland", DateTime.Now.AddMonths(-200)),
-        new Person("test 2", 25, "Norway", DateTime.Now.AddMonths(-2)),
+        new Person("test 1", 15, "Poland", DateTime.Now.AddMonths(-200))
+        {
+            Car = new Car("Opel", "Vectra", 2005)
+        },
+        new Person("test 2", 25, "Norway", DateTime.Now.AddMonths(-2))
+        {
+            Car = new Car("Audi", "A3", 2003)
+        },
         new Person("test 3", 20, "Greece", DateTime.Now.AddMonths(-55)),
         new Person("test 4", 23, "Polsomething", DateTime.Now.AddMonths(-67)),
         new Person("test 5", 23, "Poland", DateTime.Now.AddMonths(200)),
@@ -87,6 +93,20 @@ public class FilterToLambdaParserTests
             // and
             ((person.Age >= 20 && person.Age <= 30) && person.Name.StartsWith("test"))).ToList();
 
+        var f = new Filter(jsonRule);
+        var exp = FilterToLambdaParser.Parse<Person>(f);
+        var result = PeopleList.Where(exp.Compile()).ToList();
+
+        Assert.Equal(expected.Count, result.Count);
+    }
+    
+    [Fact]
+    public void should_get_correct_result_when_filtering_nested_object()
+    {
+        var jsonRule =
+            @"{ ""Car"": { ""Model"": { ""_eq"": ""A3"" } } }";
+
+        var expected = PeopleList.Where(person => person.Car.Model == "Vectra").ToList();
         var f = new Filter(jsonRule);
         var exp = FilterToLambdaParser.Parse<Person>(f);
         var result = PeopleList.Where(exp.Compile()).ToList();
