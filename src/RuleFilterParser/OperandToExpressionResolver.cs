@@ -23,9 +23,9 @@ public static class OperandToExpressionResolver
             property = ConvertPropertyToDouble(property);
             value = Array.ConvertAll<int, double>(arr, x => x);
         }
-        else if (DateTime.TryParse(value.ToString(), out var dateTime))
+        else if (DateTime.TryParse(value.ToString(), out var dateTime) && property.Type == typeof(DateTime))
         {
-            property = ConvertPropertyToDateTime(property);
+            // property = ConvertPropertyToDateTime(property);
             value = dateTime;
         }
 
