@@ -294,6 +294,25 @@ public class OperandToExpressionResolverTests
         Assert.Equal(ExpressionType.LessThanOrEqual, binaryExpression.Right.NodeType);
     }
 
+    [Theory]
+    [InlineData("2023-01-01T00:00:00.0000000Z", "2023-01-01T00:00:00.0000000Z")]
+    [InlineData("2023-01-01T00:00:00.0000000", "2023-01-01T00:00:00.0000000")]
+    [InlineData("2023-01-01", "2023-01-01")]
+    [InlineData("2023/01/01", "2023/01/01")]
+    public void should_return_between_expression_for_date_time_tuple_from_string(string from, string to)
+    {
+        var parameter = Expression.Parameter(typeof(TestClass), "x");
+        var prop = Expression.Property(parameter, "anyDate");
+
+        var exp = OperandToExpressionResolver.GetExpressionForRule(
+            prop, "_between", new ValueTuple<string, string>(from, to));
+        var binaryExpression = (BinaryExpression)exp;
+
+        Assert.Equal(ExpressionType.AndAlso, exp.NodeType);
+        Assert.Equal(ExpressionType.GreaterThanOrEqual, binaryExpression.Left.NodeType);
+        Assert.Equal(ExpressionType.LessThanOrEqual, binaryExpression.Right.NodeType);
+    }
+
     [Fact]
     public void should_return_not_between_expression()
     {
