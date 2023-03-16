@@ -91,19 +91,20 @@ public static class OperandToExpressionResolver
                         Convert.ToDouble(intTuple.Item2));
                 }
 
+                if (value is ValueTuple<string, string> tuple &&
+                    DateTime.TryParse(tuple.Item1, out var from) &&
+                    DateTime.TryParse(tuple.Item2, out var to) &&
+                    property.Type == typeof(DateTime))
+                {
+                    value = new ValueTuple<DateTime, DateTime>(from, to);
+                }
+
                 if (value is ValueTuple<string, string> stringTuple)
                 {
                     property = ConvertPropertyToDouble(property);
                     value = new ValueTuple<double, double>(
                         Convert.ToDouble(stringTuple.Item1),
                         Convert.ToDouble(stringTuple.Item2));
-                }
-
-                if (value is ValueTuple<DateTime, DateTime> dtTuple && property.Type == typeof(DateTime))
-                {
-                    value = new ValueTuple<DateTime, DateTime>(
-                        Convert.ToDateTime(dtTuple.Item1),
-                        Convert.ToDateTime(dtTuple.Item2));
                 }
 
                 switch (value)
