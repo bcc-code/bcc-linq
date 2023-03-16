@@ -99,9 +99,8 @@ public static class OperandToExpressionResolver
                         Convert.ToDouble(stringTuple.Item2));
                 }
 
-                if (value is ValueTuple<DateTime, DateTime> dtTuple)
+                if (value is ValueTuple<DateTime, DateTime> dtTuple && property.Type == typeof(DateTime))
                 {
-                    property = ConvertPropertyToDateTime(property);
                     value = new ValueTuple<DateTime, DateTime>(
                         Convert.ToDateTime(dtTuple.Item1),
                         Convert.ToDateTime(dtTuple.Item2));

@@ -283,7 +283,7 @@ public class OperandToExpressionResolverTests
     public void should_return_between_expression_for_date_time_tuple()
     {
         var parameter = Expression.Parameter(typeof(TestClass), "x");
-        var prop = Expression.Property(parameter, "numberIntergerProp");
+        var prop = Expression.Property(parameter, "anyDate");
 
         var exp = OperandToExpressionResolver.GetExpressionForRule(
             prop, "_between", new ValueTuple<DateTime, DateTime>(DateTime.UtcNow, DateTime.UtcNow));
