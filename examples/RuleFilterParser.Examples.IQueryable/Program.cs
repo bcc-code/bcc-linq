@@ -28,6 +28,7 @@ else
 
 
 var app = builder.Build();
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -44,6 +45,7 @@ app.MapControllers();
 
 // Filter example
 // "{ "age": { "_between": [2, 4] } }";
+// "{ "someDate": { "_between": ["2023-03-14T00:00:00.0000000", "2023-03-16T00:00:00.0000000"] } }";
 app.MapGet("/persons", async ([FromQuery] string jsonFilter, PersonsContext db) =>
     await db.Persons
         .ApplyRuleFilter(new Filter(jsonFilter))
@@ -51,12 +53,15 @@ app.MapGet("/persons", async ([FromQuery] string jsonFilter, PersonsContext db) 
 
 app.MapPost("/persons/seed", async (PersonsContext db) =>
 {
-    await db.Persons.AddAsync(new("Kobe Bryant", 1));
-    await db.Persons.AddAsync(new("Michael Jordan", 2));
-    await db.Persons.AddAsync(new("Scottie Pippen", 3));
-    await db.Persons.AddAsync(new("LeBron James", 4));
-    await db.Persons.AddAsync(new("Kevin Garnett", 5));
-    await db.Persons.AddAsync(new("Ben Wallace", 6));
+    await db.Persons.AddRangeAsync(new List<Person>
+    {
+        new("Kobe Bryant", 1, DateTime.UtcNow.AddDays(-1)), 
+        new("Michael Jordan", 2, DateTime.UtcNow.AddDays(-2)),
+        new("Scottie Pippen", 3, DateTime.UtcNow.AddDays(-3)),
+        new("LeBron James", 4, DateTime.UtcNow.AddDays(-4)),
+        new("Kevin Garnett", 5, DateTime.UtcNow.AddDays(-5)),
+        new("Ben Wallace", 6, DateTime.UtcNow.AddDays(-6))
+    });
 
     await db.SaveChangesAsync();
 });

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RuleFilterParser.Examples.IQueryable;
@@ -11,9 +12,11 @@ using RuleFilterParser.Examples.IQueryable;
 namespace RuleFilterParser.Examples.IQueryable.Migrations
 {
     [DbContext(typeof(PersonsContext))]
-    partial class PersonsContextModelSnapshot : ModelSnapshot
+    [Migration("20230316104528_datetime")]
+    partial class datetime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

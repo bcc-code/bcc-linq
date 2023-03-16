@@ -23,9 +23,9 @@ public static class OperandToExpressionResolver
             property = ConvertPropertyToDouble(property);
             value = Array.ConvertAll<int, double>(arr, x => x);
         }
-        else if (DateTime.TryParse(value.ToString(), out var dateTime))
+        else if (DateTime.TryParse(value.ToString(), out var dateTime) && property.Type == typeof(DateTime))
         {
-            property = ConvertPropertyToDateTime(property);
+            // property = ConvertPropertyToDateTime(property);
             value = dateTime;
         }
 
@@ -99,9 +99,8 @@ public static class OperandToExpressionResolver
                         Convert.ToDouble(stringTuple.Item2));
                 }
 
-                if (value is ValueTuple<DateTime, DateTime> dtTuple)
+                if (value is ValueTuple<DateTime, DateTime> dtTuple && property.Type == typeof(DateTime))
                 {
-                    property = ConvertPropertyToDateTime(property);
                     value = new ValueTuple<DateTime, DateTime>(
                         Convert.ToDateTime(dtTuple.Item1),
                         Convert.ToDateTime(dtTuple.Item2));
