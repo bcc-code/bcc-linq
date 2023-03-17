@@ -106,7 +106,7 @@ public class FilterToLambdaParserTests
         var jsonRule =
             @"{ ""Car"": { ""Model"": { ""_eq"": ""A3"" } } }";
 
-        var expected = PeopleList.Where(person => person.Car.Model == "Vectra").ToList();
+        var expected = PeopleList.Where(person => person.Car.Model == "A3").ToList();
         var f = new Filter(jsonRule);
         var exp = FilterToLambdaParser.Parse<Person>(f);
         var result = PeopleList.Where(exp.Compile()).ToList();
