@@ -10,7 +10,7 @@ public static class FilterToLambdaParser
         {
             var parameter = Expression.Parameter(typeof(T), typeof(T).FullName?.ToLower());
             var filterExpressionsList = GetExpressionsForFilter(filter, parameter);
-            
+
             var expressionBody = MergeExpressions(filterExpressionsList, LogicalFilter.And);
 
             var lambda = Expression.Lambda<Func<T, bool>>(expressionBody, parameter);
@@ -65,15 +65,27 @@ public static class FilterToLambdaParser
                         break;
                     }
                     default:
-                        allExpressions.AddRange(GetExpressionsForFilter(propertyFilter, parameter, prop.Key));
+                        allExpressions.AddRange(GetExpressionsForFilter(
+                            propertyFilter,
+                            parameter,
+                            parentKey != null ? $"{parentKey}.{prop.Key}" : prop.Key));
+
                         break;
                 }
             }
             else if (prop.Key.StartsWith("_"))
             {
+                if (parentKey == null)
+                {
+                    // TODO: Specify exception
+                    throw new Exception();
+                }
+
+                var property = parentKey.Split('.')
+                    .Aggregate((Expression)parameter, Expression.Property);
+
                 var expressionForProperty = OperandToExpressionResolver.GetExpressionForRule(
-                    Expression.Property(parameter,
-                        parentKey ?? throw new ArgumentNullException(nameof(parentKey))),
+                    property,
                     prop.Key,
                     prop.Value);
                 allExpressions.Add(expressionForProperty);
