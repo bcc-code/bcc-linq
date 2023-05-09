@@ -20,6 +20,9 @@ public class Filter
     {
     }
 
+    public override string ToString() => "{}";
+    
+
     private void Parse(string json)
     {
         var deserializedJson = FilterDeserializationHelpers.DeserializeJsonRule(json);
