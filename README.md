@@ -1,6 +1,10 @@
 # Directus Filter - C# implementation
 This is an implementation of a parser and converter for  [Directus Filter](https://docs.directus.io/reference/query.html#filter). It parses a JSON representation of the Directus Filter format into a list of Expressions used in IQueryable, and it can also perform the reverse conversion.
 
+## Getting started
+1. Add [nuget package](https://www.nuget.org/packages/BccCode.RuleFilterParser/) to a .NET project
+2. See the usage examples below.
+
 ## Filter usage
 As an input param it takes a json string in directus filter format and applies the filter on a DbSet.
 
