@@ -31,13 +31,13 @@ public class FilterToLambdaParserTests
     public void should_get_correct_result_when_filter_has_one_logical_filter()
     {
         var jsonRule =
-            "{\"_or\":\r\n[\r\n{\"age\":{\"_gte\": 20}},{\"country\":{\"_eq\":\"Poland\", \"_in\":[\"Poland\", \"Norway\"]}}\r\n]\r\n}";
+            "{\"_or\":\r\n[\r\n{\"Age\":{\"_gte\": 20}},{\"Country\":{\"_eq\":\"Poland\", \"_in\":[\"Poland\", \"Norway\"]}}\r\n]\r\n}";
 
         var expected = PeopleList.Where(
             person => person.Age >= 20 || person.Country == "Poland" || person.Country.Contains("Pol")).ToList();
 
-        var f = new Filter(jsonRule);
-        var exp = FilterToLambdaParser.Parse<Person>(f);
+        var f = new Filter<Person>(jsonRule);
+        var exp = FilterToLambdaParser.Parse(f);
         var result = PeopleList.Where(exp.Compile()).ToList();
 
         Assert.Equal(expected.Count, result.Count);
@@ -93,8 +93,8 @@ public class FilterToLambdaParserTests
             // and
             ((person.Age >= 20 && person.Age <= 30) && person.Name.StartsWith("test"))).ToList();
 
-        var f = new Filter(jsonRule);
-        var exp = FilterToLambdaParser.Parse<Person>(f);
+        var f = new Filter<Person>(jsonRule);
+        var exp = FilterToLambdaParser.Parse(f);
         var result = PeopleList.Where(exp.Compile()).ToList();
 
         Assert.Equal(expected.Count, result.Count);
@@ -107,8 +107,8 @@ public class FilterToLambdaParserTests
             @"{ ""Car"": { ""Model"": { ""_eq"": ""A3"" } } }";
 
         var expected = PeopleList.Where(person => person.Car.Model == "A3").ToList();
-        var f = new Filter(jsonRule);
-        var exp = FilterToLambdaParser.Parse<Person>(f);
+        var f = new Filter<Person>(jsonRule);
+        var exp = FilterToLambdaParser.Parse(f);
         var result = PeopleList.Where(exp.Compile()).ToList();
 
         Assert.Equal(expected.Count, result.Count);

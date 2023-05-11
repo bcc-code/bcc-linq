@@ -4,7 +4,7 @@ namespace RuleFilterParser;
 
 public static class FilterToLambdaParser
 {
-    public static Expression<Func<T, bool>> Parse<T>(Filter filter)
+    public static Expression<Func<T, bool>> Parse<T>(Filter<T> filter) where T : class
     {
         try
         {
@@ -23,16 +23,16 @@ public static class FilterToLambdaParser
         }
     }
 
-    private static List<Expression> GetExpressionsForFilter(
-        Filter filter,
+    private static List<Expression> GetExpressionsForFilter<T>(
+        Filter<T> filter,
         ParameterExpression parameter,
-        string? parentKey = null)
+        string? parentKey = null) where T: class
     {
         var allExpressions = new List<Expression>();
 
         foreach (var prop in filter.Properties)
         {
-            if (prop.Value is Filter propertyFilter)
+            if (prop.Value is Filter<T> propertyFilter)
             {
                 switch (prop.Key)
                 {

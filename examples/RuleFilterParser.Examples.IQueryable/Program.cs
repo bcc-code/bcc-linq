@@ -48,7 +48,7 @@ app.MapControllers();
 // "{ "someDate": { "_between": ["2023-03-14T00:00:00.0000000", "2023-03-16T00:00:00.0000000"] } }";
 app.MapGet("/persons", async ([FromQuery] string jsonFilter, PersonsContext db) =>
     await db.Persons
-        .ApplyRuleFilter(new Filter(jsonFilter))
+        .ApplyRuleFilter(new Filter<Person>(jsonFilter))
         .ToListAsync());
 
 app.MapPost("/persons/seed", async (PersonsContext db) =>

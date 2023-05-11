@@ -8,5 +8,6 @@ internal class TestClass
     public long NumberLongProp { get; set; }
     public bool BooleanProp { get; set; }
     public string[] StringArrayProp { get; set; }
+    public decimal Amount { get; set; }
     public DateTime AnyDate { get; set; }
 }

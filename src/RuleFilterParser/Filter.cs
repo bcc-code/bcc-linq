@@ -4,34 +4,27 @@ using RuleFilterParser.Extensions;
 
 namespace RuleFilterParser;
 
-public class Filter
+public class Filter<T>
 {
-    protected Type? ObjectType { get; set; } = null;
-    
     private Dictionary<string, object> _properties = new();
-
     public Dictionary<string, object> Properties => _properties;
-
+    
     public Filter() : this("{}")
     {
     }    
-    
+
     public Filter(string json) => _parse(json);
 
     private Filter(object obj) : this(JsonConvert.SerializeObject(obj))
     {
     }
 
-    public static Filter Parse(string json)
-    {
-        return new Filter();
-    } 
     
     private void _parse(string json)
     {
         var deserializedJson = FilterDeserializationHelpers.DeserializeJsonRule(json);
         
-        var propertyMetadata = ObjectType?.GetProperties();
+        var propertyMetadata = typeof(T).GetProperties();
 
         foreach (var (key, value) in deserializedJson)
         {
@@ -49,24 +42,26 @@ public class Filter
                 }
 
                 var result = FilterDeserializationHelpers.MergeDictionaries(dictionaries);
-                deserializedJson[key] = new Filter(result);
+                deserializedJson[key] = new Filter<T>(result);
             }
             else if (new[] { "_in", "_nin" }.Contains(key))
             {
-                var array = JsonConvert.DeserializeObject<object[]>(value.ToString() ?? string.Empty);
+                var array = JsonConvert.DeserializeObject<T[]>(value.ToString() ?? string.Empty);
                 if (array is null || array.Length == 0)
                 {
                     throw new ArgumentException(
                         $"JSON filter rule is invalid. Array under {key} is null or empty.");
                 }
 
-                deserializedJson[key] = array[0] switch
-                {
-                    bool => array.Select(x => (bool)x),
-                    int or double or long => array.Select(Convert.ToDouble),
-                    DateTime => array.Select(x => (DateTime)x),
-                    _ => array.Select(x => x.ToString())
-                };
+                deserializedJson[key] = array;
+
+                // deserializedJson[key] = array[0] switch
+                // {
+                //     bool => array.Select(x => (bool)x),
+                //     int or double or long => array.Select(Convert.ToDouble),
+                //     DateTime => array.Select(x => (DateTime)x),
+                //     _ => array.Select(x => x.ToString())
+                // };
             }
             else if (new[] { "_between", "_nbetween" }.Contains(key))
             {
@@ -99,14 +94,28 @@ public class Filter
             }
             else
             {
-                deserializedJson[key] = new Filter(value);
+                var propertyInfo = propertyMetadata.FirstOrDefault(x => x.Name == key);
+                if (propertyInfo != null)
+                {
+                    Type filterType = typeof(Filter<>).MakeGenericType(propertyInfo.PropertyType);
+                    try
+                    {
+                        deserializedJson[key] = Activator.CreateInstance(filterType, value.ToString());
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw e.InnerException;
+                    }
+                    
+                }
             }
         }
 
         _properties = deserializedJson;
     }
 
-    public Filter GetInvertedFilter() => FilterInverter.Invert(this);
+    public Filter<T> GetInvertedFilter() => FilterInverter.Invert(this);
 
     public void RemoveFieldFromFilter(string field, string path = "", string history = "")
     {
@@ -123,7 +132,7 @@ public class Filter
                 return;
             }
 
-            if (_properties[key] is not Filter filter)
+            if (_properties[key] is not Filter<T> filter)
             {
                 continue;
             }
@@ -148,7 +157,7 @@ public class Filter
                 return;
             }
 
-            if (_properties[key] is not Filter filter)
+            if (_properties[key] is not Filter<T> filter)
             {
                 continue;
             }
@@ -156,18 +165,5 @@ public class Filter
             history = $"{history}.{key}";
             filter.RenameFieldInFilter(oldField, newField, path, history);
         }
-    }
-}
-
-public class Filter<T> : Filter where T : new()
-{
-    public Filter() : base()
-    {
-        ObjectType = typeof(T);
-    }
-
-    public Filter(string json) : base(json)
-    {
-        ObjectType = typeof(T);
     }
 }
