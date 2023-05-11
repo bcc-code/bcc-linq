@@ -61,6 +61,18 @@ public class FilterTests
 
         Assert.IsAssignableFrom<IEnumerable<double>>(value);
     }
+    
+    [Fact]
+    public void should_cast_value_to_decimal_list()
+    {
+        
+        var json = @"{ ""Amount"": { ""_in"": [100, 200, 300] } }";
+        
+        var filter = Filter<TestClass>.Parse(json);
+        var value = ((Filter)filter.Properties["test"]).Properties["_in"];
+
+        Assert.IsAssignableFrom<IEnumerable<decimal>>(value);
+    }
 
     [Fact]
     public void should_throw_exception_on_empty_list()
@@ -155,4 +167,10 @@ public class FilterTests
 
         Assert.IsNotType<DateTime>(value);
     }
+}
+
+public class TestClass
+{
+    public decimal Amount { get; set; }
+    public int Number { get; set; }
 }

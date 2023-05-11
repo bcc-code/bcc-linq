@@ -6,6 +6,8 @@ namespace RuleFilterParser;
 
 public class Filter
 {
+    protected Type? ObjectType { get; set; } = null;
+    
     private Dictionary<string, object> _properties = new();
 
     public Dictionary<string, object> Properties => _properties;
@@ -14,15 +16,22 @@ public class Filter
     {
     }    
     
-    public Filter(string json) => Parse(json);
+    public Filter(string json) => _parse(json);
 
     private Filter(object obj) : this(JsonConvert.SerializeObject(obj))
     {
     }
 
-    private void Parse(string json)
+    public static Filter Parse(string json)
+    {
+        return new Filter();
+    } 
+    
+    private void _parse(string json)
     {
         var deserializedJson = FilterDeserializationHelpers.DeserializeJsonRule(json);
+        
+        var propertyMetadata = ObjectType?.GetProperties();
 
         foreach (var (key, value) in deserializedJson)
         {
@@ -147,5 +156,18 @@ public class Filter
             history = $"{history}.{key}";
             filter.RenameFieldInFilter(oldField, newField, path, history);
         }
+    }
+}
+
+public class Filter<T> : Filter where T : new()
+{
+    public Filter() : base()
+    {
+        ObjectType = typeof(T);
+    }
+
+    public Filter(string json) : base(json)
+    {
+        ObjectType = typeof(T);
     }
 }
