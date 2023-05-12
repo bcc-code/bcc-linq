@@ -10,6 +10,7 @@ public static class OperandToExpressionResolver
 
     public static object ConvertValue(Type type, object value)
     {
+
         try
         {
             value = type switch
@@ -39,9 +40,14 @@ public static class OperandToExpressionResolver
     
     public static Expression GetExpressionForRule(Expression property, string operand, object value)
     {
-       
         
-
+        Type propertyType = property.Type;
+        if (Nullable.GetUnderlyingType(propertyType) != null)
+        {
+            propertyType = Nullable.GetUnderlyingType(propertyType);
+            property = Expression.Convert(property, propertyType);
+        }
+        
         switch (operand)
         {
             case "_eq":
