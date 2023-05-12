@@ -4,10 +4,63 @@ using RuleFilterParser.Extensions;
 
 namespace RuleFilterParser;
 
-public class Filter<T>
+public abstract class Filter
 {
-    private Dictionary<string, object> _properties = new();
+    protected Dictionary<string, object> _properties = new();
     public Dictionary<string, object> Properties => _properties;
+    public Filter GetInvertedFilter() => FilterInverter.Invert(this);
+    public void RemoveFieldFromFilter(string field, string path = "", string history = "")
+    {
+        if (_properties.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var key in _properties.Keys.ToList())
+        {
+            if (key == field && (path == "" || history.EndsWith(path)))
+            {
+                _properties.Remove(field);
+                return;
+            }
+
+            if (_properties[key] is not Filter filter)
+            {
+                continue;
+            }
+
+            history = $"{history}.{key}";
+            filter.RemoveFieldFromFilter(field, path, history);
+        }
+    }
+
+    public void RenameFieldInFilter(string oldField, string newField, string path = "", string history = "")
+    {
+        if (_properties.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var key in _properties.Keys.ToList())
+        {
+            if (key == oldField && (path == "" || history.EndsWith(path)))
+            {
+                _properties.RenameKey(oldField, newField);
+                return;
+            }
+
+            if (_properties[key] is not Filter filter)
+            {
+                continue;
+            }
+
+            history = $"{history}.{key}";
+            filter.RenameFieldInFilter(oldField, newField, path, history);
+        }
+    }
+}
+public class Filter<T> : Filter
+{
     
     public Filter() : this("{}")
     {
@@ -19,6 +72,7 @@ public class Filter<T>
     {
     }
 
+    public Type GetFilterType() => typeof(T);
     
     private void _parse(string json)
     {
@@ -28,6 +82,8 @@ public class Filter<T>
 
         foreach (var (key, value) in deserializedJson)
         {
+            var propertyInfo = propertyMetadata.FirstOrDefault(x => x.Name.ToLower() == key.ToLower());
+            
             if (new[] { "_and", "_or" }.Contains(key))
             {
                 if (value is not JArray jArray)
@@ -71,30 +127,15 @@ public class Filter<T>
                     throw new ArgumentException(
                         $"JSON filter rule is invalid. Value under {key} is not pair.");
                 }
+                deserializedJson[key] = OperandToExpressionResolver.ConvertValue(propertyInfo?.PropertyType ?? GetFilterType(), (array[0].ToString(), array[1].ToString()));
 
-                var from = array[0];
-                var to = array[1];
-
-                deserializedJson[key] = from switch
-                {
-                    int or double or long => (Convert.ToDouble(from), Convert.ToDouble(to)),
-                    DateTime => ((DateTime)from, (DateTime)to),
-                    _ => ((string)from, (string)to)
-                };
             }
             else if (key.StartsWith("_"))
             {
-                deserializedJson[key] = value switch
-                {
-                    bool boolValue => boolValue,
-                    int or double or long => Convert.ToDouble(value),
-                    DateTime => value,
-                    _ => (string)value
-                };
+                deserializedJson[key] = OperandToExpressionResolver.ConvertValue(propertyInfo?.PropertyType ?? GetFilterType(), value);
             }
             else
             {
-                var propertyInfo = propertyMetadata.FirstOrDefault(x => x.Name == key);
                 if (propertyInfo != null)
                 {
                     Type filterType = typeof(Filter<>).MakeGenericType(propertyInfo.PropertyType);
@@ -115,55 +156,6 @@ public class Filter<T>
         _properties = deserializedJson;
     }
 
-    public Filter<T> GetInvertedFilter() => FilterInverter.Invert(this);
 
-    public void RemoveFieldFromFilter(string field, string path = "", string history = "")
-    {
-        if (_properties.Count == 0)
-        {
-            return;
-        }
-
-        foreach (var key in _properties.Keys.ToList())
-        {
-            if (key == field && (path == "" || history.EndsWith(path)))
-            {
-                _properties.Remove(field);
-                return;
-            }
-
-            if (_properties[key] is not Filter<T> filter)
-            {
-                continue;
-            }
-
-            history = $"{history}.{key}";
-            filter.RemoveFieldFromFilter(field, path, history);
-        }
-    }
-
-    public void RenameFieldInFilter(string oldField, string newField, string path = "", string history = "")
-    {
-        if (_properties.Count == 0)
-        {
-            return;
-        }
-
-        foreach (var key in _properties.Keys.ToList())
-        {
-            if (key == oldField && (path == "" || history.EndsWith(path)))
-            {
-                _properties.RenameKey(oldField, newField);
-                return;
-            }
-
-            if (_properties[key] is not Filter<T> filter)
-            {
-                continue;
-            }
-
-            history = $"{history}.{key}";
-            filter.RenameFieldInFilter(oldField, newField, path, history);
-        }
-    }
+    
 }

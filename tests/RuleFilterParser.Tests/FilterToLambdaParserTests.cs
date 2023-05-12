@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using RuleFilterParser;
+﻿using RuleFilterParser;
 using RuleToLinqParser.Tests.Helpers;
 
 namespace RuleToLinqParser.Tests;
@@ -31,7 +29,7 @@ public class FilterToLambdaParserTests
     public void should_get_correct_result_when_filter_has_one_logical_filter()
     {
         var jsonRule =
-            "{\"_or\":\r\n[\r\n{\"Age\":{\"_gte\": 20}},{\"Country\":{\"_eq\":\"Poland\", \"_in\":[\"Poland\", \"Norway\"]}}\r\n]\r\n}";
+            "{\"_or\":\r\n[\r\n{\"age\":{\"_gte\": 20}},{\"Country\":{\"_eq\":\"Poland\", \"_in\":[\"Poland\", \"Norway\"]}}\r\n]\r\n}";
 
         var expected = PeopleList.Where(
             person => person.Age >= 20 || person.Country == "Poland" || person.Country.Contains("Pol")).ToList();
@@ -88,10 +86,10 @@ public class FilterToLambdaParserTests
 
         var expected = PeopleList.Where(person =>
             // or
-            (person.Age >= 20 || person.Country == "Poland" || new[] { "Greece", "Norway" }.Contains(person.Country))
+            (person.Age >= 20 || person.Country == "Poland" || new[] { "Greece", "Norway" }.Contains(person.Country)) 
             &&
             // and
-            ((person.Age >= 20 && person.Age <= 30) && person.Name.StartsWith("test"))).ToList();
+            person.Age is >= 20 and <= 30 && person.Name.StartsWith("test")).ToList();
 
         var f = new Filter<Person>(jsonRule);
         var exp = FilterToLambdaParser.Parse(f);

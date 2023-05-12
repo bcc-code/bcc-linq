@@ -5,9 +5,10 @@ namespace RuleFilterParser;
 
 public static class FilterInverter
 {
-    public static Filter<T> Invert<T>(Filter<T> filter)
+    public static Filter Invert(Filter filter)
     {
-        var inverted = new Filter<T>();
+        
+        var inverted = Activator.CreateInstance(filter.GetType(), "{}") as Filter;
 
         foreach (var key in filter.Properties.Keys.ToList())
         {
@@ -15,12 +16,12 @@ public static class FilterInverter
             {
                 case "_and":
                     inverted.Properties.Add("_or",
-                        (filter.Properties[key] as Filter<T>)?.GetInvertedFilter() ??
+                        (filter.Properties[key] as Filter)?.GetInvertedFilter() ??
                         throw new ObjectIsNotFilterException());
                     break;
                 case "_or":
                     inverted.Properties.Add("_and",
-                        (filter.Properties[key] as Filter<T>)?.GetInvertedFilter() ??
+                        (filter.Properties[key] as Filter)?.GetInvertedFilter() ??
                         throw new ObjectIsNotFilterException());
                     break;
                 case "_eq":
@@ -91,7 +92,7 @@ public static class FilterInverter
                     break;
                 default:
                     inverted.Properties.Add(key,
-                        (filter.Properties[key] as Filter<T>)?.GetInvertedFilter() ??
+                        (filter.Properties[key] as Filter)?.GetInvertedFilter() ??
                         throw new ObjectIsNotFilterException());
                     break;
             }

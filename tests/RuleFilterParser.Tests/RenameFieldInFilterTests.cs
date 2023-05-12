@@ -18,13 +18,13 @@ public class RenameFieldInFilterTests
     [Fact]
     public void should_rename_field_filter_nested_in_another_field_filter()
     {
-        var filter = new Filter<TestClass>("{\"test1\":{\"test2\":{\"_eq\":\"ipsum\"}}}");
-        var expected = new Filter<TestClass>("{\"test1\":{\"test100\":{\"_eq\":\"ipsum\"}}}");
-        filter.RenameFieldInFilter("test2", "test100", "test1");
+        var filter = new Filter<TestClass>("{\"Nested\":{\"test2\":{\"_eq\":\"ipsum\"}}}");
+        var expected = new Filter<TestClass>("{\"Nested\":{\"NestedStrProp\":{\"_eq\":\"ipsum\"}}}");
+        filter.RenameFieldInFilter("test2", "NestedStrProp", "Nested");
 
         Assert.True(
-            (expected.Properties["test1"] as Filter<TestClass>).Properties.Keys.SequenceEqual(
-                (filter.Properties["test1"] as Filter<TestClass>).Properties.Keys));
+            (expected.Properties["Nested"] as Filter).Properties.Keys.SequenceEqual(
+                (filter.Properties["Nested"] as Filter).Properties.Keys));
     }
 
     [Fact]

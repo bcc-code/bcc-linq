@@ -20,13 +20,13 @@ public class RemoveFieldFromFilterTests
     {
         var filter =
             new Filter<TestClass>(
-                "{\"test1\":{\"deeper\":{\"_eq\":\"lorem\"},\"leave\":{\"_eq\":\"x\"}},\"test2\":{\"_eq\":\"ipsum\"}}");
-        var expected = new Filter<TestClass>("{\"test1\":{\"leave\":{\"_eq\":\"x\"}},\"test2\":{\"_eq\":\"ipsum\"}}");
-        filter.RemoveFieldFromFilter("deeper", "test1");
+                "{\"Nested\":{\"deeper\":{\"_eq\":\"lorem\"},\"leave\":{\"_eq\":\"x\"}},\"NumberIntergerProp\":{\"_eq\":\"ipsum\"}}");
+        var expected = new Filter<TestClass>("{\"Nested\":{\"leave\":{\"_eq\":\"x\"}},\"NumberIntergerProp\":{\"_eq\":\"ipsum\"}}");
+        filter.RemoveFieldFromFilter("deeper", "Nested");
 
         Assert.True(
-            (expected.Properties["test1"] as Filter<TestClass>).Properties.Keys.SequenceEqual(
-                (filter.Properties["test1"] as Filter<TestClass>).Properties.Keys));
+            (expected.Properties["Nested"] as Filter).Properties.Keys.SequenceEqual(
+                (filter.Properties["Nested"] as Filter).Properties.Keys));
     }
 
     [Fact]

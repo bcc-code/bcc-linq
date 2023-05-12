@@ -3,6 +3,7 @@
 internal class TestClass
 {
     public string StrProp { get; set; }
+    public string AnotherStrProp { get; set; }
     public int NumberIntergerProp { get; set; }
     public double NumberDoubleProp { get; set; }
     public long NumberLongProp { get; set; }
@@ -10,4 +11,11 @@ internal class TestClass
     public string[] StringArrayProp { get; set; }
     public decimal Amount { get; set; }
     public DateTime AnyDate { get; set; }
+    public NestedClass  Nested { get; set; }
+}
+
+internal class NestedClass
+{
+    
+    public string NestedStrProp { get; set; }
 }
