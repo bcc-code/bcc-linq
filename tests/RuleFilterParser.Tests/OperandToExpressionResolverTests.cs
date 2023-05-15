@@ -266,7 +266,7 @@ public class OperandToExpressionResolverTests
     public void should_return_array_contains_expression()
     {
         var parameter = Expression.Parameter(typeof(TestClass), "x");
-        var prop = Expression.Property(parameter, "stringArrayProp");
+        var prop = Expression.Property(parameter, "StrProp");
 
         var exp = OperandToExpressionResolver.GetExpressionForRule(
             prop, "_in", new[] { "a", "b" });
@@ -292,7 +292,7 @@ public class OperandToExpressionResolverTests
     public void should_return_array_not_contains_expression()
     {
         var parameter = Expression.Parameter(typeof(TestClass), "x");
-        var prop = Expression.Property(parameter, "stringArrayProp");
+        var prop = Expression.Property(parameter, "StrProp");
 
         var exp = OperandToExpressionResolver.GetExpressionForRule(
             prop, "_nin", new[] { "a", "b" });
