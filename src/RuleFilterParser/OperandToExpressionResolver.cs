@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Globalization;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using RuleFilterParser.Exceptions;
 
@@ -6,40 +7,53 @@ namespace RuleFilterParser;
 
 public static class OperandToExpressionResolver
 {
+
+    public static object ConvertValue(Type type, object value)
+    {
+
+        try
+        {
+            value = type switch
+            {
+                Type when type == typeof(bool) && value is string strVal => strVal == "1",
+                Type when type == typeof(int) && value is string strVal => (int)double.Parse(strVal, CultureInfo.InvariantCulture),
+                Type when type == typeof(DateTime) && value is string strVal && DateTime.TryParse(strVal, out var dateTime) => dateTime, 
+                Type when type == typeof(int) && value is ValueTuple<string, string> tuple => new ValueTuple<int, int>(
+                    (int)ConvertValue(type, tuple.Item1), (int)ConvertValue(type, tuple.Item2)),
+                Type when type == typeof(double) && value is ValueTuple<string, string> tuple => new ValueTuple<double, double>(
+                    (double)ConvertValue(type, tuple.Item1), (double)ConvertValue(type, tuple.Item2)),
+                Type when type == typeof(DateTime) && value is ValueTuple<string, string> tuple => new ValueTuple<DateTime, DateTime>(
+                    (DateTime)ConvertValue(type, tuple.Item1), (DateTime)ConvertValue(type, tuple.Item2)),
+                Type when type == typeof(int) && value is not int => int.Parse(value.ToString()),
+                _ => value
+            };
+            
+            
+            value = Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
+        }
+        catch (Exception ex)
+        {
+        }
+
+        return value;
+    }
+    
     public static Expression GetExpressionForRule(Expression property, string operand, object value)
     {
-        if (double.TryParse(value.ToString(), out var doubleValue))
+        
+        Type propertyType = property.Type;
+        if (Nullable.GetUnderlyingType(propertyType) != null)
         {
-            property = ConvertPropertyToDouble(property);
-            value = doubleValue;
+            propertyType = Nullable.GetUnderlyingType(propertyType);
+            property = Expression.Convert(property, propertyType);
         }
-        else if (bool.TryParse(value.ToString(), out var boolValue))
-        {
-            property = ConvertPropertyToBoolean(property);
-            value = boolValue;
-        }
-        else if (value is int[] arr)
-        {
-            property = ConvertPropertyToDouble(property);
-            value = Array.ConvertAll<int, double>(arr, x => x);
-        }
-        else if (DateTime.TryParse(value.ToString(), out var dateTime) && property.Type == typeof(DateTime))
-        {
-            // property = ConvertPropertyToDateTime(property);
-            value = dateTime;
-        }
-
-        if (property.Type == typeof(int) || property.Type == typeof(long))
-        {
-            property = ConvertPropertyToDouble(property);
-        }
-
+        
         switch (operand)
         {
             case "_eq":
-                return Expression.Equal(property, Expression.Constant(value));
+                return Expression.Equal(property, Expression.Constant(ConvertValue(property.Type, value)));
             case "_neq":
-                return Expression.NotEqual(property, Expression.Constant(value));
+                return Expression.NotEqual(property, Expression.Constant(ConvertValue(property.Type, value)));
             case
                 "_contains" or "_ncontains" or
                 "_starts_with" or "_nstarts_with" or
@@ -83,47 +97,19 @@ public static class OperandToExpressionResolver
 
             case "_between" or "_nbetween":
             {
-                if (value is ValueTuple<int, int> intTuple)
-                {
-                    property = ConvertPropertyToDouble(property);
-                    value = new ValueTuple<double, double>(
-                        Convert.ToDouble(intTuple.Item1),
-                        Convert.ToDouble(intTuple.Item2));
-                }
+                value = ConvertValue(property.Type, value);
 
-                if (value is ValueTuple<string, string> tuple &&
-                    DateTime.TryParse(tuple.Item1, out var from) &&
-                    DateTime.TryParse(tuple.Item2, out var to) &&
-                    property.Type == typeof(DateTime))
+                return value switch
                 {
-                    value = new ValueTuple<DateTime, DateTime>(from, to);
-                }
+                    ValueTuple<double, double> tuple => GetBetweenExpression(property, operand, tuple.Item1,
+                        tuple.Item2),
+                    ValueTuple<int, int> tuple => GetBetweenExpression(property, operand, tuple.Item1,
+                        tuple.Item2),
+                    ValueTuple<DateTime, DateTime> tuple => GetBetweenExpression(property, operand, tuple.Item1,
+                        tuple.Item2),
+                    _ => throw new IncorrectTypeForOperandException(operand, "a tuple of numbers or dates")
+                };
 
-                if (value is ValueTuple<string, string> stringTuple)
-                {
-                    property = ConvertPropertyToDouble(property);
-                    value = new ValueTuple<double, double>(
-                        Convert.ToDouble(stringTuple.Item1),
-                        Convert.ToDouble(stringTuple.Item2));
-                }
-
-                switch (value)
-                {
-                    case ValueTuple<double, double> doubleTuple:
-                    {
-                        var (left, right) = doubleTuple;
-                        return GetBetweenExpression(property, operand, left, right);
-                    }
-                    case ValueTuple<DateTime, DateTime> dateTimeTuple:
-                    {
-                        var (left, right) = dateTimeTuple;
-                        return GetBetweenExpression(property, operand, left, right);
-                    }
-                    default:
-                    {
-                        throw new IncorrectTypeForOperandException(operand, "a tuple of numbers or dates");
-                    }
-                }
             }
             case "_gt" or "_gte" or "_lt" or "_lte":
             {
@@ -134,10 +120,10 @@ public static class OperandToExpressionResolver
 
                 return operand switch
                 {
-                    "_gt" => Expression.GreaterThan(property, Expression.Constant(value)),
-                    "_gte" => Expression.GreaterThanOrEqual(property, Expression.Constant(value)),
-                    "_lt" => Expression.LessThan(property, Expression.Constant(value)),
-                    "_lte" => Expression.LessThanOrEqual(property, Expression.Constant(value)),
+                    "_gt" => Expression.GreaterThan(property, Expression.Constant(ConvertValue(property.Type, value))),
+                    "_gte" => Expression.GreaterThanOrEqual(property, Expression.Constant(ConvertValue(property.Type, value))),
+                    "_lt" => Expression.LessThan(property, Expression.Constant(ConvertValue(property.Type, value))),
+                    "_lte" => Expression.LessThanOrEqual(property, Expression.Constant(ConvertValue(property.Type, value))),
                     _ => throw new ArgumentOutOfRangeException(nameof(operand), operand, null)
                 };
             }
@@ -177,7 +163,7 @@ public static class OperandToExpressionResolver
                 Expression.LessThan(property, Expression.Constant(left)),
                 Expression.GreaterThan(property, Expression.Constant(right)));
         }
-
+        
         return Expression.AndAlso(
             Expression.GreaterThanOrEqual(property, Expression.Constant(left)),
             Expression.LessThanOrEqual(property, Expression.Constant(right)));
@@ -207,15 +193,8 @@ public static class OperandToExpressionResolver
         => UseConvertMethodForProp("ToDouble", prop);
 
 
-    private static MethodCallExpression ConvertPropertyToBoolean(Expression prop)
-        => UseConvertMethodForProp("ToBoolean", prop);
-
-
     private static MethodCallExpression ConvertPropertyToString(Expression prop)
         => UseConvertMethodForProp("ToString", prop);
-
-    private static MethodCallExpression ConvertPropertyToDateTime(Expression prop)
-        => UseConvertMethodForProp("ToDateTime", prop);
 
     private static MethodCallExpression UseConvertMethodForProp(string methodName, Expression prop)
     {

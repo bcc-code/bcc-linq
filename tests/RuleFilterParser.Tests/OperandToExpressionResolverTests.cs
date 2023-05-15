@@ -54,6 +54,18 @@ public class OperandToExpressionResolverTests
 
         Assert.Equal(ExpressionType.Equal, exp.NodeType);
     }
+    
+    [Fact]
+    public void should_return_equal_expression_for_int_nullable()
+    {
+        var parameter = Expression.Parameter(typeof(TestClass), "x");
+        var prop = Expression.Property(parameter, "IntNullable");
+
+        var exp = OperandToExpressionResolver.GetExpressionForRule(
+            prop, "_eq", 5);
+
+        Assert.Equal(ExpressionType.Equal, exp.NodeType);
+    }
 
     [Fact]
     public void should_return_not_equal_expression()
@@ -168,6 +180,19 @@ public class OperandToExpressionResolverTests
 
         var exp = OperandToExpressionResolver.GetExpressionForRule(
             prop, "_gte", 1);
+
+        Assert.Equal(ExpressionType.GreaterThanOrEqual, exp.NodeType);
+    }
+
+    [Fact]
+    public void should_return_greater_than_or_equal_expression_for_date_nullable()
+    {
+        var parameter = Expression.Parameter(typeof(TestClass), "x");
+        var prop = Expression.Property(parameter, "DateNullable");
+        var date = new DateTime(2023, 03, 01, 12, 0, 0);
+
+        var exp = OperandToExpressionResolver.GetExpressionForRule(
+            prop, "_gte", date);
 
         Assert.Equal(ExpressionType.GreaterThanOrEqual, exp.NodeType);
     }

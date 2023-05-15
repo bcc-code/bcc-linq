@@ -4,7 +4,7 @@ namespace RuleFilterParser;
 
 public static class FilterToLambdaParser
 {
-    public static Expression<Func<T, bool>> Parse<T>(Filter filter)
+    public static Expression<Func<T, bool>> Parse<T>(Filter<T> filter) where T : class
     {
         try
         {
@@ -32,7 +32,7 @@ public static class FilterToLambdaParser
 
         foreach (var prop in filter.Properties)
         {
-            if (prop.Value is Filter propertyFilter)
+            if (prop.Value is Filter filterInstance)
             {
                 switch (prop.Key)
                 {
@@ -40,7 +40,7 @@ public static class FilterToLambdaParser
                     {
                         var andExpressions = new List<Expression>();
 
-                        var nextLevelExpressions = GetExpressionsForFilter(propertyFilter, parameter);
+                        var nextLevelExpressions = GetExpressionsForFilter(filterInstance, parameter);
                         if (nextLevelExpressions.Count > 0)
                         {
                             andExpressions.AddRange(nextLevelExpressions);
@@ -54,7 +54,7 @@ public static class FilterToLambdaParser
                     {
                         var orExpressions = new List<Expression>();
 
-                        var nextLevelExpressions = GetExpressionsForFilter(propertyFilter, parameter);
+                        var nextLevelExpressions = GetExpressionsForFilter(filterInstance, parameter);
                         if (nextLevelExpressions.Count > 0)
                         {
                             orExpressions.AddRange(nextLevelExpressions);
@@ -66,7 +66,7 @@ public static class FilterToLambdaParser
                     }
                     default:
                         allExpressions.AddRange(GetExpressionsForFilter(
-                            propertyFilter,
+                            filterInstance,
                             parameter,
                             parentKey != null ? $"{parentKey}.{prop.Key}" : prop.Key));
 
@@ -87,7 +87,7 @@ public static class FilterToLambdaParser
                 var expressionForProperty = OperandToExpressionResolver.GetExpressionForRule(
                     property,
                     prop.Key,
-                    prop.Value);
+                    OperandToExpressionResolver.ConvertValue(property.Type, prop.Value));
                 allExpressions.Add(expressionForProperty);
             }
         }
