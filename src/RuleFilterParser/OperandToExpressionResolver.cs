@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using RuleFilterParser.Exceptions;
 
@@ -72,10 +73,8 @@ public static class OperandToExpressionResolver
             }
             case "_in" or "_nin":
             {
-                
-                var valueArray = ((IEnumerable<object>)value).ToArray();
-                
-                if (value is not IEnumerable<object>)
+
+                if (!(value is Array valueArray))
                 {
                     throw new IncorrectTypeForOperandException(operand, "an array");
                 }
@@ -83,7 +82,7 @@ public static class OperandToExpressionResolver
                 var convertedValue = new object[valueArray.Length];
                 for (int i = 0; i < valueArray.Length; i++)
                 {
-                    convertedValue[i] = ConvertValue(property.Type, valueArray[i]);
+                    convertedValue[i] = ConvertValue(property.Type, valueArray.GetValue(i));
                 }
                 
                 var typedArray = Array.CreateInstance(property.Type, convertedValue.Length);

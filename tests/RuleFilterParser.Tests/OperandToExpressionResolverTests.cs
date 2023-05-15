@@ -287,6 +287,32 @@ public class OperandToExpressionResolverTests
 
         Assert.Equal("Contains", methodCallExpression.Method.Name);
     }
+    
+    [Fact]
+    public void should_return_in_expression_for_decimal_nullable_array_strings()
+    {
+        var parameter = Expression.Parameter(typeof(TestClass), "x");
+        var prop = Expression.Property(parameter, "AmountNullable");
+
+        var exp = OperandToExpressionResolver.GetExpressionForRule(
+            prop, "_in", new[] { "1", "2", "3" });
+        var methodCallExpression = (MethodCallExpression)exp;
+
+        Assert.Equal("Contains", methodCallExpression.Method.Name);
+    }
+    
+    [Fact]
+    public void should_return_in_expression_for_decimal_array()
+    {
+        var parameter = Expression.Parameter(typeof(TestClass), "x");
+        var prop = Expression.Property(parameter, "Amount");
+
+        var exp = OperandToExpressionResolver.GetExpressionForRule(
+            prop, "_in", new[] { 1, 2, 3 });
+        var methodCallExpression = (MethodCallExpression)exp;
+
+        Assert.Equal("Contains", methodCallExpression.Method.Name);
+    }
 
     [Fact]
     public void should_return_array_not_contains_expression()

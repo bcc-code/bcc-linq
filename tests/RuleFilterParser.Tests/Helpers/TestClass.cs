@@ -11,6 +11,7 @@ internal class TestClass
     public bool BooleanProp { get; set; }
     public string[] StringArrayProp { get; set; }
     public decimal Amount { get; set; }
+    public decimal? AmountNullable { get; set; }
     public DateTime AnyDate { get; set; }
     public DateTime? DateNullable { get; set; }
     public NestedClass  Nested { get; set; }
