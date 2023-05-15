@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using RuleFilterParser.Exceptions;
 
@@ -17,6 +18,7 @@ public static class OperandToExpressionResolver
             {
                 Type when type == typeof(bool) && value is string strVal => strVal == "1",
                 Type when type == typeof(int) && value is string strVal => (int)double.Parse(strVal, CultureInfo.InvariantCulture),
+                Type when type == typeof(decimal) && value is string strVal => decimal.Parse(strVal, CultureInfo.InvariantCulture),
                 Type when type == typeof(DateTime) && value is string strVal && DateTime.TryParse(strVal, out var dateTime) => dateTime, 
                 Type when type == typeof(int) && value is ValueTuple<string, string> tuple => new ValueTuple<int, int>(
                     (int)ConvertValue(type, tuple.Item1), (int)ConvertValue(type, tuple.Item2)),
@@ -71,21 +73,30 @@ public static class OperandToExpressionResolver
             }
             case "_in" or "_nin":
             {
-                if (value is not IEnumerable<object>)
+
+                if (!(value is Array valueArray))
                 {
                     throw new IncorrectTypeForOperandException(operand, "an array");
                 }
 
+                var convertedValue = new object[valueArray.Length];
+                for (int i = 0; i < valueArray.Length; i++)
+                {
+                    convertedValue[i] = ConvertValue(property.Type, valueArray.GetValue(i));
+                }
+                
+                var typedArray = Array.CreateInstance(property.Type, convertedValue.Length);
+                Array.Copy(convertedValue, typedArray, convertedValue.Length);
+
                 var containsMethod = typeof(Enumerable).GetMethods().Where(x => x.Name == "Contains")
-                    .Single(x => x.GetParameters().Length == 2).MakeGenericMethod(typeof(object));
+                    .Single(x => x.GetParameters().Length == 2).MakeGenericMethod(property.Type);
 
                 if (containsMethod is null)
                 {
                     throw new GettingMethodByReflectionException("Contains", nameof(Enumerable));
                 }
 
-                var arrayContainsExpression =
-                    Expression.Call(containsMethod, Expression.Constant(value), property);
+                var arrayContainsExpression = Expression.Call(containsMethod, Expression.Constant(typedArray), property);
 
                 if (operand.StartsWith("_n"))
                 {

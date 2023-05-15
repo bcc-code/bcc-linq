@@ -110,14 +110,7 @@ public class Filter<T> : Filter
                 }
 
                 deserializedJson[key] = array;
-
-                // deserializedJson[key] = array[0] switch
-                // {
-                //     bool => array.Select(x => (bool)x),
-                //     int or double or long => array.Select(Convert.ToDouble),
-                //     DateTime => array.Select(x => (DateTime)x),
-                //     _ => array.Select(x => x.ToString())
-                // };
+                
             }
             else if (new[] { "_between", "_nbetween" }.Contains(key))
             {
