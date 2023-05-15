@@ -24,6 +24,18 @@ public class QueryableConverterTests
         
         Assert.Equal("{\"Start\":{\"_gte\":\"2023-05-01T00:00:00.0000000\",\"_lte\":\"2023-05-31T00:00:00.0000000\"}}", json);
     }
+
+    [Fact]
+    public void BetweenTwoDatesQueryMemberExpression()
+    {
+        var defaultFrom = DateTime.UtcNow.AddMonths(-6);
+        var defaultTo = DateTime.UtcNow;
+        var defaultFilterJson = DirectusFilterBuilder<Project>.Create()
+            .Where(x => x.Start >= defaultFrom && x.Start <= defaultTo)
+            .Serialize();
+        
+        Assert.NotEqual("{}", defaultFilterJson);
+    }
     
     [Fact]
     public void GreaterThanOrEqual()

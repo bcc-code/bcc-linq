@@ -97,8 +97,7 @@ public class DirectusFilterBuilder<T>
         {
             return constExpr.Value.ToString();
         }
-        else if (expression is UnaryExpression unaryExpr &&
-                 unaryExpr.Operand is MemberExpression memberExpr &&
+        else if (expression is UnaryExpression { Operand: MemberExpression memberExpr } unaryExpr &&
                  memberExpr.Expression is ConstantExpression constExpr2)
         {
             var container = constExpr2.Value;
@@ -119,7 +118,18 @@ public class DirectusFilterBuilder<T>
             {
                 return date.ToString("o");
             }
+        }else if (expression is MemberExpression fieldExpr && fieldExpr.Type == typeof(DateTime))
+        {
+            if (fieldExpr.Expression is ConstantExpression constExpr3)
+            {
+                var container = constExpr3.Value;
+                if (((FieldInfo)fieldExpr.Member).GetValue(container) is DateTime date)
+                {
+                    return date.ToString("o");
+                }
+            }
         }
+
 
         return null;
     }
