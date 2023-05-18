@@ -17,6 +17,34 @@ As an input param it takes a json string in directus filter format and applies t
 
 ```
 
+## Queryable usage
+
+When you implement the IApiClient interface into your API client class, you are able to run linq queries
+against it like this:
+
+``` csharp
+using RuleFilterParser;
+
+IApiClient client = ...;
+
+var queryable = client.GetAsQueryable("persons");  // URL path of the API
+
+var persons = from person in queryable
+              where person.Country == "NO"  // Note: Equals(person.Country, "NO") works, too
+              select new
+              {
+                  person.Age,
+                  person.Country
+              };
+
+foreach(var person in persons)
+{
+    // Here we interate through the query result getting
+    // by default per API request 100 rows/persons.
+}
+
+```
+
 ## DirectusFilterBuilder usage
 
 DirectusFilterBuilder is a C# implementation for building a json string in a Directus Filter format.
