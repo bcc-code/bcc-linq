@@ -40,6 +40,7 @@ internal class ApiQueryBuilder
         return "";
     }
 
+    [Obsolete]
     public virtual string ToRequestQuery()
     {
         var sb = new StringBuilder();
