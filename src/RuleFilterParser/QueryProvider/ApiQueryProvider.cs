@@ -225,6 +225,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
             nestedMemberExpressions.Add(m);
         }
         nestedMemberExpressions.RemoveAt(0);
+        nestedMemberExpressions.Reverse();
 
         bool isNested = false;
         if (depth > _indent)
@@ -247,6 +248,23 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
             if (_activeParameters.TryGetValue(parameterNode, out var queryBuilder))
             {
                 string ApiMemberName() => node.Member.Name.ToCamelCase();
+
+                string ApiMemberPath(string splitter = ".")
+                {
+                    var memberPath = new StringBuilder();
+                    
+                    foreach (var nestedMemberExpression in nestedMemberExpressions)
+                    {
+                        memberPath.Append(
+                            nestedMemberExpression.Member.Name.ToCamelCase()
+                        );
+                        memberPath.Append(splitter);
+                    }
+                        
+                    memberPath.Append(ApiMemberName());
+
+                    return memberPath.ToString();
+                }
                 
                 switch (_visitMode)
                 {
@@ -265,25 +283,16 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                         break;
                     case VisitLinqLambdaMode.Where:
                         Debug.Assert(_where != null);
-                        nestedMemberExpressions.Reverse();
-                        foreach (var nestedMemberExpression in nestedMemberExpressions)
-                        {
-                            _where.Append(
-                                nestedMemberExpression.Member.Name.ToCamelCase()
-                            );
-                            _where.Append("\": {\"");
-                        }
-                        
-                        _where.Append(ApiMemberName());
+                        _where.Append(ApiMemberPath(splitter: "\": {\""));
                         return Expression.Empty();
                     case VisitLinqLambdaMode.OrderBy:
-                        queryBuilder.Sorts.Add(ApiMemberName());
+                        queryBuilder.Sorts.Add(ApiMemberPath());
                         return Expression.Empty();
                     case VisitLinqLambdaMode.OrderByDescending:
-                        queryBuilder.Sorts.Add("-" + ApiMemberName());
+                        queryBuilder.Sorts.Add("-" + ApiMemberPath());
                         return Expression.Empty();
                     case VisitLinqLambdaMode.Include:
-                        queryBuilder.Expands.Add(ApiMemberName());
+                        queryBuilder.Expands.Add(ApiMemberPath());
                         return Expression.Empty();
                     default:
                         throw new NotSupportedException($"Member {node.Member.Name} used in an unsupported manner");

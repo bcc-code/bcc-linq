@@ -13,6 +13,8 @@ public class LinqQueryProviderTests
         return api;
     }
 
+    #region Select
+
     [Fact]
     public void SelectTest()
     {
@@ -26,6 +28,7 @@ public class LinqQueryProviderTests
         var persons = query.ToList();
         Assert.Equal("person", api.LastEndpoint);
         Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
     }
 
@@ -42,6 +45,7 @@ public class LinqQueryProviderTests
         // Currently not supported
         Assert.Throws<Exception>(() =>
         {
+            // ReSharper disable once UnusedVariable
             var persons = query.ToList();
         });
     }
@@ -59,6 +63,7 @@ public class LinqQueryProviderTests
         // Currently not supported
         Assert.Throws<Exception>(() =>
         {
+            // ReSharper disable once UnusedVariable
             var persons = query.ToList();
         });
     }
@@ -79,6 +84,7 @@ public class LinqQueryProviderTests
         var persons = query.ToList();
         Assert.Equal("person", api.LastEndpoint);
         Assert.Equal("name", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
     }
     
@@ -98,6 +104,7 @@ public class LinqQueryProviderTests
         var persons = query.ToList();
         Assert.Equal("person", api.LastEndpoint);
         Assert.Equal("car,car.manufacturer", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
     }
 
@@ -118,11 +125,16 @@ public class LinqQueryProviderTests
         var persons = query.ToList();
         Assert.Equal("person", api.LastEndpoint);
         Assert.Equal("name,age", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
     }
 
+    #endregion
+    
+    #region Where
+
     [Fact]
-    public void SelectWhereIntGreaterThanTest()
+    public void WhereIntGreaterThanTest()
     {
         var api = InitializeApiClient();
         var personsSource = api.GetAsQueryable<Person>("person");
@@ -134,8 +146,9 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("person", api.LastEndpoint);
-        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequest.Filter);
+        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -143,7 +156,7 @@ public class LinqQueryProviderTests
     }
     
     [Fact]
-    public void SelectWhereIntNotGreaterThanTest()
+    public void WhereIntNotGreaterThanTest()
     {
         var api = InitializeApiClient();
         var personsSource = api.GetAsQueryable<Person>("person");
@@ -155,8 +168,9 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("person", api.LastEndpoint);
-        Assert.Equal("{\"age\": {\"_lte\": 26}}", api.LastRequest.Filter);
+        Assert.Equal("{\"age\": {\"_lte\": 26}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -164,7 +178,7 @@ public class LinqQueryProviderTests
     }
 
     [Fact]
-    public void SelectWhereAndTest()
+    public void WhereSelectAndTest()
     {
         var api = InitializeApiClient();
         var personsSource = api.GetAsQueryable<Person>("person");
@@ -180,8 +194,9 @@ public class LinqQueryProviderTests
         var persons = query.ToList();
         Assert.Equal("person", api.LastEndpoint);
         Assert.Equal("{\"_and\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Reid Cantrell\"}}]}",
-            api.LastRequest.Filter);
+            api.LastRequest?.Filter);
         Assert.Equal("country", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
@@ -190,7 +205,7 @@ public class LinqQueryProviderTests
     }
 
     [Fact]
-    public void SelectWhereOrTest()
+    public void WhereSelectOrTest()
     {
         var api = InitializeApiClient();
         var personsSource = api.GetAsQueryable<Person>("person");
@@ -207,8 +222,9 @@ public class LinqQueryProviderTests
         var persons = query.ToList();
         Assert.Equal("person", api.LastEndpoint);
         Assert.Equal("{\"_or\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Chelsey Logan\"}}]}",
-            api.LastRequest.Filter);
+            api.LastRequest?.Filter);
         Assert.Equal("country,name", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);
@@ -216,7 +232,7 @@ public class LinqQueryProviderTests
     }
 
     [Fact]
-    public void SelectWhereOrTwiceTest()
+    public void WhereSelectOrTwiceTest()
     {
         var api = InitializeApiClient();
         var personsSource = api.GetAsQueryable<Person>("person");
@@ -234,8 +250,9 @@ public class LinqQueryProviderTests
         Assert.Equal("person", api.LastEndpoint);
         Assert.Equal(
             "{\"_or\": [{\"_or\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Chelsey Logan\"}}]}, {\"country\": {\"_eq\": \"US\"}}]}",
-            api.LastRequest.Filter);
+            api.LastRequest?.Filter);
         Assert.Equal("country,name", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(4, persons.Count);
@@ -243,7 +260,7 @@ public class LinqQueryProviderTests
     }
 
     [Fact]
-    public void WhereStringStartsWithTest()
+    public void StringStartsWithTest()
     {
         var api = InitializeApiClient();
         var personsSource = api.GetAsQueryable<Person>("person");
@@ -257,8 +274,9 @@ public class LinqQueryProviderTests
         Assert.Equal("person", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_starts_with\": \"Chelsey\"}}",
-            api.LastRequest.Filter);
+            api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -280,8 +298,9 @@ public class LinqQueryProviderTests
         Assert.Equal("person", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_ends_with\": \"Cantrell\"}}",
-            api.LastRequest.Filter);
+            api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -303,17 +322,15 @@ public class LinqQueryProviderTests
         Assert.Equal("person", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_empty\": null}}",
-            api.LastRequest.Filter);
+            api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(0, persons.Count);
         Assert.Equal(5, persons.Count);
     }
 
-    /*
-     * TODO it does not work yet
-     */
     [Fact]
     public void WhereNestedEqualTest()
     {
@@ -329,11 +346,97 @@ public class LinqQueryProviderTests
         Assert.Equal("person", api.LastEndpoint);
         Assert.Equal(
             "{\"_and\": [{\"car\": {\"_neq\": null}}, {\"car\": {\"model\": {\"_eq\": \"Opel\"}}}]}",
-            api.LastRequest.Filter);
+            api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("", api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
         Assert.Equal(5, persons.Count);
     }
+    
+    #endregion
+
+    #region OrderBy
+
+    [Fact]
+    public void OrderByTest()
+    {
+        var api = InitializeApiClient();
+        var personsSource = api.GetAsQueryable<Person>("person");
+
+        var query =
+            from p in personsSource
+            orderby p.Name
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("name", api.LastRequest?.Sort);
+        Assert.Equal(5, persons.Count);
+    }
+
+    [Fact]
+    public void OrderByDescendingTest()
+    {
+        var api = InitializeApiClient();
+        var personsSource = api.GetAsQueryable<Person>("person");
+
+        var query =
+            from p in personsSource
+            orderby p.Name descending
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("-name", api.LastRequest?.Sort);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    [Fact]
+    public void OrderByMultipleColumnsTest()
+    {
+        var api = InitializeApiClient();
+        var personsSource = api.GetAsQueryable<Person>("person");
+
+        var query =
+            from p in personsSource
+            orderby p.Name, p.Age descending, p.Country 
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("name,-age,country", api.LastRequest?.Sort);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    /// <summary>
+    /// We do by design not support filtering on nesting columns
+    /// </summary>
+    [Fact]
+    public void OrderByNestingNotSupportedTest()
+    {
+        var api = InitializeApiClient();
+        var personsSource = api.GetAsQueryable<Person>("person");
+
+        var query =
+            from p in personsSource
+            orderby p.Car.Manufacturer
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("car.manufacturer", api.LastRequest?.Sort);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    #endregion
 }

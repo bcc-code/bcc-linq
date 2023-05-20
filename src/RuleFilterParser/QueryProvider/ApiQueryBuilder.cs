@@ -109,7 +109,7 @@ internal class ApiQueryBuilder
             request.Fields = "*";
         request.Filter = GetFilterString();
         request.Search = null; // TODO not yet implemented
-        request.Sort = null; // TODO not yet implemented
+        request.Sort = string.Join(',', this.Sorts);
         request.Limit = Limit == 0 ? null : Limit;
         request.Offset = Offset == 0 ? null : Offset;
         request.Page = Page;
