@@ -36,12 +36,14 @@ internal class ApiClientMockup : IApiClient
     public string? LastEndpoint { get; set; }
     public IApiRequest? LastRequest { get; set; }
     
-    public void RegisterData(Type type, IList enumerable)
+    public void RegisterData(Type type, IEnumerable enumerable)
     {
         if (_inMemoryData.ContainsKey(type))
             throw new ArgumentException($"The data of type {type.FullName} has already been registered", nameof(type));
-        
-        _inMemoryData.Add(type, enumerable);
+
+        var listType = typeof(List<>).MakeGenericType(type);
+        var inMemoryList = Activator.CreateInstance(listType, enumerable);
+        _inMemoryData.Add(type, (IList)inMemoryList);
     }
     
     #region IApiClient

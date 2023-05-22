@@ -1,6 +1,5 @@
 ﻿using RuleFilterParser;
 using RuleToLinqParser.Tests.Helpers;
-using RuleToLinqParser.Tests.Seeds;
 
 namespace RuleToLinqParser.Tests;
 
@@ -9,7 +8,7 @@ public class LinqQueryProviderTests
     private ApiClientMockup InitializeApiClient()
     {
         var api = new ApiClientMockup();
-        api.RegisterData(typeof(Person), Persons.TestData());
+        api.RegisterData(typeof(Person), Seeds.Persons);
         return api;
     }
 

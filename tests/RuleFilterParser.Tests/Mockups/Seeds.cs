@@ -1,12 +1,14 @@
-﻿using RuleToLinqParser.Tests.Helpers;
+﻿using System.Collections.Immutable;
+using RuleToLinqParser.Tests.Helpers;
 
-namespace RuleToLinqParser.Tests.Seeds;
+namespace RuleToLinqParser.Tests;
 
-internal static class Persons
+internal static class Seeds
 {
-    public static List<Person> TestData()
-    {
-        return new List<Person>
+    private static IReadOnlyCollection<Person>? _persons;
+
+    public static IReadOnlyCollection<Person> Persons
+        => _persons ??= ImmutableList.Create(new Person[]
         {
             new("Archibald Mcbride", 18, "US", new DateTime(2020, 1, 4)),
             new("Tim Obrien", 25, "NO", new DateTime(1942, 5, 23)),
@@ -19,6 +21,5 @@ internal static class Persons
                 Car = new Car("Opel", "Astra", 2019)
             },
             new("Amelie Beasley", 75, "PL", new DateTime(1982, 12, 24)),
-        };
-    }
+        });
 }
