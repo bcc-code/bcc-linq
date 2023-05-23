@@ -68,8 +68,9 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
     /// An internal mode used during expression visiting to know what kind of action should be taken.
     /// </summary>
     private VisitLinqLambdaMode _visitMode = VisitLinqLambdaMode.Undefined;
-    private readonly Dictionary<ParameterExpression, ApiQueryBuilder> _activeParameters = new();
+    private readonly Dictionary<ParameterExpression, IApiCaller> _activeParameters = new();
     private StringBuilder? _where;
+    private StringBuilder? _selectField;
     private bool _inverseOperator; 
     private int _memberDepth;
     private int _indent;
@@ -115,10 +116,11 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
         lock (_queryBuilderLock)
         {
             _visitMode = VisitLinqLambdaMode.Undefined;
+            Debug.Assert(_mapFromToApiCallers.Count == 0);
             translatedExpression = this.Visit(expression);
             Debug.Assert(translatedExpression != null);
             Debug.Assert(_activeParameters.Count == 0);
-            _queryBuilders.Clear();
+            _mapFromToApiCallers.Clear();
         }
         
         var lambdaExpression = Expression.Lambda<Func<IEnumerable>>(translatedExpression);
@@ -140,10 +142,11 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
         lock (_queryBuilderLock)
         {
             _visitMode = VisitLinqLambdaMode.Undefined;
+            Debug.Assert(_mapFromToApiCallers.Count == 0);
             translatedExpression = this.Visit(expression);
             Debug.Assert(translatedExpression != null);
             Debug.Assert(_activeParameters.Count == 0);
-            _queryBuilders.Clear();
+            _mapFromToApiCallers.Clear();
         }
         
         var lambdaExpression = Expression.Lambda<Func<TResult>>(translatedExpression);
@@ -153,21 +156,29 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
 
     #endregion
 
-    private readonly Dictionary<Expression, ApiQueryBuilder> _queryBuilders = new();
+    /// <summary>
+    /// A map holding the API caller classes (eg. <see cref="ApiPagedEnumerable"/>) mapped to the constant Expression
+    /// to the <see cref="ApiQueryable"/> (which is replaced with an instance of <see cref="ApiPagedEnumerable"/>.
+    ///
+    /// This makes it theoretically possible to use a type twice in a query e.g. when performing a cross join.
+    ///
+    /// In other words, you have a <see cref="IApiCaller"/> instance per 'FROM'/'JOIN' of your linq expression. 
+    /// </summary>
+    private readonly Dictionary<Expression, IApiCaller> _mapFromToApiCallers = new();
 
-    private ApiQueryBuilder GetOrAddQueryBuilder(Expression node)
+    /// <summary>
+    /// Tries to get the <see cref="IApiCaller"/> from an expression by traveling though a possible chain of
+    /// Linq <see cref="Queryable"/> method calls.
+    ///
+    /// Note: In case we add custom Queryable extensions, here is the place this needs to be adjusted. Potentially a
+    /// check for a extension method with first parameter holding a <see cref="IQueryable{T}"/> could do this better.  
+    /// </summary>
+    /// <param name="node"></param>
+    /// <param name="apiCaller"></param>
+    /// <returns></returns>
+    private bool TryGetApiCaller(Expression node, out IApiCaller apiCaller)
     {
-        if (_queryBuilders.TryGetValue(node, out var queryBuilder))
-            return queryBuilder;
-
-        var newQueryBuilder = new ApiQueryBuilder();
-        _queryBuilders.Add(node, newQueryBuilder);
-        return newQueryBuilder;
-    }
-
-    private bool TryGetQueryBuilder(Expression node, out ApiQueryBuilder queryBuilder)
-    {
-        if (_queryBuilders.TryGetValue(node, out queryBuilder))
+        if (_mapFromToApiCallers.TryGetValue(node, out apiCaller))
         {
             return true;
         }
@@ -179,7 +190,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                 node = mc.Arguments[0];
             }
             
-            if (_queryBuilders.TryGetValue(node, out queryBuilder))
+            if (_mapFromToApiCallers.TryGetValue(node, out apiCaller))
             {
                 return true;
             }
@@ -227,14 +238,12 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
         nestedMemberExpressions.RemoveAt(0);
         nestedMemberExpressions.Reverse();
 
-        bool isNested = false;
         if (depth > _indent)
         {
             _indent = depth;
         }
         else if (depth < _indent)
         {
-            isNested = true;
             _indent = depth;
         }
 
@@ -245,7 +254,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
         
         if (findNode is ParameterExpression parameterNode)
         {
-            if (_activeParameters.TryGetValue(parameterNode, out var queryBuilder))
+            if (_activeParameters.TryGetValue(parameterNode, out var apiCaller))
             {
                 string ApiMemberName() => node.Member.Name.ToCamelCase();
 
@@ -269,31 +278,67 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                 switch (_visitMode)
                 {
                     case VisitLinqLambdaMode.Select:
-                        if (isNested)
+                    {
+                        bool initializedStringBuilder;
+                        if (_selectField == null)
                         {
-                            if (queryBuilder.Fields.Count == 0)
-                                throw new NotSupportedException($"Unexpected nested handling for member {node.Member.Name}");
-
-                            queryBuilder.Fields[^1] = $"{ApiMemberName()}.{queryBuilder.Fields[^1]}";
+                            initializedStringBuilder = true;
+                            _selectField = new StringBuilder();
                         }
                         else
                         {
-                            queryBuilder.Fields.Add(ApiMemberName());                          
+                            initializedStringBuilder = false;
                         }
-                        break;
+
+                        base.VisitMember(node);
+
+                        _selectField.Append(ApiMemberName());
+
+                        if (initializedStringBuilder)
+                        {
+                            apiCaller.Request.Fields = string.IsNullOrEmpty(apiCaller.Request.Fields)
+                                ? _selectField.ToString()
+                                : $"{apiCaller.Request.Fields},{_selectField}";
+
+                            _selectField = null;
+                        }
+                        else
+                        {
+                            _selectField.Append(".");
+                        }
+
+                        return node;
+                    }
                     case VisitLinqLambdaMode.Where:
+                    {
                         Debug.Assert(_where != null);
                         _where.Append(ApiMemberPath(splitter: "\": {\""));
-                        return Expression.Empty();
+                        return Expression.Empty();                        
+                    }
                     case VisitLinqLambdaMode.OrderBy:
-                        queryBuilder.Sorts.Add(ApiMemberPath());
+                    {
+                        var memberPath = ApiMemberPath();
+                        apiCaller.Request.Sort = string.IsNullOrEmpty(apiCaller.Request.Sort)
+                            ? memberPath
+                            : $"{apiCaller.Request.Sort},{memberPath}";
                         return Expression.Empty();
+                    }
                     case VisitLinqLambdaMode.OrderByDescending:
-                        queryBuilder.Sorts.Add("-" + ApiMemberPath());
+                    {
+                        var memberPath = ApiMemberPath();
+                        apiCaller.Request.Sort = string.IsNullOrEmpty(apiCaller.Request.Sort)
+                            ? $"-{memberPath}"
+                            : $"{apiCaller.Request.Sort},-{memberPath}";
                         return Expression.Empty();
+                    }
                     case VisitLinqLambdaMode.Include:
-                        queryBuilder.Expands.Add(ApiMemberPath());
+                    {
+                        var memberPath = ApiMemberPath();
+                        apiCaller.Request.Fields = string.IsNullOrEmpty(apiCaller.Request.Fields)
+                            ? memberPath
+                            : $"{apiCaller.Request.Fields},{memberPath}.*";
                         return Expression.Empty();
+                    }
                     default:
                         throw new NotSupportedException($"Member {node.Member.Name} used in an unsupported manner");
                 }
@@ -650,7 +695,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                     //Arg 0: source
                     var source =  Visit(node.Arguments[0]);
                     Debug.Assert(source != null);
-                    if (!TryGetQueryBuilder(node.Arguments[0], out var queryBuilder))
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
                         // ... the source was not a ApiQueryable and is not
                         // part of the API. So we just do nothing and pass it
@@ -661,14 +706,16 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                         Debug.Assert(l.Parameters.Count == 1);
                         
                         _visitMode = VisitLinqLambdaMode.Where;
-                        _activeParameters.Add(l.Parameters[0], queryBuilder);
+                        _activeParameters.Add(l.Parameters[0], apiCaller);
                         _where = new StringBuilder();
 
                         Visit(l.Body);
                         
                         _visitMode = VisitLinqLambdaMode.Undefined;
                         _activeParameters.Remove(l.Parameters[0]);
-                        queryBuilder.Filters.Add(_where.ToString());
+                        apiCaller.Request.Filter = string.IsNullOrEmpty(apiCaller.Request.Filter)
+                            ? _where.ToString()
+                            : $"{{ \"_and\" : [ {apiCaller.Request.Filter} , {_where} ] }}";
                         _where = null;
                         
                         // We remove here the Where method call from the expression tree, because
@@ -686,7 +733,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                     //Arg 0: source
                     var source =  Visit(node.Arguments[0]);
                     Debug.Assert(source != null);
-                    if (!TryGetQueryBuilder(node.Arguments[0], out var queryBuilder))
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
                         // ... the source was not a ApiQueryable and is not
                         // part of the API. So we just do nothing and pass it
@@ -704,12 +751,12 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                             }
                         
                             _visitMode = VisitLinqLambdaMode.Select;
-                            _activeParameters.Add(l.Parameters[0], queryBuilder);
+                            _activeParameters.Add(l.Parameters[0], apiCaller);
 
                             // Lambda: row => row
                             if (l.Body is ParameterExpression p && p == l.Parameters[0])
                             {
-                                queryBuilder.Fields.Add("*");                                
+                                apiCaller.Request.Fields = "*";                              
                             }
                             else
                             {
@@ -749,7 +796,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                     //Arg 0: source
                     var source = Visit(node.Arguments[0]);
                     Debug.Assert(source != null);
-                    if (!TryGetQueryBuilder(node.Arguments[0], out var queryBuilder))
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
                         // ... the source was not a ApiQueryable and is not
                         // part of the API. So we just do nothing and pass it
@@ -775,7 +822,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                             _visitMode = VisitLinqLambdaMode.OrderBy;
                         }
                         
-                        _activeParameters.Add(l.Parameters[0], queryBuilder);
+                        _activeParameters.Add(l.Parameters[0], apiCaller);
 
                         Visit(l.Body);
                         
@@ -798,7 +845,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                 {
                     var source =  Visit(node.Arguments[0]);
                     Debug.Assert(source != null);
-                    if (!TryGetQueryBuilder(node.Arguments[0], out var queryBuilder))
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
                         // ... the source was not a ApiQueryable and is not
                         // part of the API. So we just do nothing and pass it
@@ -815,7 +862,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                             nameof(Queryable.Max) => "max",
                             _ => throw new ArgumentOutOfRangeException()
                         };
-                        queryBuilder.AggregateFunction = function;
+                        apiCaller.Request.Aggregate = function;
 
                         // We remove here the aggregation method call from the expression tree,
                         // because the aggregation is done by the API.
@@ -832,7 +879,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                 {
                     var source =  Visit(node.Arguments[0]);
                     Debug.Assert(source != null);
-                    if (!TryGetQueryBuilder(node.Arguments[0], out var queryBuilder))
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
                         // ... the source was not a ApiQueryable and is not
                         // part of the API. So we just do nothing and pass it
@@ -842,7 +889,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                         if (c.Type != typeof(int))
                             throw new NotSupportedException(
                                 "The parameter for Queryable.Take must be a constant integer expression");
-                        queryBuilder.Limit = (int)c.Value;
+                        apiCaller.Request.Limit = (int)c.Value;
 
                         // We remove here the Take method call from the expression tree,
                         // because the Take is done by the API.
@@ -858,7 +905,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                 {
                     var source =  Visit(node.Arguments[0]);
                     Debug.Assert(source != null);
-                    if (!TryGetQueryBuilder(node.Arguments[0], out var queryBuilder))
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
                         // ... the source was not a ApiQueryable and is not
                         // part of the API. So we just do nothing and pass it
@@ -868,7 +915,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                         if (c.Type != typeof(int))
                             throw new NotSupportedException(
                                 "The parameter for Queryable.Skip must be a constant integer expression");
-                        queryBuilder.Offset = (int)c.Value;
+                        apiCaller.Request.Offset = (int)c.Value;
                         
                         // We remove here the Skip method call from the expression tree,
                         // because the Take is done by the API.
@@ -890,7 +937,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
             //Arg 0: source
             var source =  Visit(node.Arguments[0]);
             Debug.Assert(source != null);
-            if (!TryGetQueryBuilder(node.Arguments[0], out var queryBuilder))
+            if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
             {
                 // ... the source was not a ApiQueryable and is not
                 // part of the API. So we just do nothing and pass it
@@ -908,7 +955,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                     }
 
                     _visitMode = VisitLinqLambdaMode.Include;
-                    _activeParameters.Add(l.Parameters[0], queryBuilder);
+                    _activeParameters.Add(l.Parameters[0], apiCaller);
 
                     Visit(l.Body);
 
@@ -944,13 +991,16 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
     {
         // data model type
         var type = node.Type.GenericTypeArguments[0];
-        
-        var queryBuilder = GetOrAddQueryBuilder(node);
 
-        var apiPagedEnumerableType = typeof(ApiPagedEnumerable<>).MakeGenericType(type);
-        var pagedData = Activator.CreateInstance(apiPagedEnumerableType, _apiClient, _path, queryBuilder);
+        if (!_mapFromToApiCallers.TryGetValue(node, out var apiCaller))
+        {
+            var apiPagedEnumerableType = typeof(ApiPagedEnumerable<>).MakeGenericType(type);
+            apiCaller = (IApiCaller)Activator.CreateInstance(apiPagedEnumerableType, _apiClient, _path);
+            
+            _mapFromToApiCallers.Add(node, apiCaller);
+        }
 
-        return Expression.Constant(((IEnumerable)pagedData).AsQueryable());
+        return Expression.Constant(apiCaller.AsQueryable());
     }
 
     private void TransformConstant(StringBuilder stringBuilder, ConstantExpression node)

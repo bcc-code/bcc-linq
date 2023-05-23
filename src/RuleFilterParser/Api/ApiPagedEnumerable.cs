@@ -3,10 +3,19 @@
 namespace RuleFilterParser;
 
 /// <summary>
+/// Internal. Makes it possible to easily getting the API request for a instance of <see cref="ApiPagedEnumerable{T}"/>
+/// without knowing the generic data type.
+/// </summary>
+internal interface IApiCaller : IEnumerable
+{
+    public IApiRequest Request { get; }
+}
+
+/// <summary>
 /// A class returning data from the API by requesting data per page. 
 /// </summary>
 /// <typeparam name="T"></typeparam>
-internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
+internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApiCaller
 {
     /// <summary>
     /// The maximum number of rows per page allowed by the API.
@@ -16,7 +25,6 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
 
     private readonly IApiClient _apiClient;
     private readonly string _path;
-    private readonly ApiQueryBuilder _queryBuilder;
     private int _rowsPerPage = 100;
 
     /// <summary>
@@ -35,27 +43,38 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
         }
     }
 
-    public ApiPagedEnumerable(IApiClient apiClient, string path, ApiQueryBuilder queryBuilder)
+    /// <summary>
+    /// The API request which will be passed to a single API call. 
+    /// </summary>
+    public IApiRequest Request { get; }
+
+    public ApiPagedEnumerable(IApiClient apiClient, string path)
     {
         _apiClient = apiClient;
         _path = path;
-        _queryBuilder = queryBuilder;
+        Request = apiClient.ConstructApiRequest(_path);
+    }
+
+    private void PrepareRequest()
+    {
+        if (string.IsNullOrEmpty(Request.Fields))
+        {
+            Request.Fields = "*";
+        }
     }
 
     private IResultList<T>? RequestPage(int page)
     {
-        _queryBuilder.Page = page;
-        var request = _apiClient.ConstructApiRequest(_path);
-        _queryBuilder.MapToApiRequest(request);
-        return _apiClient.Get<IResultList<T>>(_path, request);
+        PrepareRequest();
+        Request.Page = page;
+        return _apiClient.Get<IResultList<T>>(_path, Request);
     }
     
     private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = new())
     {
-        _queryBuilder.Page = page;
-        var request = _apiClient.ConstructApiRequest(_path);
-        _queryBuilder.MapToApiRequest(request);
-        return _apiClient.GetAsync<IResultList<T>>(_path, request, cancellationToken);
+        PrepareRequest();
+        Request.Page = page;
+        return _apiClient.GetAsync<IResultList<T>>(_path, Request, cancellationToken);
     }
     
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new())
