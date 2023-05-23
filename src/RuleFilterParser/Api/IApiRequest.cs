@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace RuleFilterParser;
+﻿namespace RuleFilterParser;
 
 public interface IApiRequest
 {

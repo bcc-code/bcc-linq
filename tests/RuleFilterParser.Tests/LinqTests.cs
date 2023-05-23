@@ -1,27 +1,16 @@
-﻿using RuleFilterParser;
-using RuleToLinqParser.Tests.Helpers;
-
-namespace RuleToLinqParser.Tests;
+﻿namespace RuleToLinqParser.Tests;
 
 public class LinqQueryProviderTests
 {
-    private ApiClientMockup InitializeApiClient()
-    {
-        var api = new ApiClientMockup();
-        api.RegisterData(typeof(Person), Seeds.Persons);
-        return api;
-    }
-
     #region Select
 
     [Fact]
     public void SelectTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             select p;
 
         var persons = query.ToList();
@@ -34,11 +23,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void SelectSingleStringFieldTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             select p.Name;
 
         // Currently not supported
@@ -52,11 +40,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void SelectSingleIntegerFieldTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             select p.Age;
 
         // Currently not supported
@@ -70,11 +57,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void SelectNewSingleFieldTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             select new
             {
                 p.Name
@@ -90,11 +76,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void SelectNewNestedSingleFieldIfNullTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             select new
             {
                 Manufacturer = p.Car == null ? null : p.Car.Manufacturer
@@ -110,11 +95,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void SelectNewTwoFieldsTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             select new
             {
                 p.Name,
@@ -135,11 +119,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void WhereIntGreaterThanTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             where p.Age > 26
             select p;
 
@@ -157,11 +140,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void WhereIntNotGreaterThanTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             where !(p.Age > 26)
             select p;
 
@@ -179,11 +161,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void WhereSelectAndTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             where p.Age > 26 && p.Name == "Reid Cantrell"
             select new
             {
@@ -206,11 +187,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void WhereSelectOrTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             where p.Age > 26 || p.Name == "Chelsey Logan"
             select new
             {
@@ -233,11 +213,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void WhereSelectOrTwiceTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             where p.Age > 26 || p.Name == "Chelsey Logan" || p.Country == "US"
             select new
             {
@@ -261,11 +240,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void StringStartsWithTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             where p.Name.StartsWith("Chelsey")
             select p;
 
@@ -285,11 +263,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void WhereStringEndsWithTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             where p.Name.EndsWith("Cantrell")
             select p;
 
@@ -309,11 +286,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void WhereStringIsNullOrEmptyTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             where string.IsNullOrEmpty(p.Name)
             select p;
 
@@ -333,11 +309,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void WhereNestedEqualTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             where p.Car != null && Equals(p.Car.Model, "Opel")
             select p;
 
@@ -361,11 +336,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void OrderByTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             orderby p.Name
             select p;
 
@@ -380,11 +354,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void OrderByDescendingTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             orderby p.Name descending
             select p;
 
@@ -399,11 +372,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void OrderByMultipleColumnsTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             orderby p.Name, p.Age descending, p.Country 
             select p;
 
@@ -421,11 +393,10 @@ public class LinqQueryProviderTests
     [Fact]
     public void OrderByNestingNotSupportedTest()
     {
-        var api = InitializeApiClient();
-        var personsSource = api.GetAsQueryable<Person>("person");
+        var api = new ApiClientMockup();
 
         var query =
-            from p in personsSource
+            from p in api.Persons
             orderby p.Car.Manufacturer
             select p;
 

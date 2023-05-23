@@ -7,11 +7,15 @@ public static class ApiClientExtension
     /// <summary>
     /// Creates a Queryable object.
     /// </summary>
-    /// <param name="apiClient"></param>
-    /// <param name="path"></param>
+    /// <param name="apiClient">
+    /// The API client.
+    /// </param>
+    /// <param name="path">
+    /// The URL path to the API endpoint.
+    /// </param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static IQueryable<T> GetAsQueryable<T>(this IApiClient apiClient, string path)
+    public static IQueryable<T> GetQueryable<T>(this IApiClient apiClient, string path)
     {
         var provider = new ApiQueryProvider(apiClient, path);
         return new ApiQueryable<T>(provider);
