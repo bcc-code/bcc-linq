@@ -868,7 +868,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
                         if (c.Type != typeof(int))
                             throw new NotSupportedException(
                                 "The parameter for Queryable.Skip must be a constant integer expression");
-                        queryBuilder.Limit = (int)c.Value;
+                        queryBuilder.Offset = (int)c.Value;
                         
                         // We remove here the Skip method call from the expression tree,
                         // because the Take is done by the API.
