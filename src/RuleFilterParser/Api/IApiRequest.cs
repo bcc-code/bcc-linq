@@ -8,7 +8,6 @@ public interface IApiRequest
     /// Choose the fields that are returned in the current dataset. This parameter supports dot notation to request
     /// nested relational fields. You can also use a wildcard (*) to include all fields at a specific depth.
     /// </summary>
-    [FromQuery(Name = "fields")]
     public string? Fields { get; set; }
     
     /// <summary>
@@ -16,7 +15,6 @@ public interface IApiRequest
     /// Rules spec, which includes additional information on logical operators (AND/OR), nested relational filtering,
     /// and dynamic variables.
     /// </summary>
-    [FromQuery(Name = "filter")]
     public string? Filter { get; set; }
     
     /// <summary>
@@ -24,7 +22,6 @@ public interface IApiRequest
     /// It's an easy way to search for an item without creating complex field filters – though it is far less optimized.
     /// It only searches the root item's fields, related item fields are not included.
     /// </summary>
-    [FromQuery(Name = "search")]
     public string? Search { get; set; }
     
     /// <summary>
@@ -32,26 +29,22 @@ public interface IApiRequest
     /// descending order. Fields are prioritized by the order in the parameter. The dot-notation has to be used when
     /// sorting with values of nested fields.
     /// </summary>
-    [FromQuery(Name = "sort")]
     public string? Sort { get; set; }
     
     /// <summary>
     /// Set the maximum number of items that will be returned. The default limit is set to <c>100</c>.
     /// </summary>
-    [FromQuery(Name = "limit")]
     public int? Limit { get; set; }
     
     /// <summary>
     /// Skip the first <c>n</c> items in the response. Can be used for pagination.
     /// </summary>
-    [FromQuery(Name = "offset")]
     public int? Offset { get; set; }
     
     /// <summary>
     /// An alternative to <c>offset</c>. Page is a way to set <c>offset</c> under the hood by calculating
     /// <c>limit * page</c>. Page is 1-indexed.
     /// </summary>
-    [FromQuery(Name = "page")]
     public int? Page { get; set; }
     
     /// <summary>
@@ -98,7 +91,6 @@ public interface IApiRequest
     ///   </item>
     /// </list>
     /// </summary>
-    [FromQuery(Name = "aggregate")]
     public string? Aggregate { get; set; }
     
     /// <summary>
@@ -110,13 +102,11 @@ public interface IApiRequest
     /// The <c>groupBy</c> query allows for grouping on multiple fields simultaneously. Combined with the Functions,
     /// this allows for aggregate reporting per year-month-date.
     /// </summary>
-    [FromQuery(Name = "groupBy")]
     public string? GroupBy { get; set; }
     
     /// <summary>
     /// Deep allows you to set any of the other query parameters on a nested relational dataset.
     /// </summary>
-    [FromQuery(Name = "deep")]
     public string? Deep { get; set; }
     
     /// <summary>
@@ -129,7 +119,6 @@ public interface IApiRequest
     /// Alias for nested fields, f.e. <c>field.nested</c>, will not work.
     /// </remarks>
     /// </summary>
-    [FromQuery(Name = "alias")]
     public string? Alias { get; set; }
     
     /// <summary>
@@ -141,6 +130,5 @@ public interface IApiRequest
     ///
     /// <b>Filter Count (<c>filter_count</c>)</b>
     /// </summary>
-    [FromQuery(Name = "meta")]
     public string? Meta { get; set; }
 }
