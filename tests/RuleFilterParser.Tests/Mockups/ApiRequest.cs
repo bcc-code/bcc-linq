@@ -2,7 +2,7 @@
 
 namespace RuleFilterParser;
 
-public class ApiRequest : IApiRequest
+internal class ApiRequest : IApiRequest
 {
     [FromQuery(Name = "fields")]
     public string? Fields { get; set; }

@@ -8,6 +8,10 @@ namespace RuleFilterParser;
 /// <typeparam name="T"></typeparam>
 internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
 {
+    /// <summary>
+    /// The maximum number of rows per page allowed by the API.
+    /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     public const int MaxRowsPerPage = 1000;
 
     private readonly IApiClient _apiClient;
@@ -41,13 +45,17 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
     private IResultList<T>? RequestPage(int page)
     {
         _queryBuilder.Page = page;
-        return _apiClient.Get<IResultList<T>>(_path, _queryBuilder.ToApiRequest());
+        var request = _apiClient.ConstructApiRequest(_path);
+        _queryBuilder.MapToApiRequest(request);
+        return _apiClient.Get<IResultList<T>>(_path, request);
     }
     
     private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = new())
     {
         _queryBuilder.Page = page;
-        return _apiClient.GetAsync<IResultList<T>>(_path, _queryBuilder.ToApiRequest(), cancellationToken);
+        var request = _apiClient.ConstructApiRequest(_path);
+        _queryBuilder.MapToApiRequest(request);
+        return _apiClient.GetAsync<IResultList<T>>(_path, request, cancellationToken);
     }
     
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new())

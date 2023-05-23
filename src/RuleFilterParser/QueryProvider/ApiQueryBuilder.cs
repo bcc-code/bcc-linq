@@ -11,7 +11,7 @@ internal class ApiQueryBuilder
 
     public List<string> Expands { get; set; } = new();
     public int? Limit { get; set; }
-    public int Offset { get; set; }
+    public int? Offset { get; set; }
     public List<string> Fields { get; set; } = new();
 
     public Dictionary<string,string> Aliases = new();
@@ -25,7 +25,7 @@ internal class ApiQueryBuilder
         Sorts.Clear();
         Expands.Clear();
         Limit = null;
-        Offset = 0;
+        Offset = null;
         Fields.Clear();
         Aliases.Clear();
         Page = 1;
@@ -87,11 +87,11 @@ internal class ApiQueryBuilder
         }
 
         // Add slices
-        if (Limit > 0)
+        if (Limit.HasValue && Limit > 0)
         {
             sb.Append($"&limit={Limit}");
         }
-        if (Offset > 0)
+        if (Offset.HasValue && Offset > 0)
         {
             sb.Append($"&offset={Offset}");
         }
@@ -99,9 +99,8 @@ internal class ApiQueryBuilder
         return "?" + sb.ToString().TrimStart('&');
     }
 
-    public IApiRequest ToApiRequest()
+    public void MapToApiRequest(IApiRequest request)
     {
-        var request = new ApiRequest();
         if (Fields.Count > 0)
             request.Fields = Fields.Select(f => Aliases.TryGetValue(f, out var alias) ? alias : f)
                 .Aggregate((c, n) => $"{c},{n}");
@@ -110,8 +109,8 @@ internal class ApiQueryBuilder
         request.Filter = GetFilterString();
         request.Search = null; // TODO not yet implemented
         request.Sort = string.Join(',', this.Sorts);
-        request.Limit = Limit == 0 ? null : Limit;
-        request.Offset = Offset == 0 ? null : Offset;
+        request.Limit = Limit;
+        request.Offset = Offset;
         request.Page = Page;
         request.Aggregate = AggregateFunction;
         request.GroupBy = null; // TODO not yet implemented
@@ -120,6 +119,5 @@ internal class ApiQueryBuilder
             throw new NotImplementedException();
         request.Alias = null;
         request.Meta = null; // TODO not yet implemented
-        return request;
     }
 }

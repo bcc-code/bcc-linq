@@ -83,5 +83,12 @@ internal class ApiClientMockup : IApiClient
         return Task.FromResult<TResult?>(null);
     }
 
+    IApiRequest IApiClient.ConstructApiRequest(string path)
+    {
+        // NOTE: The Mockup API does just use a single ApiRequest class.
+        //       A real API client might use different request model classes for different endpoints.
+        return new ApiRequest();
+    }
+
     #endregion
 }
