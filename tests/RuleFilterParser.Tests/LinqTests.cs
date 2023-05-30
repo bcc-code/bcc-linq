@@ -14,7 +14,7 @@ public class LinqQueryProviderTests
             select p;
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("*", api.LastRequest?.Fields ?? "*");
         Assert.Null(api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
@@ -67,7 +67,7 @@ public class LinqQueryProviderTests
             };
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("name", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
@@ -86,7 +86,7 @@ public class LinqQueryProviderTests
             };
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("car,car.manufacturer", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
@@ -106,7 +106,7 @@ public class LinqQueryProviderTests
             };
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("name,age", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
@@ -127,7 +127,7 @@ public class LinqQueryProviderTests
             select p;
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
@@ -148,7 +148,7 @@ public class LinqQueryProviderTests
             select p;
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("{\"age\": {\"_lte\": 26}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
@@ -172,7 +172,7 @@ public class LinqQueryProviderTests
             };
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("{\"_and\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Reid Cantrell\"}}]}",
             api.LastRequest?.Filter);
         Assert.Equal("country", api.LastRequest?.Fields);
@@ -199,7 +199,7 @@ public class LinqQueryProviderTests
             };
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("{\"_or\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Chelsey Logan\"}}]}",
             api.LastRequest?.Filter);
         Assert.Equal("country,name", api.LastRequest?.Fields);
@@ -225,7 +225,7 @@ public class LinqQueryProviderTests
             };
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"_or\": [{\"_or\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Chelsey Logan\"}}]}, {\"country\": {\"_eq\": \"US\"}}]}",
             api.LastRequest?.Filter);
@@ -248,7 +248,7 @@ public class LinqQueryProviderTests
             select p;
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_starts_with\": \"Chelsey\"}}",
             api.LastRequest?.Filter);
@@ -271,7 +271,7 @@ public class LinqQueryProviderTests
             select p;
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_ends_with\": \"Cantrell\"}}",
             api.LastRequest?.Filter);
@@ -294,7 +294,7 @@ public class LinqQueryProviderTests
             select p;
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_empty\": null}}",
             api.LastRequest?.Filter);
@@ -317,7 +317,7 @@ public class LinqQueryProviderTests
             select p;
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"_and\": [{\"car\": {\"_neq\": null}}, {\"car\": {\"model\": {\"_eq\": \"Opel\"}}}]}",
             api.LastRequest?.Filter);
@@ -344,7 +344,7 @@ public class LinqQueryProviderTests
             select p;
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Null(api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields ?? "*");
         Assert.Equal("name", api.LastRequest?.Sort);
@@ -362,7 +362,7 @@ public class LinqQueryProviderTests
             select p;
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Null(api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Equal("-name", api.LastRequest?.Sort);
@@ -380,7 +380,7 @@ public class LinqQueryProviderTests
             select p;
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Null(api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields ?? "*");
         Assert.Equal("name,-age,country", api.LastRequest?.Sort);
@@ -401,7 +401,7 @@ public class LinqQueryProviderTests
             select p;
 
         var persons = query.ToList();
-        Assert.Equal("person", api.LastEndpoint);
+        Assert.Equal("persons", api.LastEndpoint);
         Assert.Null(api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields ?? "*");
         Assert.Equal("car.manufacturer", api.LastRequest?.Sort);
