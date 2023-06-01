@@ -19,7 +19,7 @@ public class ApiClientMockupBase : IApiClient
             Data = data;
             Meta = meta ?? new Dictionary<string, object>();
         }
-        
+
         public List<T> Data { get; }
         public Dictionary<string, object> Meta { get; }
 
@@ -30,12 +30,12 @@ public class ApiClientMockupBase : IApiClient
 
         #endregion
     }
-    
+
     private readonly Dictionary<Type, IList> _inMemoryData = new();
-    
+
     public string? LastEndpoint { get; set; }
     public IApiRequest? LastRequest { get; set; }
-    
+
     public void RegisterData(Type type, IEnumerable enumerable)
     {
         if (_inMemoryData.ContainsKey(type))
@@ -55,7 +55,7 @@ public class ApiClientMockupBase : IApiClient
         LastRequest = request;
 
         var resultType = typeof(TResult);
-        
+
         Debug.Assert(resultType.IsGenericType);
         if (resultType.GetGenericTypeDefinition() == typeof(IResultList<>))
         {
@@ -67,10 +67,10 @@ public class ApiClientMockupBase : IApiClient
                 return (TResult)Activator.CreateInstance(resultListType, inMemory, null);
 #pragma warning restore CS8600
             }
-            
+
             throw new Exception($"No In-Memory data registered in ApiClientMockup with type {resultType.GenericTypeArguments[0].FullName}");
         }
-        
+
         throw new Exception("Invalid call of method No In-Memory data registered in ApiClientMockup");
     }
 

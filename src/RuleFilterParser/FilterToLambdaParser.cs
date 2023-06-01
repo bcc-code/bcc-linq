@@ -37,33 +37,33 @@ public static class FilterToLambdaParser
                 switch (prop.Key)
                 {
                     case "_and":
-                    {
-                        var andExpressions = new List<Expression>();
-
-                        var nextLevelExpressions = GetExpressionsForFilter(filterInstance, parameter);
-                        if (nextLevelExpressions.Count > 0)
                         {
-                            andExpressions.AddRange(nextLevelExpressions);
-                        }
+                            var andExpressions = new List<Expression>();
 
-                        var finalAndExpression = MergeExpressions(andExpressions, LogicalFilter.And);
-                        allExpressions.Add(finalAndExpression);
-                        break;
-                    }
+                            var nextLevelExpressions = GetExpressionsForFilter(filterInstance, parameter);
+                            if (nextLevelExpressions.Count > 0)
+                            {
+                                andExpressions.AddRange(nextLevelExpressions);
+                            }
+
+                            var finalAndExpression = MergeExpressions(andExpressions, LogicalFilter.And);
+                            allExpressions.Add(finalAndExpression);
+                            break;
+                        }
                     case "_or":
-                    {
-                        var orExpressions = new List<Expression>();
-
-                        var nextLevelExpressions = GetExpressionsForFilter(filterInstance, parameter);
-                        if (nextLevelExpressions.Count > 0)
                         {
-                            orExpressions.AddRange(nextLevelExpressions);
-                        }
+                            var orExpressions = new List<Expression>();
 
-                        var finalOrExpression = MergeExpressions(orExpressions, LogicalFilter.Or);
-                        allExpressions.Add(finalOrExpression);
-                        break;
-                    }
+                            var nextLevelExpressions = GetExpressionsForFilter(filterInstance, parameter);
+                            if (nextLevelExpressions.Count > 0)
+                            {
+                                orExpressions.AddRange(nextLevelExpressions);
+                            }
+
+                            var finalOrExpression = MergeExpressions(orExpressions, LogicalFilter.Or);
+                            allExpressions.Add(finalOrExpression);
+                            break;
+                        }
                     default:
                         allExpressions.AddRange(GetExpressionsForFilter(
                             filterInstance,
@@ -116,19 +116,19 @@ public static class FilterToLambdaParser
 
                 break;
             case > 2:
-            {
-                for (var i = 1; i < main.Count; i++)
                 {
-                    final = @operator switch
+                    for (var i = 1; i < main.Count; i++)
                     {
-                        LogicalFilter.And => Expression.AndAlso(final, main[i]),
-                        LogicalFilter.Or => Expression.Or(final, main[i]),
-                        _ => final
-                    };
-                }
+                        final = @operator switch
+                        {
+                            LogicalFilter.And => Expression.AndAlso(final, main[i]),
+                            LogicalFilter.Or => Expression.Or(final, main[i]),
+                            _ => final
+                        };
+                    }
 
-                break;
-            }
+                    break;
+                }
         }
 
         return final;

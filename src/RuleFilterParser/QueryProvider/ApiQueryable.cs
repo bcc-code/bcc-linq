@@ -12,7 +12,7 @@ internal class ApiQueryable<T> : IOrderedQueryable<T>, IAsyncEnumerable<T>
     public ApiQueryable(IQueryProvider provider, Expression? expression = default)
     {
         Provider = provider ?? throw new ArgumentNullException(nameof(provider));
-        
+
         expression ??= Expression.Constant(this);
         if (!typeof(IQueryable<T>).IsAssignableFrom(expression.Type))
         {

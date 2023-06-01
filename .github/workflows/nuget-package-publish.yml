@@ -29,6 +29,9 @@ jobs:
         with:
           dotnet-version: 7.0.*
 
+      - name: Running dotnet format
+        run: dotnet format
+
       - name: Set Environment Variables
         uses: ./.github/actions/setvars
         with:

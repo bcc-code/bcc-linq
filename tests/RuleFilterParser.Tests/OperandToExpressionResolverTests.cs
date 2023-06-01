@@ -54,7 +54,7 @@ public class OperandToExpressionResolverTests
 
         Assert.Equal(ExpressionType.Equal, exp.NodeType);
     }
-    
+
     [Fact]
     public void should_return_equal_expression_for_int_nullable()
     {
@@ -274,7 +274,7 @@ public class OperandToExpressionResolverTests
 
         Assert.Equal("Contains", methodCallExpression.Method.Name);
     }
-    
+
     [Fact]
     public void should_return_in_expression_for_decimal_array_strings()
     {
@@ -287,7 +287,7 @@ public class OperandToExpressionResolverTests
 
         Assert.Equal("Contains", methodCallExpression.Method.Name);
     }
-    
+
     [Fact]
     public void should_return_in_expression_for_decimal_nullable_array_strings()
     {
@@ -300,7 +300,7 @@ public class OperandToExpressionResolverTests
 
         Assert.Equal("Contains", methodCallExpression.Method.Name);
     }
-    
+
     [Fact]
     public void should_return_in_expression_for_decimal_array()
     {

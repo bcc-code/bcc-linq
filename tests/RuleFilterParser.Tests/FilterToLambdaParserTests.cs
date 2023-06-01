@@ -86,7 +86,7 @@ public class FilterToLambdaParserTests
 
         var expected = PeopleList.Where(person =>
             // or
-            (person.Age >= 20 || person.Country == "Poland" || new[] { "Greece", "Norway" }.Contains(person.Country)) 
+            (person.Age >= 20 || person.Country == "Poland" || new[] { "Greece", "Norway" }.Contains(person.Country))
             &&
             // and
             person.Age is >= 20 and <= 30 && person.Name.StartsWith("test")).ToList();
@@ -97,7 +97,7 @@ public class FilterToLambdaParserTests
 
         Assert.Equal(expected.Count, result.Count);
     }
-    
+
     [Fact]
     public void should_get_correct_result_when_filtering_nested_object()
     {

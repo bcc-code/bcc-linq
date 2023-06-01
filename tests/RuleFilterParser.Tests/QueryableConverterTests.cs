@@ -21,7 +21,7 @@ public class QueryableConverterTests
             .Where(x => x.Start >= new DateTime(2023, 5, 1) && x.Start <= new DateTime(2023, 5, 31));
 
         var json = query.Serialize();
-        
+
         Assert.Equal("{\"Start\":{\"_gte\":\"2023-05-01T00:00:00.0000000\",\"_lte\":\"2023-05-31T00:00:00.0000000\"}}", json);
     }
 
@@ -33,47 +33,47 @@ public class QueryableConverterTests
         var defaultFilterJson = DirectusFilterBuilder<Project>.Create()
             .Where(x => x.Start >= defaultFrom && x.Start <= defaultTo)
             .Serialize();
-        
+
         Assert.NotEqual("{}", defaultFilterJson);
     }
-    
+
     [Fact]
     public void GreaterThanOrEqual()
     {
         var json = DirectusFilterBuilder<Project>.Create()
             .Where(x => x.Start >= new DateTime(2023, 5, 1))
             .Serialize();
-        
+
         Assert.Equal("{\"Start\":{\"_gte\":\"2023-05-01T00:00:00.0000000\"}}", json);
     }
-    
+
     [Fact]
     public void GreaterThan()
     {
         var json = DirectusFilterBuilder<Project>.Create()
             .Where(x => x.Start > new DateTime(2023, 5, 1))
             .Serialize();
-        
+
         Assert.Equal("{\"Start\":{\"_gt\":\"2023-05-01T00:00:00.0000000\"}}", json);
     }
-    
+
     [Fact]
     public void LessThanOrEqual()
     {
         var json = DirectusFilterBuilder<Project>.Create()
             .Where(x => x.Start <= new DateTime(2023, 5, 1))
             .Serialize();
-        
+
         Assert.Equal("{\"Start\":{\"_lte\":\"2023-05-01T00:00:00.0000000\"}}", json);
     }
-    
+
     [Fact]
     public void LessThan()
     {
         var json = DirectusFilterBuilder<Project>.Create()
             .Where(x => x.Start < new DateTime(2023, 5, 1))
             .Serialize();
-        
+
         Assert.Equal("{\"Start\":{\"_lt\":\"2023-05-01T00:00:00.0000000\"}}", json);
     }
 }
