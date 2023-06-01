@@ -62,12 +62,12 @@ public class FilterTests
 
         Assert.IsAssignableFrom<IEnumerable<double>>(value);
     }
-    
+
     [Fact]
     public void should_cast_value_to_decimal_list()
     {
         var json = @"{ ""Amount"": { ""_in"": [100, 200, 300] } }";
-        
+
         var filter = new Filter<TestClass>(json);
         var value = ((Filter<decimal>)filter.Properties["Amount"]).Properties["_in"];
 
@@ -91,11 +91,12 @@ public class FilterTests
         var value = ((Filter<double>)filter.Properties["NumberDoubleProp"]).Properties["_between"];
         Assert.IsType<(double, double)>(value);
     }
-    
+
     [Fact]
     public void should_cast_value_to_datetime_tuple()
     {
-        var json = @"{ ""AnyDate"": { ""_between"": [""2023-01-01T00:00:00.0000000"", ""2023-03-01T00:00:00.0000000""] } }";
+        var json =
+            @"{ ""AnyDate"": { ""_between"": [""2023-01-01T00:00:00.0000000"", ""2023-03-01T00:00:00.0000000""] } }";
         var filter = new Filter<TestClass>(json);
 
         var value = ((Filter<DateTime>)filter.Properties["AnyDate"]).Properties["_between"];

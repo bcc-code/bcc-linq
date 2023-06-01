@@ -6,7 +6,7 @@ public class Person
     public int Age { get; set; }
     public string Country { get; set; }
 
-    public Car Car { get; set; }
+    public Car Car { get; set; } = new("Opel", "Astra", 2003);
     public DateTime AnyDate { get; set; }
 
     public Person(string name, int age, string country, DateTime anyDate)
