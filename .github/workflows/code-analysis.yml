@@ -1,11 +1,6 @@
 name: Code analysis
 
-on:
-  pull_request:
-    paths:
-      - "**.cs"
-      - ".editorconfig"
-  workflow_dispatch:
+on: pull_request
 
 jobs:
   check-format:
