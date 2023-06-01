@@ -5,9 +5,10 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
-        <PackageId>BccCode.RuleFilterParser</PackageId>
-        <Description>Parsing directus filters to LINQ</Description>
+        <PackageId>BccCode.Library.RuleFilterParser</PackageId>
+        <Description>Parsing directus filters to LINQ and converting C# Expression to Directus Filters</Description>
         <LangVersion>latest</LangVersion>
+        <Authors />
     </PropertyGroup>
 
     <ItemGroup>
