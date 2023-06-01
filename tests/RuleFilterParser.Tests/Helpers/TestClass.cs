@@ -14,11 +14,11 @@ internal class TestClass
     public decimal? AmountNullable { get; set; }
     public DateTime AnyDate { get; set; }
     public DateTime? DateNullable { get; set; }
-    public NestedClass  Nested { get; set; }
+    public NestedClass Nested { get; set; }
 }
 
 internal class NestedClass
 {
-    
+
     public string NestedStrProp { get; set; }
 }

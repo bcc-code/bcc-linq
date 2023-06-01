@@ -69,14 +69,14 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
         Request.Page = page;
         return _apiClient.Get<IResultList<T>>(_path, Request);
     }
-    
+
     private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = new())
     {
         PrepareRequest();
         Request.Page = page;
         return _apiClient.GetAsync<IResultList<T>>(_path, Request, cancellationToken);
     }
-    
+
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new())
     {
         IResultList<T>? pageData;
@@ -93,7 +93,7 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
             }
         } while (pageData.Data.Count == RowsPerPage);
     }
-    
+
     public IEnumerator<T> GetEnumerator()
     {
         IResultList<T>? pageData;

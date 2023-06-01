@@ -72,7 +72,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public void SelectNewNestedSingleFieldIfNullTest()
     {
@@ -113,7 +113,7 @@ public class LinqQueryProviderTests
     }
 
     #endregion
-    
+
     #region Where
 
     [Fact]
@@ -136,7 +136,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(2, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public void WhereIntNotGreaterThanTest()
     {
@@ -177,7 +177,7 @@ public class LinqQueryProviderTests
             api.LastRequest?.Filter);
         Assert.Equal("country", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
-        
+
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -328,7 +328,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(2, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     #endregion
 
     #region OrderBy
@@ -368,7 +368,7 @@ public class LinqQueryProviderTests
         Assert.Equal("-name", api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public void OrderByMultipleColumnsTest()
     {
@@ -376,7 +376,7 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Persons
-            orderby p.Name, p.Age descending, p.Country 
+            orderby p.Name, p.Age descending, p.Country
             select p;
 
         var persons = query.ToList();
@@ -386,7 +386,7 @@ public class LinqQueryProviderTests
         Assert.Equal("name,-age,country", api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
     }
-    
+
     /// <summary>
     /// We do by design not support filtering on nesting columns
     /// </summary>
@@ -407,6 +407,6 @@ public class LinqQueryProviderTests
         Assert.Equal("car.manufacturer", api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
     }
-    
+
     #endregion
 }

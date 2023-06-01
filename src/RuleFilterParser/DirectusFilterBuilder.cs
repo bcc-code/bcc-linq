@@ -1,10 +1,11 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace RuleFilterParser;
 
+[Obsolete]
 public class DirectusFilterBuilder<T>
 {
     private IQueryable<T> _queryable;
@@ -118,7 +119,8 @@ public class DirectusFilterBuilder<T>
             {
                 return date.ToString("o");
             }
-        }else if (expression is MemberExpression fieldExpr && fieldExpr.Type == typeof(DateTime))
+        }
+        else if (expression is MemberExpression fieldExpr && fieldExpr.Type == typeof(DateTime))
         {
             if (fieldExpr.Expression is ConstantExpression constExpr3)
             {

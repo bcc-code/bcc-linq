@@ -1,4 +1,4 @@
-using RuleFilterParser;
+﻿using RuleFilterParser;
 using RuleToLinqParser.Tests.Helpers;
 
 namespace RuleToLinqParser.Tests;

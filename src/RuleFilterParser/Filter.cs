@@ -61,10 +61,10 @@ public abstract class Filter
 }
 public class Filter<T> : Filter
 {
-    
+
     public Filter() : this("{}")
     {
-    }    
+    }
 
     public Filter(string json) => _parse(json);
 
@@ -73,17 +73,17 @@ public class Filter<T> : Filter
     }
 
     public Type GetFilterType() => typeof(T);
-    
+
     private void _parse(string json)
     {
         var deserializedJson = FilterDeserializationHelpers.DeserializeJsonRule(json);
-        
+
         var propertyMetadata = typeof(T).GetProperties();
 
         foreach (var (key, value) in deserializedJson)
         {
             var propertyInfo = propertyMetadata.FirstOrDefault(x => x.Name.ToLower() == key.ToLower());
-            
+
             if (new[] { "_and", "_or" }.Contains(key))
             {
                 if (value is not JArray jArray)
@@ -110,7 +110,7 @@ public class Filter<T> : Filter
                 }
 
                 deserializedJson[key] = array;
-                
+
             }
             else if (new[] { "_between", "_nbetween" }.Contains(key))
             {
@@ -141,7 +141,7 @@ public class Filter<T> : Filter
                         Console.WriteLine(e);
                         throw e.InnerException;
                     }
-                    
+
                 }
             }
         }
@@ -150,5 +150,5 @@ public class Filter<T> : Filter
     }
 
 
-    
+
 }

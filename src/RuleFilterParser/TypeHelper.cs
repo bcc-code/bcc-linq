@@ -8,7 +8,7 @@ internal static class TypeHelper
         if (ienum == null) return seqType;
         return ienum.GetGenericArguments()[0];
     }
-    
+
     private static Type? FindIEnumerable(Type? seqType)
     {
         if (seqType == null || seqType == typeof(string))
@@ -60,7 +60,7 @@ internal static class TypeHelper
         {
             return true;
         }
-        
+
         Type? baseType = givenType.BaseType;
         if (baseType == null)
             return false;

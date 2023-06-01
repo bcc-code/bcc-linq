@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RuleFilterParser;
 using RuleFilterParser.Examples.IQueryable;
@@ -55,7 +55,7 @@ app.MapPost("/persons/seed", async (PersonsContext db) =>
 {
     await db.Persons.AddRangeAsync(new List<Person>
     {
-        new("Kobe Bryant", 1, DateTime.UtcNow.AddDays(-1)), 
+        new("Kobe Bryant", 1, DateTime.UtcNow.AddDays(-1)),
         new("Michael Jordan", 2, DateTime.UtcNow.AddDays(-2)),
         new("Scottie Pippen", 3, DateTime.UtcNow.AddDays(-3)),
         new("LeBron James", 4, DateTime.UtcNow.AddDays(-4)),

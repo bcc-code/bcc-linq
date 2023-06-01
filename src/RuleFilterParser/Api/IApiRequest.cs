@@ -7,44 +7,44 @@ public interface IApiRequest
     /// nested relational fields. You can also use a wildcard (*) to include all fields at a specific depth.
     /// </summary>
     public string? Fields { get; set; }
-    
+
     /// <summary>
     /// Used to search items in a collection that matches the filter's conditions. The filter param follows the Filter
     /// Rules spec, which includes additional information on logical operators (AND/OR), nested relational filtering,
     /// and dynamic variables.
     /// </summary>
     public string? Filter { get; set; }
-    
+
     /// <summary>
     /// The search parameter allows you to perform a search on all string and text type fields within a collection.
     /// It's an easy way to search for an item without creating complex field filters – though it is far less optimized.
     /// It only searches the root item's fields, related item fields are not included.
     /// </summary>
     public string? Search { get; set; }
-    
+
     /// <summary>
     /// What field(s) to sort by. Sorting defaults to ascending, but a minus sign (<c>-</c>) can be used to reverse this to
     /// descending order. Fields are prioritized by the order in the parameter. The dot-notation has to be used when
     /// sorting with values of nested fields.
     /// </summary>
     public string? Sort { get; set; }
-    
+
     /// <summary>
     /// Set the maximum number of items that will be returned. The default limit is set to <c>100</c>.
     /// </summary>
     public int? Limit { get; set; }
-    
+
     /// <summary>
     /// Skip the first <c>n</c> items in the response. Can be used for pagination.
     /// </summary>
     public int? Offset { get; set; }
-    
+
     /// <summary>
     /// An alternative to <c>offset</c>. Page is a way to set <c>offset</c> under the hood by calculating
     /// <c>limit * page</c>. Page is 1-indexed.
     /// </summary>
     public int? Page { get; set; }
-    
+
     /// <summary>
     /// Aggregate functions allow you to perform calculations on a set of values, returning a single result.
     /// 
@@ -90,7 +90,7 @@ public interface IApiRequest
     /// </list>
     /// </summary>
     public string? Aggregate { get; set; }
-    
+
     /// <summary>
     /// By default, the above aggregation functions run on the whole dataset. To allow for more flexible reporting,
     /// you can combine the above aggregation with grouping. Grouping allows for running the aggregation functions
@@ -101,12 +101,12 @@ public interface IApiRequest
     /// this allows for aggregate reporting per year-month-date.
     /// </summary>
     public string? GroupBy { get; set; }
-    
+
     /// <summary>
     /// Deep allows you to set any of the other query parameters on a nested relational dataset.
     /// </summary>
     public string? Deep { get; set; }
-    
+
     /// <summary>
     /// Aliases allow you rename fields on the fly, and request the same nested data set multiple times using different
     /// filters.
@@ -118,7 +118,7 @@ public interface IApiRequest
     /// </remarks>
     /// </summary>
     public string? Alias { get; set; }
-    
+
     /// <summary>
     /// Metadata allows you to retrieve some additional information about the items in the collection you're fetching.
     /// <c>*</c> can be used as a wildcard to retrieve all metadata.
