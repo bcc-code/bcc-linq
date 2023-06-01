@@ -1,4 +1,4 @@
-namespace RuleToLinqParser.Tests.Helpers;
+﻿namespace RuleToLinqParser.Tests.Helpers;
 
 public class Person
 {
