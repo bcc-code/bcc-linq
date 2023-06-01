@@ -1,11 +1,11 @@
 name: Code analysis
 
 on:
-  push:
+  pull_request:
     paths:
       - "**.cs"
       - ".editorconfig"
-        
+      - 
   workflow_dispatch:
 
 jobs:
