@@ -17,6 +17,8 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("*", api.LastRequest?.Fields ?? "*");
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -70,6 +72,8 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("name", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -89,6 +93,8 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("car,car.manufacturer", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -109,6 +115,8 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("name,age", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -131,6 +139,8 @@ public class LinqQueryProviderTests
         Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -152,6 +162,8 @@ public class LinqQueryProviderTests
         Assert.Equal("{\"age\": {\"_lte\": 26}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -177,7 +189,8 @@ public class LinqQueryProviderTests
             api.LastRequest?.Filter);
         Assert.Equal("country", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
-
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -204,6 +217,8 @@ public class LinqQueryProviderTests
             api.LastRequest?.Filter);
         Assert.Equal("country,name", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);
@@ -231,6 +246,8 @@ public class LinqQueryProviderTests
             api.LastRequest?.Filter);
         Assert.Equal("country,name", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(4, persons.Count);
@@ -254,6 +271,8 @@ public class LinqQueryProviderTests
             api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -277,6 +296,8 @@ public class LinqQueryProviderTests
             api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -300,6 +321,8 @@ public class LinqQueryProviderTests
             api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(0, persons.Count);
@@ -323,6 +346,8 @@ public class LinqQueryProviderTests
             api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -348,6 +373,8 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields ?? "*");
         Assert.Equal("name", api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -366,6 +393,8 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Equal("-name", api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -384,6 +413,8 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields ?? "*");
         Assert.Equal("name,-age,country", api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -405,6 +436,76 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields ?? "*");
         Assert.Equal("car.manufacturer", api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal(5, persons.Count);
+    }
+
+    #endregion
+
+    #region Skip
+
+    [Fact]
+    public void SkipTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Persons.Skip(2);
+
+        var persons = query.ToList();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Null(api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Equal(2, api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(3, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
+
+    #endregion
+
+    #region Take
+
+    [Fact]
+    public void TakeTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Persons.Take(3);
+
+        var persons = query.ToList();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Null(api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(3, api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(3, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    [Fact]
+    public void SkipTakeTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Persons.Skip(2).Take(3);
+
+        var persons = query.ToList();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Null(api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Equal(2, api.LastRequest?.Offset);
+        Assert.Equal(3, api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(3, persons.Count);
         Assert.Equal(5, persons.Count);
     }
 
