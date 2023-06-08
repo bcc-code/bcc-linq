@@ -1,4 +1,6 @@
-﻿namespace BccCode.Linq.Tests;
+﻿using BccCode.Linq.Async;
+
+namespace BccCode.Linq.Tests;
 
 public class LinqQueryProviderTests
 {
@@ -146,6 +148,27 @@ public class LinqQueryProviderTests
         //Assert.Equal(2, persons.Count);
         Assert.Equal(5, persons.Count);
     }
+    
+    [Fact]
+    public async void WhereIntGreaterThanAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            where p.Age > 26
+            select p;
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(2, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
 
     [Fact]
     public void WhereIntNotGreaterThanTest()
@@ -164,6 +187,27 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
         Assert.Null(api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(2, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    [Fact]
+    public async void WhereIntNotGreaterThanAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            where !(p.Age > 26)
+            select p;
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("{\"age\": {\"_lte\": 26}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -196,6 +240,32 @@ public class LinqQueryProviderTests
         //Assert.Equal(1, persons.Count);
         Assert.Equal(5, persons.Count);
     }
+    
+    [Fact(Skip = "Does not work, see https://github.com/bcc-code/rule-filter-parser-dotnet/issues/26")]
+    public async void WhereSelectAndAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            where p.Age > 26 && p.Name == "Reid Cantrell"
+            select new
+            {
+                p.Country
+            };
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("{\"_and\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Reid Cantrell\"}}]}",
+            api.LastRequest?.Filter);
+        Assert.Equal("country", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(1, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
 
     [Fact]
     public void WhereSelectOrTest()
@@ -219,6 +289,32 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
         Assert.Null(api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(3, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    [Fact(Skip = "Does not work, see https://github.com/bcc-code/rule-filter-parser-dotnet/issues/26")]
+    public async void WhereSelectOrAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            where p.Age > 26 || p.Name == "Chelsey Logan"
+            select new
+            {
+                p.Country,
+                p.Name
+            };
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("{\"_or\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Chelsey Logan\"}}]}",
+            api.LastRequest?.Filter);
+        Assert.Equal("country,name", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);
@@ -253,6 +349,33 @@ public class LinqQueryProviderTests
         //Assert.Equal(4, persons.Count);
         Assert.Equal(5, persons.Count);
     }
+    
+    [Fact(Skip = "Does not work, see https://github.com/bcc-code/rule-filter-parser-dotnet/issues/26")]
+    public async void WhereSelectOrTwiceAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            where p.Age > 26 || p.Name == "Chelsey Logan" || p.Country == "US"
+            select new
+            {
+                p.Country,
+                p.Name
+            };
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal(
+            "{\"_or\": [{\"_or\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Chelsey Logan\"}}]}, {\"country\": {\"_eq\": \"US\"}}]}",
+            api.LastRequest?.Filter);
+        Assert.Equal("country,name", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(4, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
 
     [Fact]
     public void StringStartsWithTest()
@@ -273,6 +396,29 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
         Assert.Null(api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(1, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    [Fact]
+    public async void StringStartsWithAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            where p.Name.StartsWith("Chelsey")
+            select p;
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal(
+            "{\"name\": {\"_starts_with\": \"Chelsey\"}}",
+            api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -303,6 +449,29 @@ public class LinqQueryProviderTests
         //Assert.Equal(1, persons.Count);
         Assert.Equal(5, persons.Count);
     }
+    
+    [Fact]
+    public async void WhereStringEndsWithAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            where p.Name.EndsWith("Cantrell")
+            select p;
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal(
+            "{\"name\": {\"_ends_with\": \"Cantrell\"}}",
+            api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(1, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
 
     [Fact]
     public void WhereStringIsNullOrEmptyTest()
@@ -323,6 +492,29 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
         Assert.Null(api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(0, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    [Fact]
+    public async void WhereStringIsNullOrEmptyAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            where string.IsNullOrEmpty(p.Name)
+            select p;
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal(
+            "{\"name\": {\"_empty\": null}}",
+            api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(0, persons.Count);
@@ -353,6 +545,29 @@ public class LinqQueryProviderTests
         //Assert.Equal(2, persons.Count);
         Assert.Equal(5, persons.Count);
     }
+    
+    [Fact]
+    public async void WhereNestedEqualAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            where p.Car != null && Equals(p.Car.Model, "Opel")
+            select p;
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal(
+            "{\"_and\": [{\"car\": {\"_neq\": null}}, {\"car\": {\"model\": {\"_eq\": \"Opel\"}}}]}",
+            api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(2, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
 
     #endregion
 
@@ -377,6 +592,24 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
+    
+    [Fact]
+    public async void OrderByAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            orderby p.Name
+            select p;
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Null(api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields ?? "*");
+        Assert.Equal("name", api.LastRequest?.Sort);
+        Assert.Equal(5, persons.Count);
+    }
 
     [Fact]
     public void OrderByDescendingTest()
@@ -395,6 +628,24 @@ public class LinqQueryProviderTests
         Assert.Equal("-name", api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
         Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    [Fact]
+    public async void OrderByDescendingAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            orderby p.Name descending
+            select p;
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Null(api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("-name", api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
     }
 
@@ -417,12 +668,27 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
-
-    /// <summary>
-    /// We do by design not support filtering on nesting columns
-    /// </summary>
+    
     [Fact]
-    public void OrderByNestingNotSupportedTest()
+    public async void OrderByMultipleColumnsAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            orderby p.Name, p.Age descending, p.Country
+            select p;
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Null(api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields ?? "*");
+        Assert.Equal("name,-age,country", api.LastRequest?.Sort);
+        Assert.Equal(5, persons.Count);
+    }
+
+    [Fact]
+    public void OrderByNestingTest()
     {
         var api = new ApiClientMockup();
 
@@ -506,6 +772,24 @@ public class LinqQueryProviderTests
         // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    [Fact]
+    public async void OrderByNestingAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            orderby p.Car.Manufacturer
+            select p;
+
+        var persons = await query.ToListAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Null(api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields ?? "*");
+        Assert.Equal("car.manufacturer", api.LastRequest?.Sort);
         Assert.Equal(5, persons.Count);
     }
 
