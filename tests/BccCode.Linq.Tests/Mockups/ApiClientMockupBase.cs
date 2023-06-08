@@ -80,7 +80,9 @@ public class ApiClientMockupBase : IApiClient
         LastEndpoint = endpoint;
         LastRequest = request;
 
-        return Task.FromResult<TResult?>(null);
+        return Task.FromResult(
+            Get<TResult>(endpoint, request)
+        );
     }
 
     IApiRequest IApiClient.ConstructApiRequest(string path)

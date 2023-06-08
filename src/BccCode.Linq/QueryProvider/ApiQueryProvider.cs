@@ -4,12 +4,11 @@ using System.Globalization;
 using System.Linq.Expressions;
 using System.Text;
 using BccCode.Linq.ApiClient;
+using BccCode.Linq.Async;
 
 namespace BccCode.Linq;
 
-internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
-// implements the following interface, but Microsoft.EntityFrameworkCore is not imported
-//, Microsoft.EntityFrameworkCore.IAsyncQueryProvider
+internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQueryProvider
 {
     private enum VisitLinqLambdaMode
     {
@@ -53,6 +52,22 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
     }
 
     /// <summary>
+    /// The type which is expected.
+    /// </summary>
+    private enum QueryableTypeMode
+    {
+        /// <summary>
+        /// The queryable should return a <see cref="IEnumerable{T}"/>.
+        /// </summary>
+        Enumerable,
+        
+        /// <summary>
+        /// The queryable should return a <see cref="IAsyncEnumerable{T}"/>.
+        /// </summary>
+        AsyncEnumerable
+    }
+    
+    /// <summary>
     /// A provider class cannot handle multiple executions at the same time.
     ///
     /// This lock object is used to make sure this does not happen.
@@ -75,6 +90,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
     private bool _inverseOperator;
     private int _memberDepth;
     private int _indent;
+    private QueryableTypeMode _expectedTypeMode;
 
     /// <summary>
     /// Initializes a query provider which performs queries against a REST API client implementing
@@ -93,6 +109,8 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
         _path = path;
     }
 
+    #region IQueryProvider
+    
     public IQueryable CreateQuery(Expression expression)
     {
         Type? elementType = TypeHelper.GetElementType(expression.Type);
@@ -116,6 +134,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
         Expression? translatedExpression;
         lock (_queryBuilderLock)
         {
+            _expectedTypeMode = QueryableTypeMode.Enumerable;
             _visitMode = VisitLinqLambdaMode.Undefined;
             Debug.Assert(_mapFromToApiCallers.Count == 0);
             translatedExpression = this.Visit(expression);
@@ -135,6 +154,8 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
         return (TResult)result;
     }
 
+    #endregion
+    
     #region IAsyncQueryProvider
 
     public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = default)
@@ -142,6 +163,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
         Expression? translatedExpression;
         lock (_queryBuilderLock)
         {
+            _expectedTypeMode = QueryableTypeMode.AsyncEnumerable;
             _visitMode = VisitLinqLambdaMode.Undefined;
             Debug.Assert(_mapFromToApiCallers.Count == 0);
             translatedExpression = this.Visit(expression);
@@ -1001,7 +1023,15 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider
             _mapFromToApiCallers.Add(node, apiCaller);
         }
 
-        return Expression.Constant(apiCaller.AsQueryable());
+        switch (_expectedTypeMode)
+        {
+            case QueryableTypeMode.Enumerable:
+                return Expression.Constant(apiCaller.AsQueryable());
+            case QueryableTypeMode.AsyncEnumerable:
+                return Expression.Constant(apiCaller);
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     private void TransformConstant(StringBuilder stringBuilder, ConstantExpression node)
