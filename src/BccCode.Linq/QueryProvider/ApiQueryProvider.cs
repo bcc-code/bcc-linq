@@ -60,13 +60,13 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         /// The queryable should return a <see cref="IEnumerable{T}"/>.
         /// </summary>
         Enumerable,
-        
+
         /// <summary>
         /// The queryable should return a <see cref="IAsyncEnumerable{T}"/>.
         /// </summary>
         AsyncEnumerable
     }
-    
+
     /// <summary>
     /// A provider class cannot handle multiple executions at the same time.
     ///
@@ -110,7 +110,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     }
 
     #region IQueryProvider
-    
+
     public IQueryable CreateQuery(Expression expression)
     {
         Type? elementType = TypeHelper.GetElementType(expression.Type);
@@ -155,7 +155,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     }
 
     #endregion
-    
+
     #region IAsyncQueryProvider
 
     public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = default)

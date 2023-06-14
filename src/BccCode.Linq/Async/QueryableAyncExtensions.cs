@@ -100,7 +100,7 @@ public static class QueryableAsyncExtensions
         var asyncEnumerable = source.Take(1).AsAsyncEnumerable(cancellationToken);
 
         var enumerator = asyncEnumerable.GetAsyncEnumerator(cancellationToken);
-        
+
         if (await enumerator.MoveNextAsync())
         {
             return enumerator.Current;
