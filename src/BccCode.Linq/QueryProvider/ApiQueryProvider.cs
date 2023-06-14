@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using BccCode.Linq.ApiClient;
 using BccCode.Linq.Async;
@@ -764,6 +765,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         //Arg 1: selector
                         else if (node.Arguments[1] is UnaryExpression u)
                         {
+                            Delegate? selector;
                             if (u.Operand is LambdaExpression l)
                             {
                                 Debug.Assert(l.Parameters.Count == 1);
@@ -788,20 +790,59 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
                                 _visitMode = VisitLinqLambdaMode.Undefined;
                                 _activeParameters.Remove(l.Parameters[0]);
+
+                                // We compile here the select expression for further usage ...
+                                selector = l.Compile();
                             }
                             else
                             {
                                 throw new Exception("Expected a Lambda expression in a Select query.");
                             }
 
+                            // Note: Above we used the ExpressionVisitor logic to travel through the Select tree and find out
+                            //       what properties we need to retrieve from the API. Here we now select an alternative
+                            //       Select method which is not based on IQueryable<T> which performs a client-side execution
+                            //       of the compiled selector:
+                            //         when the return is IEnumerable<T>, we use System.Linq.Enumerable.Select
+                            //         when the return is IAsyncEnumerable<T>, we use BccCode.Linq.Async.AsyncEnumerable.Select
+
+                            MethodInfo? genericMethod;
+                            switch (_expectedTypeMode)
+                            {
+                                case QueryableTypeMode.Enumerable:
+                                {
+                                    var enumerableSelectMethod = typeof(Enumerable)
+                                        .GetMethods(BindingFlags.Static | BindingFlags.Public).First(m =>
+                                            m.Name == nameof(System.Linq.Enumerable.Select) && m.GetParameters().Length == 2);
+
+                                    genericMethod = enumerableSelectMethod;
+                                }
+                                    break;
+                                case QueryableTypeMode.AsyncEnumerable:
+                                {
+                                    var asyncEnumerableSelectMethod = typeof(AsyncEnumerable)
+                                        .GetMethods(BindingFlags.Static | BindingFlags.Public).FirstOrDefault(m =>
+                                            m.Name == nameof(AsyncEnumerable.Select) && m.GetParameters().Length == 2);
+                                    
+                                    genericMethod = asyncEnumerableSelectMethod;
+                                }
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+                            
+                            Debug.Assert(genericMethod != null);
+                            var method = genericMethod.MakeGenericMethod(
+                                u.Type.GenericTypeArguments[0].GenericTypeArguments[0],
+                                u.Type.GenericTypeArguments[0].GenericTypeArguments[1]
+                            );
+                            
                             // Replace the exception with the new source.
-                            // Note: We still keep the select expression in the tree so that C# can
-                            //       perform its logic.
                             return Expression.Call(
                                 null,
-                                node.Method,
+                                method,
                                 source,
-                                node.Arguments[1]
+                                Expression.Constant(selector) // materialized u Expression
                             );
                         }
                         throw new Exception("Syntax of Select expression not supported.");

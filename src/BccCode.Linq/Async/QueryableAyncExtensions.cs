@@ -1,7 +1,7 @@
 ﻿namespace BccCode.Linq.Async;
 
 /// <summary>
-/// Adds extension methods to run async. operations against a instance of <see cref="IQueryable{T}"/>. 
+/// Adds extension methods to run async. operations against an instance of <see cref="IQueryable{T}"/>. 
 /// </summary>
 public static class QueryableAsyncExtensions
 {

@@ -241,7 +241,7 @@ public class LinqQueryProviderTests
         Assert.Equal(5, persons.Count);
     }
 
-    [Fact(Skip = "Does not work, see https://github.com/bcc-code/rule-filter-parser-dotnet/issues/29")]
+    [Fact]
     public async void WhereSelectAndAsyncTest()
     {
         var api = new ApiClientMockup();
@@ -295,7 +295,7 @@ public class LinqQueryProviderTests
         Assert.Equal(5, persons.Count);
     }
 
-    [Fact(Skip = "Does not work, see https://github.com/bcc-code/rule-filter-parser-dotnet/issues/29")]
+    [Fact]
     public async void WhereSelectOrAsyncTest()
     {
         var api = new ApiClientMockup();
@@ -350,7 +350,7 @@ public class LinqQueryProviderTests
         Assert.Equal(5, persons.Count);
     }
 
-    [Fact(Skip = "Does not work, see https://github.com/bcc-code/rule-filter-parser-dotnet/issues/29")]
+    [Fact]
     public async void WhereSelectOrTwiceAsyncTest()
     {
         var api = new ApiClientMockup();
