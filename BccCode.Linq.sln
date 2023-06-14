@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DD036B92-1A55-4F61-99C6-2EFF90A2371B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{387FA296-FF99-47FE-9148-FE096131B089}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BccCode.Linq", "src\BccCode.Linq\BccCode.Linq.csproj", "{A2BFA71F-80FD-4303-B88F-5BCC35F0290B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BccCode.Linq.Tests", "tests\BccCode.Linq.Tests\BccCode.Linq.Tests.csproj", "{A45B1549-1104-4CB2-91B9-8E525F800370}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{D321CBDA-E958-4207-AE58-AAB8E06ED9A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BccCode.Linq.Examples.IQueryable", "examples\BccCode.Linq.Examples.IQueryable\BccCode.Linq.Examples.IQueryable.csproj", "{473D2E22-9B13-49E3-881A-28CEC928AEB5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A2BFA71F-80FD-4303-B88F-5BCC35F0290B} = {DD036B92-1A55-4F61-99C6-2EFF90A2371B}
+		{A45B1549-1104-4CB2-91B9-8E525F800370} = {387FA296-FF99-47FE-9148-FE096131B089}
+		{473D2E22-9B13-49E3-881A-28CEC928AEB5} = {D321CBDA-E958-4207-AE58-AAB8E06ED9A2}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2BFA71F-80FD-4303-B88F-5BCC35F0290B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2BFA71F-80FD-4303-B88F-5BCC35F0290B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2BFA71F-80FD-4303-B88F-5BCC35F0290B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2BFA71F-80FD-4303-B88F-5BCC35F0290B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A45B1549-1104-4CB2-91B9-8E525F800370}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A45B1549-1104-4CB2-91B9-8E525F800370}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A45B1549-1104-4CB2-91B9-8E525F800370}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A45B1549-1104-4CB2-91B9-8E525F800370}.Release|Any CPU.Build.0 = Release|Any CPU
+		{473D2E22-9B13-49E3-881A-28CEC928AEB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{473D2E22-9B13-49E3-881A-28CEC928AEB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{473D2E22-9B13-49E3-881A-28CEC928AEB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{473D2E22-9B13-49E3-881A-28CEC928AEB5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
