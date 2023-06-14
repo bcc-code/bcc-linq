@@ -148,7 +148,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(2, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public async void WhereIntGreaterThanAsyncTest()
     {
@@ -192,7 +192,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(2, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public async void WhereIntNotGreaterThanAsyncTest()
     {
@@ -240,7 +240,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(1, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact(Skip = "Does not work, see https://github.com/bcc-code/rule-filter-parser-dotnet/issues/29")]
     public async void WhereSelectAndAsyncTest()
     {
@@ -294,7 +294,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(3, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact(Skip = "Does not work, see https://github.com/bcc-code/rule-filter-parser-dotnet/issues/29")]
     public async void WhereSelectOrAsyncTest()
     {
@@ -349,7 +349,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(4, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact(Skip = "Does not work, see https://github.com/bcc-code/rule-filter-parser-dotnet/issues/29")]
     public async void WhereSelectOrTwiceAsyncTest()
     {
@@ -401,7 +401,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(1, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public async void StringStartsWithAsyncTest()
     {
@@ -449,7 +449,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(1, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public async void WhereStringEndsWithAsyncTest()
     {
@@ -497,7 +497,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(0, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public async void WhereStringIsNullOrEmptyAsyncTest()
     {
@@ -545,7 +545,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(2, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public async void WhereNestedEqualAsyncTest()
     {
@@ -592,7 +592,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public async void OrderByAsyncTest()
     {
@@ -630,7 +630,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public async void OrderByDescendingAsyncTest()
     {
@@ -668,7 +668,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Limit);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public async void OrderByMultipleColumnsAsyncTest()
     {
@@ -774,7 +774,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(3, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public async void OrderByNestingAsyncTest()
     {

@@ -10,5 +10,5 @@
 /// </remarks>
 public interface IAsyncQueryProvider : IQueryProvider
 {
-    public TResult ExecuteAsync<TResult> (System.Linq.Expressions.Expression expression, CancellationToken cancellationToken = default);
+    public TResult ExecuteAsync<TResult>(System.Linq.Expressions.Expression expression, CancellationToken cancellationToken = default);
 }
