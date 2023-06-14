@@ -148,10 +148,10 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         return lambdaFunc.Invoke();
     }
 
-    public TResult Execute<TResult>(Expression expression)
+    public TResult? Execute<TResult>(Expression expression)
     {
         object result = ((IQueryProvider)this).Execute(expression);
-        return (TResult)result;
+        return result == null ? default : (TResult)result;
     }
 
     #endregion
