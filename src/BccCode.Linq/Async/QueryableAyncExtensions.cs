@@ -97,7 +97,7 @@ public static class QueryableAsyncExtensions
         if (source == null)
             throw new ArgumentNullException(nameof(source));
 
-        var asyncEnumerable = source.AsAsyncEnumerable(cancellationToken);
+        var asyncEnumerable = source.Take(1).AsAsyncEnumerable(cancellationToken);
 
         var enumerator = asyncEnumerable.GetAsyncEnumerator(cancellationToken);
         
@@ -129,7 +129,7 @@ public static class QueryableAsyncExtensions
         if (source == null)
             throw new ArgumentNullException(nameof(source));
 
-        var asyncEnumerable = source.AsAsyncEnumerable(cancellationToken);
+        var asyncEnumerable = source.Take(1).AsAsyncEnumerable(cancellationToken);
 
         var enumerator = asyncEnumerable.GetAsyncEnumerator(cancellationToken);
 
