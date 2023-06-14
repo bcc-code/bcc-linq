@@ -16,7 +16,7 @@ on:
 
 env:
   API_KEY: ${{ secrets.NUGET_PACKAGES_GITHUB_API_KEY }}
-  CSPROJ_PATH: src/RuleFilterParser/RuleFilterParser.csproj
+  CSPROJ_PATH: src/BccCode.Linq/BccCode.Linq.csproj
 
 jobs:
   publish:
