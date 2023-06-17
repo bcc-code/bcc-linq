@@ -130,20 +130,42 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         return new ApiQueryable<TElement>(this, expression);
     }
 
-    public object Execute(Expression expression)
+    private Expression TranslateExpression(Expression expression, QueryableTypeMode expectedTypeMode)
     {
-        Expression? translatedExpression;
         lock (_queryBuilderLock)
         {
-            _expectedTypeMode = QueryableTypeMode.Enumerable;
+            _expectedTypeMode = expectedTypeMode;
             _visitMode = VisitLinqLambdaMode.Undefined;
             Debug.Assert(_mapFromToApiCallers.Count == 0);
-            translatedExpression = this.Visit(expression);
-            Debug.Assert(translatedExpression != null);
+            Expression? translatedExpression = this.Visit(expression);
             Debug.Assert(_activeParameters.Count == 0);
-            _mapFromToApiCallers.Clear();
-        }
+            Debug.Assert(translatedExpression != null);
 
+            // finalize IApiRequest ...
+            foreach (var apiCaller in _mapFromToApiCallers.Values)
+            {
+                if (apiCaller.Request.Fields == null)
+                {
+                    // the linq 'Select' option has not been used --> set * to get all fields
+                    apiCaller.Request.Fields = "*";
+                }
+                else if (apiCaller.Request.Fields.Split(',').All(p => p.Contains('.')))
+                {
+                    // the linq 'Select' option has not been used, but the Include option --> set * to get all fields of the main entity
+                    apiCaller.Request.Fields = $"*,{apiCaller.Request.Fields}";
+                }
+            }
+                
+            // Clear internal variables
+            _mapFromToApiCallers.Clear();
+
+            return translatedExpression;
+        }
+    }
+    
+    public object Execute(Expression expression)
+    {
+        var translatedExpression = TranslateExpression(expression, QueryableTypeMode.Enumerable);
         var lambdaExpression = Expression.Lambda<Func<IEnumerable>>(translatedExpression);
         Func<IEnumerable> lambdaFunc = lambdaExpression.Compile();
         return lambdaFunc.Invoke();
@@ -161,18 +183,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
     public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = default)
     {
-        Expression? translatedExpression;
-        lock (_queryBuilderLock)
-        {
-            _expectedTypeMode = QueryableTypeMode.AsyncEnumerable;
-            _visitMode = VisitLinqLambdaMode.Undefined;
-            Debug.Assert(_mapFromToApiCallers.Count == 0);
-            translatedExpression = this.Visit(expression);
-            Debug.Assert(translatedExpression != null);
-            Debug.Assert(_activeParameters.Count == 0);
-            _mapFromToApiCallers.Clear();
-        }
-
+        var translatedExpression = TranslateExpression(expression, QueryableTypeMode.AsyncEnumerable);
         var lambdaExpression = Expression.Lambda<Func<TResult>>(translatedExpression);
         Func<TResult> lambdaFunc = lambdaExpression.Compile();
         return lambdaFunc.Invoke();
@@ -359,7 +370,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         {
                             var memberPath = ApiMemberPath();
                             apiCaller.Request.Fields = string.IsNullOrEmpty(apiCaller.Request.Fields)
-                                ? memberPath
+                                ? $"{memberPath}.*"
                                 : $"{apiCaller.Request.Fields},{memberPath}.*";
                             return Expression.Empty();
                         }
@@ -995,46 +1006,54 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     return base.VisitMethodCall(node);
             }
         }
-        else if (node.Method.DeclaringType?.FullName == "Microsoft.EntityFrameworkCore.Query.IncludeExpression" &&
-                 node.Method.Name == "Include")
+        else if (node.Method.DeclaringType == typeof(QueryableExtensions))
         {
-            //Arg 0: source
-            var source = Visit(node.Arguments[0]);
-            Debug.Assert(source != null);
-            if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+            switch (node.Method.Name)
             {
-                // ... the source was not a ApiQueryable and is not
-                // part of the API. So we just do nothing and pass it
-            }
-            else if (node.Arguments.Count == 2)
-            {
-                if (node.Arguments[1] is UnaryExpression u && u.Operand is LambdaExpression l)
+                case nameof(QueryableExtensions.Include):
                 {
-                    var sourceType = node.Arguments[0].Type.GenericTypeArguments[0];
-
-                    var declaringType = l.Parameters[0].Type;
-                    if (declaringType != sourceType)
+                    //Arg 0: source
+                    var source = Visit(node.Arguments[0]);
+                    Debug.Assert(source != null);
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
-                        throw new Exception($"Expanding is only supported on root document type {sourceType.Name}");
+                        // ... the source was not a ApiQueryable and is not
+                        // part of the API. So we just do nothing and pass it
                     }
+                    else if (node.Arguments.Count == 2)
+                    {
+                        if (node.Arguments[1] is UnaryExpression u && u.Operand is LambdaExpression l)
+                        {
+                            var sourceType = node.Arguments[0].Type.GenericTypeArguments[0];
 
-                    _visitMode = VisitLinqLambdaMode.Include;
-                    _activeParameters.Add(l.Parameters[0], apiCaller);
+                            var declaringType = l.Parameters[0].Type;
+                            if (declaringType != sourceType)
+                            {
+                                throw new Exception($"Expanding is only supported on root document type {sourceType.Name}");
+                            }
 
-                    Visit(l.Body);
+                            _visitMode = VisitLinqLambdaMode.Include;
+                            _activeParameters.Add(l.Parameters[0], apiCaller);
 
-                    _visitMode = VisitLinqLambdaMode.Undefined;
-                    _activeParameters.Remove(l.Parameters[0]);
+                            Visit(l.Body);
 
-                    // We remove here the Include method call from the expression tree,
-                    // because the Include is done by the API.
-                    return source;
+                            _visitMode = VisitLinqLambdaMode.Undefined;
+                            _activeParameters.Remove(l.Parameters[0]);
+
+                            // We remove here the Include method call from the expression tree,
+                            // because the Include is done by the API.
+                            return source;
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(
+                            $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} signature.");
+                    }
                 }
-            }
-            else
-            {
-                throw new NotSupportedException(
-                    $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} signature.");
+                    break;
+                default:
+                    return base.VisitMethodCall(node);
             }
         }
 
