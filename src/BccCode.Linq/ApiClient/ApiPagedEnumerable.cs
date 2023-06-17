@@ -83,7 +83,7 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
         int page = 1;
         do
         {
-            pageData = await RequestPageAsync(page, cancellationToken);
+            pageData = await RequestPageAsync(page++, cancellationToken);
             if (pageData == null)
                 yield break;
 
@@ -100,7 +100,7 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
         int page = 1;
         do
         {
-            pageData = RequestPage(page);
+            pageData = RequestPage(page++);
             if (pageData == null)
                 yield break;
 
