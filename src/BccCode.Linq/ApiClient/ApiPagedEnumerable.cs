@@ -55,24 +55,14 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
         Request = apiClient.ConstructApiRequest(_path);
     }
 
-    private void PrepareRequest()
-    {
-        if (string.IsNullOrEmpty(Request.Fields))
-        {
-            Request.Fields = "*";
-        }
-    }
-
     private IResultList<T>? RequestPage(int page)
     {
-        PrepareRequest();
         Request.Page = page;
         return _apiClient.Get<IResultList<T>>(_path, Request);
     }
 
     private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = new())
     {
-        PrepareRequest();
         Request.Page = page;
         return _apiClient.GetAsync<IResultList<T>>(_path, Request, cancellationToken);
     }
