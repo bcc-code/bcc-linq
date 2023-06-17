@@ -1,4 +1,6 @@
-﻿namespace BccCode.Linq.Async;
+﻿using BccCode.Linq.ApiClient;
+
+namespace BccCode.Linq.Async;
 
 /// <summary>
 /// Adds extension methods to run async. operations against an instance of <see cref="IQueryable{T}"/>. 
@@ -139,5 +141,39 @@ public static class QueryableAsyncExtensions
         }
 
         return default(TSource);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="IResultList{T}"/> from an <see cref="IQueryable{T}"/> which has a Provider implementing <see cref="IAsyncQueryProvider"/>.
+    /// </summary>
+    /// <param name="source">
+    /// The <see cref="IQueryable{T}"/> to create a <see cref="IResultList{T}"/> from.
+    /// </param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.<</typeparam>
+    /// <returns>
+    /// A <see cref="IResultList{T}"/> that contains elements from the input sequence with the metadata from the first page.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="source"/> is <c>null</c>.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The parsed query in <paramref name="source"/> cannot be casted to the internal class <see cref="ApiPagedEnumerable{T}"/>.
+    /// </exception>
+    public static async Task<IResultList<TSource>?> FetchAsync<TSource>(this IQueryable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+
+        var asyncEnumerable = source.AsAsyncEnumerable(cancellationToken);
+
+        if (asyncEnumerable is not ApiPagedEnumerable<TSource> apiPagedEnumerable)
+        {
+            throw new InvalidOperationException(
+                $"The finalized Linq expression does not return a instance of {typeof(ApiPagedEnumerable<TSource>)}. This query cannot be used with method {nameof(FetchAsync)}.");
+        }
+
+        return await apiPagedEnumerable.FetchAsync(cancellationToken);
     }
 }
