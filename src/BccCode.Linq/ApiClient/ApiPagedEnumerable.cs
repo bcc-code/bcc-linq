@@ -11,6 +11,14 @@ internal interface IApiCaller : IEnumerable
     public IApiRequest Request { get; }
 }
 
+internal class ResultList<TEntity> : IResultList<TEntity>
+{
+    public IReadOnlyDictionary<string, object> Meta { get; set; }
+    public List<TEntity> Data { get; } = new();
+
+    IReadOnlyList<TEntity> IResultList<TEntity>.Data => Data;
+}
+
 /// <summary>
 /// A class returning data from the API by requesting data per page. 
 /// </summary>
@@ -61,13 +69,38 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
         return _apiClient.Get<IResultList<T>>(_path, Request);
     }
 
-    private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = new())
+    private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = default)
     {
         Request.Page = page;
         return _apiClient.GetAsync<IResultList<T>>(_path, Request, cancellationToken);
     }
 
-    public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new())
+    public async Task<IResultList<T>?> FetchAsync(CancellationToken cancellationToken = default)
+    {
+        var resultList = new ResultList<T>();
+        IResultList<T>? pageData;
+        int page = 1;
+        do
+        {
+            pageData = await RequestPageAsync(page++, cancellationToken);
+            if (pageData == null)
+                break;
+
+            if (page == 1)
+            {
+                resultList.Meta = pageData.Meta;
+            }
+            
+            resultList.Data.AddRange(pageData.Data);
+        } while (pageData.Data.Count == RowsPerPage);
+
+        if (resultList.Data.Count == 0)
+            return null;
+
+        return resultList;
+    }
+
+    public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
         IResultList<T>? pageData;
         int page = 1;
