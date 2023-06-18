@@ -1,6 +1,6 @@
 ﻿namespace BccCode.Linq.Tests.Helpers;
 
-internal class TestClass
+public class TestClass
 {
     public string StrProp { get; set; }
     public string AnotherStrProp { get; set; }
@@ -17,7 +17,7 @@ internal class TestClass
     public NestedClass Nested { get; set; }
 }
 
-internal class NestedClass
+public class NestedClass
 {
 
     public string NestedStrProp { get; set; }
