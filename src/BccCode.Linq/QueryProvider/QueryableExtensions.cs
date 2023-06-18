@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace BccCode.Linq;
@@ -40,23 +41,86 @@ public static class QueryableExtensions
     /// <exception cref="ArgumentNullException">
     ///     <paramref name="source" /> or <paramref name="navigationPropertyPath" /> is <see langword="null" />.
     /// </exception>
-    public static IQueryable<TEntity> Include<TEntity, TProperty>(
+    public static IIncludableQueryable<TEntity, TProperty> Include<TEntity, TProperty>(
         this IQueryable<TEntity> source,
         Expression<Func<TEntity, TProperty>> navigationPropertyPath)
     {
         if (source == null)
             throw new ArgumentNullException(nameof(source));
         if (navigationPropertyPath == null)
-            throw new ArgumentNullException(nameof(navigationPropertyPath)); 
+            throw new ArgumentNullException(nameof(navigationPropertyPath));
 
-        return source is ApiQueryable<TEntity>
-            ? source.Provider.CreateQuery<TEntity>(
-                Expression.Call(
-                    instance: null,
-                    method: IncludeMethodInfo.MakeGenericMethod(typeof(TEntity), typeof(TProperty)),
-                    arguments: new[] { source.Expression, Expression.Quote(navigationPropertyPath) }
-                ))
-            : source;
+        return
+            new IncludableQueryable<TEntity, TProperty>(
+                source.Provider is ApiQueryProvider
+                    ? source.Provider.CreateQuery<TEntity>(
+                        Expression.Call(
+                            instance: null,
+                            method: IncludeMethodInfo.MakeGenericMethod(typeof(TEntity), typeof(TProperty)),
+                            arguments: new[] { source.Expression, Expression.Quote(navigationPropertyPath) }
+                        ))
+                    : source);
+    }
+    
+    internal static readonly MethodInfo ThenIncludeAfterReferenceMethodInfo
+        = typeof(QueryableExtensions)
+            .GetTypeInfo().GetDeclaredMethods(nameof(ThenInclude))
+            .Single(
+                mi => mi.GetGenericArguments().Length == 3
+                      && mi.GetParameters()[0].ParameterType.GenericTypeArguments[1].IsGenericParameter);
+
+    /// <summary>
+    /// Specifies additional related data to be further included based on a related type that was just included.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of entity being queried.</typeparam>
+    /// <typeparam name="TPreviousProperty">The type of the entity that was just included.</typeparam>
+    /// <typeparam name="TProperty">The type of the related entity to be included.</typeparam>
+    /// <param name="source">The source query.</param>
+    /// <param name="navigationPropertyPath">
+    /// A lambda expression representing the navigation property to be included (<c>t => t.Property1</c>).
+    /// </param>
+    /// <returns>A new query with the related data included.</returns>
+    public static IIncludableQueryable<TEntity, TProperty> ThenInclude<TEntity, TPreviousProperty, TProperty>(
+        this IIncludableQueryable<TEntity, TPreviousProperty> source,
+        Expression<Func<TPreviousProperty, TProperty>> navigationPropertyPath)
+        where TEntity : class
+        => new IncludableQueryable<TEntity, TProperty>(
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            source.Provider is ApiQueryProvider
+                ? source.Provider.CreateQuery<TEntity>(
+                    Expression.Call(
+                        instance: null,
+                        method: ThenIncludeAfterReferenceMethodInfo.MakeGenericMethod(
+                            typeof(TEntity), typeof(TPreviousProperty), typeof(TProperty)),
+                        arguments: new[] { source.Expression, Expression.Quote(navigationPropertyPath) }))
+                : source);
+
+    private sealed class IncludableQueryable<TEntity, TProperty> : IIncludableQueryable<TEntity, TProperty>, IAsyncEnumerable<TEntity>
+    {
+        private readonly IQueryable<TEntity> _queryable;
+
+        public IncludableQueryable(IQueryable<TEntity> queryable)
+        {
+            _queryable = queryable;
+        }
+
+        public Expression Expression
+            => _queryable.Expression;
+
+        public Type ElementType
+            => _queryable.ElementType;
+
+        public IQueryProvider Provider
+            => _queryable.Provider;
+
+        public IAsyncEnumerator<TEntity> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            => ((IAsyncEnumerable<TEntity>)_queryable).GetAsyncEnumerator(cancellationToken);
+
+        public IEnumerator<TEntity> GetEnumerator()
+            => _queryable.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator()
+            => _queryable.GetEnumerator();
     }
     
     #endregion

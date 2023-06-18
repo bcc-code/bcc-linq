@@ -30,4 +30,12 @@ public class Car
         Model = model;
         YearOfProduction = yearOfProduction;
     }
+    
+    public ManufacturerInfo ManufacturerInfo { get; set; }
+}
+
+public class ManufacturerInfo
+{
+    public string Name { get; set; }
+    public int EstablishedYear { get; set; }
 }
