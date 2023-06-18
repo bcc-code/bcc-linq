@@ -28,4 +28,18 @@ internal static class Enumerable
                 mi => mi.GetGenericArguments().Length == 2
                       && mi.GetParameters().Length == 2
                       && mi.GetParameters()[1].ParameterType.GetGenericArguments().Length == 2);
+
+    internal static readonly MethodInfo SingleMethodInfo
+        = typeof(System.Linq.Enumerable)
+            .GetTypeInfo().GetDeclaredMethods(nameof(System.Linq.Enumerable.Single))
+            .Single(
+                mi => mi.GetGenericArguments().Length == 1
+                      && mi.GetParameters().Length == 1);
+
+    internal static readonly MethodInfo SingleOrDefaultMethodInfo
+        = typeof(System.Linq.Enumerable)
+            .GetTypeInfo().GetDeclaredMethods(nameof(System.Linq.Enumerable.SingleOrDefault))
+            .Single(
+                mi => mi.GetGenericArguments().Length == 1
+                      && mi.GetParameters().Length == 1);
 }

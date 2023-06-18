@@ -992,6 +992,60 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         }
                         throw new Exception("Syntax of Select expression not supported.");
                     }
+                case nameof(Queryable.Single):
+                {
+                    var source = Visit(node.Arguments[0]);
+                    Debug.Assert(source != null);
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                    {
+                        // ... the source was not a ApiQueryable and is not
+                        // part of the API. So we just do nothing and pass it
+                    }
+                    else if (node.Arguments.Count == 1)
+                    {
+                        apiCaller.Request.Limit = 2;
+
+                        // We remove here the Take method call from the expression tree,
+                        // because the Take is done by the API.
+                        return Expression.Call(
+                            instance: null,
+                            method: System.Linq.Internal.Enumerable.SingleMethodInfo.MakeGenericMethod(
+                                node.Method.GetGenericArguments()[0]),
+                            arguments: new[] { source });
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
+                    }
+                }
+                    break;
+                case nameof(Queryable.SingleOrDefault):
+                {
+                    var source = Visit(node.Arguments[0]);
+                    Debug.Assert(source != null);
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                    {
+                        // ... the source was not a ApiQueryable and is not
+                        // part of the API. So we just do nothing and pass it
+                    }
+                    else if (node.Arguments.Count == 1)
+                    {
+                        apiCaller.Request.Limit = 2;
+
+                        // We remove here the Take method call from the expression tree,
+                        // because the Take is done by the API.
+                        return Expression.Call(
+                            instance: null,
+                            method: System.Linq.Internal.Enumerable.SingleOrDefaultMethodInfo.MakeGenericMethod(
+                                node.Method.GetGenericArguments()[0]),
+                            arguments: new[] { source });
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
+                    }
+                }
+                    break;
                 case nameof(Queryable.OrderBy):
                 case nameof(Queryable.ThenBy):
                 case nameof(Queryable.OrderByDescending):
