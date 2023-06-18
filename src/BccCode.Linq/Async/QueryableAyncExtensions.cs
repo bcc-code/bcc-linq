@@ -241,4 +241,96 @@ public static class QueryableAsyncExtensions
 
         return await apiPagedEnumerable.FetchAsync(cancellationToken);
     }
+
+    #region Single/SingleOrDefault
+
+    /// <summary>
+    ///     Asynchronously returns the only element of a sequence, and throws an exception
+    ///     if there is not exactly one element in the sequence.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
+    /// <param name="source">An <see cref="IQueryable{T}" /> to return the single element of.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+    /// <returns>
+    ///     A task that represents the asynchronous operation.
+    ///     The task result contains the single element of the input sequence.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="source" /> is <see langword="null" />.</exception>
+    /// <exception cref="InvalidOperationException">
+    ///     <para>
+    ///         <paramref name="source" /> contains more than one elements.
+    ///     </para>
+    ///     <para>
+    ///         -or-
+    ///     </para>
+    ///     <para>
+    ///         <paramref name="source" /> contains no elements.
+    ///     </para>
+    /// </exception>
+    /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
+    public static async Task<TSource> SingleAsync<TSource>(this IQueryable<TSource> source, CancellationToken cancellationToken = default)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+
+        var asyncEnumerable = source.Take(2).AsAsyncEnumerable(cancellationToken);
+
+        var enumerator = asyncEnumerable.GetAsyncEnumerator(cancellationToken);
+
+        if (!await enumerator.MoveNextAsync())
+        {
+            throw new InvalidOperationException("The source sequence is empty.");
+        }
+
+        var current = enumerator.Current;
+
+        if (await enumerator.MoveNextAsync())
+        {
+            throw new InvalidOperationException("The source contains more than one element.");
+        }
+
+        return current;
+    }
+
+    /// <summary>
+    ///     Asynchronously returns the only element of a sequence, or a default value if the sequence is empty;
+    ///     this method throws an exception if there is more than one element in the sequence.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
+    /// <param name="source">An <see cref="IQueryable{T}" /> to return the single element of.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+    /// <returns>
+    ///     A task that represents the asynchronous operation.
+    ///     The task result contains the single element of the input sequence, or <see langword="default" /> (
+    ///     <typeparamref name="TSource" />)
+    ///     if the sequence contains no elements.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="source" /> is <see langword="null" />.</exception>
+    /// <exception cref="InvalidOperationException"><paramref name="source" /> contains more than one element.</exception>
+    /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
+    public static async Task<TSource?> SingleOrDefaultAsync<TSource>(this IQueryable<TSource> source, CancellationToken cancellationToken = default)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+
+        var asyncEnumerable = source.Take(2).AsAsyncEnumerable(cancellationToken);
+
+        var enumerator = asyncEnumerable.GetAsyncEnumerator(cancellationToken);
+
+        if (!await enumerator.MoveNextAsync())
+        {
+            return default(TSource);
+        }
+        
+        var current = enumerator.Current;
+            
+        if (await enumerator.MoveNextAsync())
+        {
+            throw new InvalidOperationException("The source contains more than one element.");
+        }
+
+        return current;
+    }
+    
+    #endregion
 }

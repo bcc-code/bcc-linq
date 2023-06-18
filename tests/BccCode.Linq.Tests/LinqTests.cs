@@ -340,6 +340,105 @@ public class LinqQueryProviderTests
 
     #endregion
 
+    #region Single
+
+    [Fact]
+    public void SingleTest()
+    {
+        var api = new ApiClientMockup();
+
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            var persons = api.Persons.Single();
+        });
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(2, api.LastRequest?.Limit);
+    }
+    
+    [Fact]
+    public void SingleAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            var persons = await api.Persons.SingleAsync();
+        });
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(2, api.LastRequest?.Limit);
+    }
+
+    #endregion
+
+    #region SingleOrDefault
+
+    [Fact] public void SingleOrDefaultTest()
+    {
+        var api = new ApiClientMockup();
+
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            var persons = api.Persons.SingleOrDefault();
+        });
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(2, api.LastRequest?.Limit);
+    }
+    
+    [Fact]
+    public void SingleOrDefaultEmptyTest()
+    {
+        var api = new ApiClientMockup();
+
+        var testClass = api.Empty.SingleOrDefault();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(2, api.LastRequest?.Limit);
+        Assert.Null(testClass);
+    }
+    
+    [Fact]
+    public void SingleOrDefaultAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            var persons = await api.Persons.SingleOrDefaultAsync();
+        });
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(2, api.LastRequest?.Limit);
+    }
+    
+    [Fact]
+    public async void SingleOrDefaultEmptyAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var testClass = await api.Empty.SingleOrDefaultAsync();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(2, api.LastRequest?.Limit);
+        Assert.Null(testClass);
+    }
+    
+    #endregion
+    
     #region Where
 
     [Fact]
