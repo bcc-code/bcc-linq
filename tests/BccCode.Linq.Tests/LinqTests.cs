@@ -96,6 +96,20 @@ public class LinqQueryProviderTests
     }
     
     [Fact]
+    public void ElementAtOrDefaultEmptyTest()
+    {
+        var api = new ApiClientMockup();
+
+        var testClass = api.Empty.ElementAtOrDefault(0);
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Equal(0, api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Null(testClass);
+    }
+    
+    [Fact]
     public async void ElementAtOrDefaultNotFoundAsyncTest()
     {
         var api = new ApiClientMockup();
