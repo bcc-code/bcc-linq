@@ -81,6 +81,69 @@ public static class QueryableAsyncExtensions
         return list;
     }
 
+    #region ElementAt/ElementAtOrDefault
+    
+    /// <summary>
+    ///     Asynchronously returns the element at a specified index in a sequence.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
+    /// <param name="source">An <see cref="IQueryable{T}" /> to return the element from.</param>
+    /// <param name="index">The zero-based index of the element to retrieve.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+    /// <returns>
+    ///     A task that represents the asynchronous operation.
+    ///     The task result contains the element at a specified index in a <paramref name="source" /> sequence.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <paramref name="source" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     <para>
+    ///         <paramref name="index" /> is less than zero.
+    ///     </para>
+    /// </exception>
+    /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
+    public static async Task<TSource> ElementAtAsync<TSource>(this IQueryable<TSource> source, int index,
+        CancellationToken cancellationToken = default)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+        if (index < 0)
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        return await source.Skip(index).Take(1).FirstAsync(cancellationToken);
+    }
+    
+    /// <summary>
+    ///     Asynchronously returns the element at a specified index in a sequence, or a default value if the index is out of range.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
+    /// <param name="source">An <see cref="IQueryable{T}" /> to return the element from.</param>
+    /// <param name="index">The zero-based index of the element to retrieve.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+    /// <returns>
+    ///     A task that represents the asynchronous operation.
+    ///     The task result contains the element at a specified index in a <paramref name="source" /> sequence.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <paramref name="source" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
+    public static async Task<TSource?> ElementAtOrDefaultAsync<TSource>(this IQueryable<TSource> source, int index,
+        CancellationToken cancellationToken = default)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+        if (index < 0)
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        return await source.Skip(index).Take(1).FirstOrDefaultAsync(cancellationToken);
+    }
+    
+    #endregion
+
+    #region First/FirstOrDefault
+    
     /// <summary>
     /// Returns the first element of a sequence.
     /// </summary>
@@ -112,7 +175,7 @@ public static class QueryableAsyncExtensions
             throw new InvalidOperationException("The source sequence is empty.");
         }
     }
-
+    
     /// <summary>
     /// Returns the first element of a sequence, or a default value if the sequence contains no elements.
     /// </summary>
@@ -125,7 +188,7 @@ public static class QueryableAsyncExtensions
     /// <exception cref="ArgumentNullException">
     /// <paramref name="source"/> is <c>null</c>.
     /// </exception>
-    public static async Task<TSource?> FirstOrDefault<TSource>(this IQueryable<TSource> source,
+    public static async Task<TSource?> FirstOrDefaultAsync<TSource>(this IQueryable<TSource> source,
         CancellationToken cancellationToken = default)
     {
         if (source == null)
@@ -143,6 +206,8 @@ public static class QueryableAsyncExtensions
         return default(TSource);
     }
 
+    #endregion
+    
     /// <summary>
     /// Creates a <see cref="IResultList{T}"/> from an <see cref="IQueryable{T}"/> which has a Provider implementing <see cref="IAsyncQueryProvider"/>.
     /// </summary>

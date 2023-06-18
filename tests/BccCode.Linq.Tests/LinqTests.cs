@@ -4,6 +4,116 @@ namespace BccCode.Linq.Tests;
 
 public class LinqQueryProviderTests
 {
+    #region ElementAt
+
+    [Fact]
+    public void ElementAtTest()
+    {
+        var api = new ApiClientMockup();
+
+        var persons = api.Persons.ElementAt(2);
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Equal(2, api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
+        //       from the expression tree, the result will be still the first element of the mockup data.
+        //Assert.Equal("Chelsey Logan", persons.Name);
+        Assert.Equal("Archibald Mcbride", persons.Name);
+    }
+    
+    [Fact]
+    public async void ElementAtAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var persons = await api.Persons.ElementAtAsync(2);
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Equal(2, api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
+        //       from the expression tree, the result will be still the first element of the mockup data.
+        //Assert.Equal("Chelsey Logan", persons.Name);
+        Assert.Equal("Archibald Mcbride", persons.Name);
+    }
+    
+    #endregion
+
+    #region ElementAtOrDefault
+    
+    [Fact]
+    public void ElementAtOrDefaultTest()
+    {
+        var api = new ApiClientMockup();
+
+        var persons = api.Persons.ElementAtOrDefault(2);
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Equal(2, api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
+        //       from the expression tree, the result will be still the first element of the mockup data.
+        //Assert.Equal("Chelsey Logan", persons.Name);
+        Assert.Equal("Archibald Mcbride", persons?.Name);
+    }
+    
+    [Fact]
+    public async void ElementAtOrDefaultAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var persons = await api.Persons.ElementAtOrDefaultAsync(2);
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Equal(2, api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
+        //       from the expression tree, the result will be still the first element of the mockup data.
+        //Assert.Equal("Chelsey Logan", persons.Name);
+        Assert.Equal("Archibald Mcbride", persons?.Name);
+    }
+    
+    [Fact]
+    public void ElementAtOrDefaultNotFoundTest()
+    {
+        var api = new ApiClientMockup();
+
+        var persons = api.Persons.ElementAtOrDefault(int.MaxValue);
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Equal(int.MaxValue, api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
+        //       from the expression tree, the result will be still the first element of the mockup data.
+        //Assert.Equal(null, persons.Name);
+        Assert.Equal("Archibald Mcbride", persons?.Name);
+    }
+    
+    [Fact]
+    public async void ElementAtOrDefaultNotFoundAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var persons = await api.Persons.ElementAtOrDefaultAsync(int.MaxValue);
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Equal(int.MaxValue, api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
+        //       from the expression tree, the result will be still the first element of the mockup data.
+        //Assert.Equal(null, persons.Name);
+        Assert.Equal("Archibald Mcbride", persons?.Name);
+    }
+
+    #endregion
+    
     #region Select
 
     [Fact]
