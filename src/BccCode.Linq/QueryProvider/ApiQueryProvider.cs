@@ -178,8 +178,8 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     public object Execute(Expression expression)
     {
         var translatedExpression = TranslateExpression(expression, QueryableTypeMode.Enumerable);
-        var lambdaExpression = Expression.Lambda<Func<IEnumerable>>(translatedExpression);
-        Func<IEnumerable> lambdaFunc = lambdaExpression.Compile();
+        var lambdaExpression = Expression.Lambda<Func<object>>(translatedExpression);
+        Func<object> lambdaFunc = lambdaExpression.Compile();
         return lambdaFunc.Invoke();
     }
 
@@ -753,6 +753,38 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         {
             switch (node.Method.Name)
             {
+                case nameof(Queryable.ElementAt):
+                case nameof(Queryable.ElementAtOrDefault):
+                {
+                    var source = Visit(node.Arguments[0]);
+                    Debug.Assert(source != null);
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                    {
+                        // ... the source was not a ApiQueryable and is not
+                        // part of the API. So we just do nothing and pass it
+                    }
+                    else if (node.Arguments[1] is ConstantExpression c)
+                    {
+                        if (c.Type != typeof(int))
+                            throw new NotSupportedException(
+                                "The parameter for Queryable.ElementAt/ElementAtOrDefault must be a constant integer expression");
+                        apiCaller.Request.Offset = (int)c.Value;
+                        apiCaller.Request.Limit = 1;
+
+                        // We remove here the Take method call from the expression tree,
+                        // because the Take is done by the API.
+                        return Expression.Call(
+                            instance: null,
+                            method: System.Linq.Internal.Enumerable.FirstMethodInfo.MakeGenericMethod(
+                                node.Method.GetGenericArguments()[0]),
+                            arguments: new[] { source });
+                    }
+                    else
+                    {
+                        throw new Exception("Format for ElementAt/ElementAtOrDefault expression not supported.");
+                    }
+                }
+                    break;
                 case nameof(Queryable.Where):
                     {
                         //Arg 0: source
@@ -849,22 +881,10 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             switch (_expectedTypeMode)
                             {
                                 case QueryableTypeMode.Enumerable:
-                                {
-                                    var enumerableSelectMethod = typeof(Enumerable)
-                                        .GetMethods(BindingFlags.Static | BindingFlags.Public).First(m =>
-                                            m.Name == nameof(System.Linq.Enumerable.Select) && m.GetParameters().Length == 2);
-
-                                    genericMethod = enumerableSelectMethod;
-                                }
+                                    genericMethod = System.Linq.Internal.Enumerable.SelectMethodInfo;
                                     break;
                                 case QueryableTypeMode.AsyncEnumerable:
-                                {
-                                    var asyncEnumerableSelectMethod = typeof(AsyncEnumerable)
-                                        .GetMethods(BindingFlags.Static | BindingFlags.Public).FirstOrDefault(m =>
-                                            m.Name == nameof(AsyncEnumerable.Select) && m.GetParameters().Length == 2);
-                                    
-                                    genericMethod = asyncEnumerableSelectMethod;
-                                }
+                                    genericMethod = AsyncEnumerable.SelectMethodInfo;
                                     break;
                                 default:
                                     throw new ArgumentOutOfRangeException();
@@ -878,11 +898,13 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             
                             // Replace the exception with the new source.
                             return Expression.Call(
-                                null,
-                                method,
-                                source,
-                                Expression.Constant(selector) // materialized u Expression
-                            );
+                                instance: null,
+                                method: method,
+                                arguments: new[]
+                                {
+                                    source,
+                                    Expression.Constant(selector) // materialized u Expression                                    
+                                });
                         }
                         throw new Exception("Syntax of Select expression not supported.");
                     }
