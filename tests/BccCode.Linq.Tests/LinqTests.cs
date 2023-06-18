@@ -113,6 +113,98 @@ public class LinqQueryProviderTests
     }
 
     #endregion
+
+    #region First
+
+    [Fact]
+    public void FirstTest()
+    {
+        var api = new ApiClientMockup();
+
+        var persons = api.Persons.First();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("Archibald Mcbride", persons.Name);
+    }
+    
+    [Fact]
+    public async void FirstAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var persons = await api.Persons.FirstAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("Archibald Mcbride", persons.Name);
+    }
+
+    #endregion
+    
+    #region FirstOrDefault
+
+    [Fact]
+    public void FirstOrDefaultTest()
+    {
+        var api = new ApiClientMockup();
+
+        var persons = api.Persons.FirstOrDefault();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("Archibald Mcbride", persons?.Name);
+    }
+    
+    [Fact]
+    public void FirstOrDefaultEmptyTest()
+    {
+        var api = new ApiClientMockup();
+
+        var testClass = api.Empty.FirstOrDefault();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Null(testClass);
+    }
+    
+    [Fact]
+    public async void FirstOrDefaultAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var persons = await api.Persons.FirstOrDefaultAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("Archibald Mcbride", persons?.Name);
+    }
+    
+    [Fact]
+    public async void FirstOrDefaultEmptyAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var testClass = await api.Empty.FirstOrDefaultAsync();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Null(testClass);
+    }
+
+    #endregion
     
     #region Select
 
