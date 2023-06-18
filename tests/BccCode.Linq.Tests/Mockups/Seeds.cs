@@ -6,6 +6,7 @@ namespace BccCode.Linq.Tests;
 internal static class Seeds
 {
     private static IReadOnlyCollection<Person>? _persons;
+    private static IReadOnlyCollection<ManufacturerInfo>? _manufacturers;
 
     public static IReadOnlyCollection<Person> Persons
         => _persons ??= ImmutableList.Create(new Person[]
@@ -20,6 +21,16 @@ internal static class Seeds
             {
                 Car = new Car("Opel", "Astra", 2019)
             },
-            new("Amelie Beasley", 75, "PL", new DateTime(1982, 12, 24)),
+            new("Amelie Beasley", 75, "PL", new DateTime(1982, 12, 24))
+            {
+                Car = new Car("Volkswagen", "Golf", 2020)
+            },
+        });
+
+    public static IReadOnlyCollection<ManufacturerInfo> Manufacturers
+        => _manufacturers ??= ImmutableList.Create(new[]
+        {
+            new ManufacturerInfo { Name = "Opel", EstablishedYear = 1862 },
+            new ManufacturerInfo { Name = "Volkswagen", EstablishedYear = 1937 }
         });
 }

@@ -817,6 +817,49 @@ public class LinqQueryProviderTests
         //Assert.Equal(3, persons.Count);
         Assert.Equal(5, persons.Count);
     }
+    
+    [Fact]
+    public void IncludeSecondNestedTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Persons
+            .Include(p => p.Car.Manufacturer);
+
+        var persons = query.ToList();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Null(api.LastRequest?.Filter);
+        Assert.Equal("*,car.manufacturer.*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(3, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    [Fact]
+    public void IncludeThenIncludeTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Persons
+            .Include(p => p.Car)
+                .ThenInclude(c => c.ManufacturerInfo);
+
+        var persons = query.ToList();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Null(api.LastRequest?.Filter);
+        Assert.Equal("*,car.*,car.manufacturerInfo.*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(3, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
 
     #endregion
 }

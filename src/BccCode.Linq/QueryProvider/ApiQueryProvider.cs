@@ -45,11 +45,19 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
         // ReSharper disable InvalidXmlDocComment
         /// <summary>
-        /// Expression is inside a <see cref="Microsoft.EntityFrameworkCore.Query.IncludeExpression.Include" />
+        /// Expression is inside a <see cref="QueryableExtensions.Include" />
         /// function.
         /// </summary>
         // ReSharper restore InvalidXmlDocComment
-        Include
+        Include,
+        
+        // ReSharper disable InvalidXmlDocComment
+        /// <summary>
+        /// Expression is inside a <see cref="QueryableExtensions.ThenInclude" />
+        /// function.
+        /// </summary>
+        // ReSharper restore InvalidXmlDocComment
+        ThenInclude
     }
 
     /// <summary>
@@ -88,6 +96,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     private readonly Dictionary<ParameterExpression, IApiCaller> _activeParameters = new();
     private StringBuilder? _where;
     private StringBuilder? _selectField;
+    private StringBuilder? _includeChain;
     private bool _inverseOperator;
     private int _memberDepth;
     private int _indent;
@@ -137,6 +146,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
             _expectedTypeMode = expectedTypeMode;
             _visitMode = VisitLinqLambdaMode.Undefined;
             Debug.Assert(_mapFromToApiCallers.Count == 0);
+            Debug.Assert(_includeChain == null);
             Expression? translatedExpression = this.Visit(expression);
             Debug.Assert(_activeParameters.Count == 0);
             Debug.Assert(translatedExpression != null);
@@ -149,7 +159,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     // the linq 'Select' option has not been used --> set * to get all fields
                     apiCaller.Request.Fields = "*";
                 }
-                else if (apiCaller.Request.Fields.Split(',').All(p => p.Contains('.')))
+                else if (apiCaller.Request.Fields.Split(',').All(p => p.EndsWith(".*")))
                 {
                     // the linq 'Select' option has not been used, but the Include option --> set * to get all fields of the main entity
                     apiCaller.Request.Fields = $"*,{apiCaller.Request.Fields}";
@@ -158,6 +168,8 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                 
             // Clear internal variables
             _mapFromToApiCallers.Clear();
+            if (_includeChain != null)
+                _includeChain = null;
 
             return translatedExpression;
         }
@@ -193,7 +205,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
     /// <summary>
     /// A map holding the API caller classes (eg. <see cref="ApiPagedEnumerable"/>) mapped to the constant Expression
-    /// to the <see cref="ApiQueryable"/> (which is replaced with an instance of <see cref="ApiPagedEnumerable"/>.
+    /// to the <see cref="ApiQueryable{T}"/> (which is replaced with an instance of <see cref="ApiPagedEnumerable"/>.
     ///
     /// This makes it theoretically possible to use a type twice in a query e.g. when performing a cross join.
     ///
@@ -220,15 +232,25 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
         while (node is MethodCallExpression mc)
         {
-            if (mc.Method.DeclaringType == typeof(Queryable))
+            if (mc.Method.DeclaringType == typeof(Queryable) ||
+                mc.Method.DeclaringType == typeof(QueryableExtensions))
             {
                 node = mc.Arguments[0];
             }
-
-            if (_mapFromToApiCallers.TryGetValue(node, out apiCaller))
+            else
             {
-                return true;
+                // The Linq method call chain uses an unsupported extension method base class, e.g. an extension method from the entity framework.
+                // We use here pessimistic behavior and throw this as an error since we don't know if in such a case something should happen
+                // or the extension method call should be ignored.
+                throw new InvalidOperationException(
+                    "The Linq method call chain uses an unsupported extension method base class.");
             }
+        }
+        
+        Debug.Assert(node.NodeType == ExpressionType.Constant);
+        if (_mapFromToApiCallers.TryGetValue(node, out apiCaller))
+        {
+            return true;
         }
 
         return false;
@@ -368,12 +390,18 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         }
                     case VisitLinqLambdaMode.Include:
                         {
-                            var memberPath = ApiMemberPath();
-                            apiCaller.Request.Fields = string.IsNullOrEmpty(apiCaller.Request.Fields)
-                                ? $"{memberPath}.*"
-                                : $"{apiCaller.Request.Fields},{memberPath}.*";
+                            Debug.Assert(_includeChain != null);
+                            _includeChain.Append(ApiMemberPath());
                             return Expression.Empty();
                         }
+                    case VisitLinqLambdaMode.ThenInclude:
+                    {
+                        Debug.Assert(_includeChain != null);
+                        Debug.Assert(_includeChain.Length > 0); // a 'ThenInclude' chain must have already the root member from 'Include'
+                        _includeChain.Append(".");
+                        _includeChain.Append(ApiMemberPath());
+                        return Expression.Empty();
+                    }
                     default:
                         throw new NotSupportedException($"Member {node.Member.Name} used in an unsupported manner");
                 }
@@ -1024,18 +1052,57 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     {
                         if (node.Arguments[1] is UnaryExpression u && u.Operand is LambdaExpression l)
                         {
-                            var sourceType = node.Arguments[0].Type.GenericTypeArguments[0];
-
-                            var declaringType = l.Parameters[0].Type;
-                            if (declaringType != sourceType)
-                            {
-                                throw new Exception($"Expanding is only supported on root document type {sourceType.Name}");
-                            }
-
                             _visitMode = VisitLinqLambdaMode.Include;
                             _activeParameters.Add(l.Parameters[0], apiCaller);
 
+                            // Starts a new include chain, frees up the old include chain when multiple include chains are used 
+                            _includeChain = new StringBuilder();
+
                             Visit(l.Body);
+
+                            apiCaller.Request.Fields = string.IsNullOrEmpty(apiCaller.Request.Fields)
+                                ? $"{_includeChain}.*"
+                                : $"{apiCaller.Request.Fields},{_includeChain}.*";
+
+                            _visitMode = VisitLinqLambdaMode.Undefined;
+                            _activeParameters.Remove(l.Parameters[0]);
+
+                            // We remove here the Include method call from the expression tree,
+                            // because the Include is done by the API.
+                            return source;
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(
+                            $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} signature.");
+                    }
+                }
+                    break;
+                case nameof(QueryableExtensions.ThenInclude):
+                {
+                    //Arg 0: source
+                    var source = Visit(node.Arguments[0]);
+                    Debug.Assert(source != null);
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                    {
+                        // ... the source was not a ApiQueryable and is not
+                        // part of the API. So we just do nothing and pass it
+                    }
+                    else if (node.Arguments.Count == 2)
+                    {
+                        if (node.Arguments[1] is UnaryExpression u && u.Operand is LambdaExpression l)
+                        {
+                            _visitMode = VisitLinqLambdaMode.ThenInclude;
+                            _activeParameters.Add(l.Parameters[0], apiCaller);
+                            Debug.Assert(_includeChain != null);
+                            Debug.Assert(_includeChain.Length > 0);
+
+                            Visit(l.Body);
+
+                            apiCaller.Request.Fields = string.IsNullOrEmpty(apiCaller.Request.Fields)
+                                ? $"{_includeChain}.*"
+                                : $"{apiCaller.Request.Fields},{_includeChain}.*";
 
                             _visitMode = VisitLinqLambdaMode.Undefined;
                             _activeParameters.Remove(l.Parameters[0]);
