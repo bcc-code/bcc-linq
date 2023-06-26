@@ -2,5 +2,5 @@
 
 public interface IMeta
 {
-    IReadOnlyDictionary<string, object> Meta { get; }
+    IMetadata? Meta { get; }
 }

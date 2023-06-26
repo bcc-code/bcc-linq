@@ -13,7 +13,7 @@ internal interface IApiCaller : IEnumerable
 
 internal class ResultList<TEntity> : IResultList<TEntity>
 {
-    public IReadOnlyDictionary<string, object> Meta { get; set; }
+    public IMetadata? Meta { get; set; }
     public List<TEntity> Data { get; } = new();
 
     IReadOnlyList<TEntity> IResultList<TEntity>.Data => Data;

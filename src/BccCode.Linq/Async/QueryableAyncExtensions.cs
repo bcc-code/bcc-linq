@@ -215,7 +215,7 @@ public static class QueryableAsyncExtensions
     /// The <see cref="IQueryable{T}"/> to create a <see cref="IResultList{T}"/> from.
     /// </param>
     /// <param name="cancellationToken"></param>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.<</typeparam>
+    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
     /// <returns>
     /// A <see cref="IResultList{T}"/> that contains elements from the input sequence with the metadata from the first page.
     /// </returns>
