@@ -17,16 +17,16 @@ public class ApiClientMockupBase : IApiClient
         public ResultList(List<T> data, Dictionary<string, object>? meta)
         {
             Data = data;
-            Meta = meta ?? new Dictionary<string, object>();
+            Meta = new Metadata(meta);
         }
 
         public List<T> Data { get; }
-        public Dictionary<string, object> Meta { get; }
+        public IMetadata Meta { get; }
 
         #region IResultList<T>
 
         IReadOnlyList<T> IResultList<T>.Data => Data;
-        IReadOnlyDictionary<string, object> IMeta.Meta => Meta;
+        IMetadata IMeta.Meta => Meta;
 
         #endregion
     }
@@ -43,7 +43,11 @@ public class ApiClientMockupBase : IApiClient
 
         var listType = typeof(List<>).MakeGenericType(type);
         var inMemoryList = Activator.CreateInstance(listType, enumerable);
+#pragma warning disable CS8604
+#pragma warning disable CS8600
         _inMemoryData.Add(type, (IList)inMemoryList);
+#pragma warning restore CS8600
+#pragma warning restore CS8604
     }
 
     #region IApiClient
