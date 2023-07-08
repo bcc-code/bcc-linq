@@ -10,13 +10,20 @@ public class DirectusFilterBuilder<T>
 {
     private IQueryable<T> _queryable;
 
+    public DirectusFilterBuilder()
+    {
+        _queryable = new List<T>().AsQueryable();
+    }
+
+    public DirectusFilterBuilder(IQueryable<T> queryable)
+    {
+        _queryable = queryable;
+    }
+
+    [Obsolete("Use the constructor instead")]
     public static DirectusFilterBuilder<T> Create()
     {
-        var builder = new DirectusFilterBuilder<T>
-        {
-            _queryable = new List<T>().AsQueryable()
-        };
-        return builder;
+        return new DirectusFilterBuilder<T>();
     }
 
     public DirectusFilterBuilder<T> Build() => this;
@@ -38,7 +45,7 @@ public class DirectusFilterBuilder<T>
         return JsonConvert.SerializeObject(filterObject);
     }
 
-    private static void ProcessBinaryExpression(BinaryExpression binaryExpression, JObject filterObject)
+    private static void ProcessBinaryExpression(BinaryExpression? binaryExpression, JObject filterObject)
     {
         if (binaryExpression == null) return;
 
@@ -55,7 +62,7 @@ public class DirectusFilterBuilder<T>
             if (left != null && right != null)
             {
                 var propertyName = left.Member.Name;
-                var filterValue = right.ToString();
+                var filterValue = right;
 
                 JObject operationObject;
 
@@ -63,6 +70,9 @@ public class DirectusFilterBuilder<T>
                 {
                     case ExpressionType.Equal:
                         operationObject = new JObject { { "_eq", filterValue } };
+                        break;
+                    case ExpressionType.NotEqual:
+                        operationObject = new JObject { { "_neq", filterValue } };
                         break;
                     case ExpressionType.GreaterThanOrEqual:
                         operationObject = new JObject { { "_gte", filterValue } };
@@ -77,7 +87,7 @@ public class DirectusFilterBuilder<T>
                         operationObject = new JObject { { "_lt", filterValue } };
                         break;
                     default:
-                        throw new NotSupportedException("The provided expression is not supported.");
+                        throw new NotSupportedException($"The provided expression {binaryExpression.NodeType} is not supported.");
                 }
 
                 if (filterObject[propertyName] == null)
@@ -87,18 +97,22 @@ public class DirectusFilterBuilder<T>
 
                 foreach (var property in operationObject.Properties())
                 {
+#pragma warning disable CS8602
+#pragma warning disable CS8600
                     ((JObject)filterObject[propertyName]).Add(property);
+#pragma warning restore CS8600
+#pragma warning restore CS8602
                 }
             }
         }
     }
-    private static string UnwrapConvert(Expression expression)
+    private static string? UnwrapConvert(Expression expression)
     {
         if (expression is ConstantExpression constExpr)
         {
             return constExpr.Value.ToString();
         }
-        else if (expression is UnaryExpression { Operand: MemberExpression memberExpr } unaryExpr &&
+        else if (expression is UnaryExpression { Operand: MemberExpression memberExpr } &&
                  memberExpr.Expression is ConstantExpression constExpr2)
         {
             var container = constExpr2.Value;
