@@ -5,7 +5,7 @@ public class QueryableConverterTests
     [Fact]
     public void EqualQuery()
     {
-        var json = DirectusFilterBuilder<Project>.Create()
+        var json = new DirectusFilterBuilder<Project>()
             .Where(x => x.Status == true)
             .Serialize();
 
@@ -13,9 +13,19 @@ public class QueryableConverterTests
     }
 
     [Fact]
+    public void NotEqualQuery()
+    {
+        var json = new DirectusFilterBuilder<Project>()
+            .Where(x => x.Status != true)
+            .Serialize();
+
+        Assert.Equal("{\"Status\":{\"_neq\":\"True\"}}", json);
+    }
+
+    [Fact]
     public void BetweenTwoDatesQuery()
     {
-        var query = DirectusFilterBuilder<Project>.Create()
+        var query = new DirectusFilterBuilder<Project>()
             .Where(x => x.Start >= new DateTime(2023, 5, 1) && x.Start <= new DateTime(2023, 5, 31));
 
         var json = query.Serialize();
@@ -28,7 +38,7 @@ public class QueryableConverterTests
     {
         var defaultFrom = DateTime.UtcNow.AddMonths(-6);
         var defaultTo = DateTime.UtcNow;
-        var defaultFilterJson = DirectusFilterBuilder<Project>.Create()
+        var defaultFilterJson = new DirectusFilterBuilder<Project>()
             .Where(x => x.Start >= defaultFrom && x.Start <= defaultTo)
             .Serialize();
 
@@ -38,7 +48,7 @@ public class QueryableConverterTests
     [Fact]
     public void GreaterThanOrEqual()
     {
-        var json = DirectusFilterBuilder<Project>.Create()
+        var json = new DirectusFilterBuilder<Project>()
             .Where(x => x.Start >= new DateTime(2023, 5, 1))
             .Serialize();
 
@@ -48,7 +58,7 @@ public class QueryableConverterTests
     [Fact]
     public void GreaterThan()
     {
-        var json = DirectusFilterBuilder<Project>.Create()
+        var json = new DirectusFilterBuilder<Project>()
             .Where(x => x.Start > new DateTime(2023, 5, 1))
             .Serialize();
 
@@ -58,7 +68,7 @@ public class QueryableConverterTests
     [Fact]
     public void LessThanOrEqual()
     {
-        var json = DirectusFilterBuilder<Project>.Create()
+        var json = new DirectusFilterBuilder<Project>()
             .Where(x => x.Start <= new DateTime(2023, 5, 1))
             .Serialize();
 
@@ -68,7 +78,7 @@ public class QueryableConverterTests
     [Fact]
     public void LessThan()
     {
-        var json = DirectusFilterBuilder<Project>.Create()
+        var json = new DirectusFilterBuilder<Project>()
             .Where(x => x.Start < new DateTime(2023, 5, 1))
             .Serialize();
 
