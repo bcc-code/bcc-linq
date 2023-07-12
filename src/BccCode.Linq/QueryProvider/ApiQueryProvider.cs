@@ -147,7 +147,13 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
             _visitMode = VisitLinqLambdaMode.Undefined;
             Debug.Assert(_mapFromToApiCallers.Count == 0);
             Debug.Assert(_includeChain == null);
-            Expression? translatedExpression = this.Visit(expression);
+            Expression? translatedExpression = this.Visit(Evaluator.PartialEval(
+                expression,
+                fnCanBeEvaluated: e => e.NodeType != ExpressionType.Parameter &&
+                                       !(e is ConstantExpression constantExpression &&
+                                         constantExpression.Type.IsGenericType &&
+                                         constantExpression.Type.GetGenericTypeDefinition() == typeof(ApiQueryable<>))
+                ));
             Debug.Assert(_activeParameters.Count == 0);
             Debug.Assert(translatedExpression != null);
 

@@ -349,6 +349,7 @@ public class LinqQueryProviderTests
 
         Assert.Throws<InvalidOperationException>(() =>
         {
+            // ReSharper disable once UnusedVariable
             var persons = api.Persons.Single();
         });
         Assert.Equal("persons", api.LastEndpoint);
@@ -365,6 +366,7 @@ public class LinqQueryProviderTests
 
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
+            // ReSharper disable once UnusedVariable
             var persons = await api.Persons.SingleAsync();
         });
         Assert.Equal("persons", api.LastEndpoint);
@@ -384,6 +386,7 @@ public class LinqQueryProviderTests
 
         Assert.Throws<InvalidOperationException>(() =>
         {
+            // ReSharper disable once UnusedVariable
             var persons = api.Persons.SingleOrDefault();
         });
         Assert.Equal("persons", api.LastEndpoint);
@@ -414,6 +417,7 @@ public class LinqQueryProviderTests
 
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
+            // ReSharper disable once UnusedVariable
             var persons = await api.Persons.SingleOrDefaultAsync();
         });
         Assert.Equal("persons", api.LastEndpoint);
@@ -440,6 +444,118 @@ public class LinqQueryProviderTests
     #endregion
     
     #region Where
+
+    [Fact]
+    public void WhereGuidEqualStaticNewTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from m in api.Manufacturers
+            // here the constructor for 'Guid' is called during expression tree validation (client side invocation)
+            where m.Uid == new Guid("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d")
+            select m;
+
+        var manufacturer = query.FirstOrDefault();
+        Assert.Equal("manufacturers", api.LastEndpoint);
+        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.NotNull(manufacturer);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the first row of the mockup data.
+        //Assert.Equal(new Guid("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"), manufacturer?.Uid);
+        Assert.Equal(new Guid("4477e983-be5c-43d5-b3d0-5f26971bf2f3"), manufacturer?.Uid);
+    }
+    
+    [Fact]
+    public void WhereGuidEqualStaticMethodCallTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from m in api.Manufacturers
+            // here the method 'Guid.Parse' is called during expression tree validation (client side invocation)
+            where m.Uid == Guid.Parse("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d")
+            select m;
+
+        var manufacturer = query.FirstOrDefault();
+        Assert.Equal("manufacturers", api.LastEndpoint);
+        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.NotNull(manufacturer);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the first row of the mockup data.
+        //Assert.Equal(new Guid("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"), manufacturer?.Uid);
+        Assert.Equal(new Guid("4477e983-be5c-43d5-b3d0-5f26971bf2f3"), manufacturer?.Uid);
+    }
+    
+    [Fact]
+    public void WhereGuidEqualLocalVariableTest()
+    {
+        var api = new ApiClientMockup();
+
+        var uid = Guid.Parse("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d");
+        
+        var query =
+            from m in api.Manufacturers
+            // here we use a local variable which will be evaluated on client side
+            where m.Uid == uid
+            select m;
+
+        var manufacturer = query.FirstOrDefault();
+        Assert.Equal("manufacturers", api.LastEndpoint);
+        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.NotNull(manufacturer);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the first row of the mockup data.
+        //Assert.Equal(new Guid("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"), manufacturer?.Uid);
+        Assert.Equal(new Guid("4477e983-be5c-43d5-b3d0-5f26971bf2f3"), manufacturer?.Uid);
+    }
+    
+    [Fact]
+    public void WhereGuidEqualRemoteToStringTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from m in api.Manufacturers
+
+            // It is invalid to call a method on a server-side property. This will not work.
+            where m.Uid.ToString() == "16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"
+            select m;
+
+        Assert.Throws<NotSupportedException>(() =>
+            {
+                // ReSharper disable once UnusedVariable
+                var manufacturer = query.FirstOrDefault();
+            }
+        );
+        
+        /*
+        var manufacturer = query.FirstOrDefault();
+        Assert.Equal("manufacturers", api.LastEndpoint);
+        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.NotNull(manufacturer);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the first row of the mockup data.
+        //Assert.Equal(new Guid("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"), manufacturer?.Uid);
+        Assert.Equal(new Guid("4477e983-be5c-43d5-b3d0-5f26971bf2f3"), manufacturer?.Uid);
+        */
+    }
 
     [Fact]
     public void WhereIntGreaterThanTest()
