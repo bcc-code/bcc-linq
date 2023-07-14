@@ -15,6 +15,11 @@ public class TestClass
     public DateTime AnyDate { get; set; }
     public DateTime? DateNullable { get; set; }
     public NestedClass Nested { get; set; }
+    public Guid Uuid { get; set; }
+    public Guid? UuidNullable { get; set; }
+#if NET6_0_OR_GREATER
+    public DateOnly DateOnly { get; set; }
+#endif
 }
 
 public class NestedClass

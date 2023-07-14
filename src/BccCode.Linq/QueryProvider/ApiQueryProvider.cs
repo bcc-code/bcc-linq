@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using BccCode.Linq.ApiClient;
 using BccCode.Linq.Async;
+using Microsoft.Extensions.Primitives;
 
 namespace BccCode.Linq;
 
@@ -1343,8 +1344,11 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         {
             type = Nullable.GetUnderlyingType(type) ?? throw new NotSupportedException("Could not get type of Nullable<> during visiting constant expression");
             // ReSharper disable once PossibleNullReferenceException
+#pragma warning disable CS8602
             value = type.GetProperty(nameof(Nullable<int>.Value)).GetMethod.Invoke(
                 value, Array.Empty<object>());
+#pragma warning restore CS8602
+            Debug.Assert(value != null);
         }
 
         if (type == typeof(string))
@@ -1362,26 +1366,57 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         else if (type == typeof(DateTime))
         {
             stringBuilder.Append("\"");
-            DateTime valueDate = ((DateTime)value).ToUniversalTime();
-            if (valueDate == valueDate.Date)
+#pragma warning disable CS8605
+            DateTime valueDateTime = ((DateTime)value).ToUniversalTime();
+#pragma warning restore CS8605
+            if (valueDateTime != valueDateTime.Date)
             {
-                stringBuilder.Append(valueDate.ToString("O", CultureInfo.InvariantCulture) + "Z");
+                stringBuilder.Append(valueDateTime.ToString("O", CultureInfo.InvariantCulture) + "Z");
             }
             else
             {
-                stringBuilder.Append(valueDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                stringBuilder.Append(valueDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
             }
             stringBuilder.Append("\"");
         }
-        else if (type == typeof(DateTime))
+        else if (type == typeof(DateTimeOffset))
         {
             stringBuilder.Append("\"");
+#pragma warning disable CS8605
             stringBuilder.Append(((DateTimeOffset)value).ToUniversalTime().ToString("O", CultureInfo.InvariantCulture) + "Z");
+#pragma warning restore CS8605
             stringBuilder.Append("\"");
+        }
+#if NET6_0_OR_GREATER
+        else if (type == typeof(DateOnly))
+        {
+            stringBuilder.Append("\"");
+#pragma warning disable CS8605
+            stringBuilder.Append(((DateOnly)value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+#pragma warning restore CS8605
+            stringBuilder.Append("\"");
+        }
+#endif
+        else if (type == typeof(bool))
+        {
+#pragma warning disable CS8602
+            stringBuilder.Append(value.ToString().ToLowerInvariant());
+#pragma warning restore CS8602
         }
         else if (type.IsValueType)
         {
-            stringBuilder.Append(value);
+            var isNumberType = TypeHelper.IsNumberType(type);
+            if (!isNumberType)
+                stringBuilder.Append('"');
+            
+            if (value is IFormattable formattable)
+            {
+                // avoid having culture-specific strings in JSON object
+                stringBuilder.Append(formattable.ToString(null, CultureInfo.InvariantCulture));
+            }
+            
+            if (!isNumberType)
+                stringBuilder.Append('"');
         }
         else
         {

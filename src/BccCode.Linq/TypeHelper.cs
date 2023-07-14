@@ -1,4 +1,6 @@
-﻿namespace BccCode.Linq;
+﻿using System.Numerics;
+
+namespace BccCode.Linq;
 
 internal static class TypeHelper
 {
@@ -66,5 +68,27 @@ internal static class TypeHelper
             return false;
 
         return IsAssignableToGenericType(baseType, genericType);
+    }
+
+#if NET7_0_OR_GREATER
+#else
+    private static readonly HashSet<Type> NumericTypes = new()
+    {
+        typeof(int),  typeof(double),  typeof(decimal),
+        typeof(long), typeof(short),   typeof(sbyte),
+        typeof(byte), typeof(ulong),   typeof(ushort),
+        typeof(uint), typeof(float),   typeof(BigInteger)
+    };
+#endif
+    
+    public static bool IsNumberType(Type type)
+    {
+#if NET7_0_OR_GREATER
+        var numType = typeof(INumber<>);
+        var result = type.GetInterfaces().Any(i => i.IsGenericType && (i.GetGenericTypeDefinition() == numType));
+        return result;
+#else
+        return NumericTypes.Contains(type);
+#endif
     }
 }
