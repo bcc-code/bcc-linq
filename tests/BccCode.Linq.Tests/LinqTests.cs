@@ -1,4 +1,5 @@
-﻿using BccCode.Linq.Async;
+﻿using System.Globalization;
+using BccCode.Linq.Async;
 
 namespace BccCode.Linq.Tests;
 
@@ -445,6 +446,8 @@ public class LinqQueryProviderTests
     
     #region Where
 
+    #region Where property equal to ...
+    
     [Fact]
     public void WhereGuidEqualStaticNewTest()
     {
@@ -663,6 +666,7 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
             where p.NumberDoubleProp == -5.13
             select p;
 
@@ -788,7 +792,7 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"anyDate\": {\"_eq\": \"2023-12-4T04:02:05Z\"}}", api.LastRequest?.Filter);
+        Assert.Equal("{\"anyDate\": {\"_eq\": \"2023-12-04T04:02:05Z\"}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
@@ -828,7 +832,7 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"dateNullable\": {\"_eq\": \"2023-12-4T04:02:05Z\"}}", api.LastRequest?.Filter);
+        Assert.Equal("{\"dateNullable\": {\"_eq\": \"2023-12-04T04:02:05Z\"}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
@@ -849,7 +853,7 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"dateOnly\": {\"_eq\": \"2023-12-4\"}}", api.LastRequest?.Filter);
+        Assert.Equal("{\"dateOnly\": {\"_eq\": \"2023-12-04\"}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
@@ -917,6 +921,374 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Limit);
         Assert.Empty(persons);
     }
+
+    #endregion
+
+    #region Where property.ToString() to ...
+
+    [Fact]
+    public void WhereStringToStringEqualToNullTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.StrProp.ToString() == null
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"strProp\": {\"_eq\": null}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereStringToStringEqualToEmptyStringTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.StrProp.ToString() == ""
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"strProp\": {\"_eq\": \"\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereIntegerToStringEqualToNumberTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.NumberIntergerProp.ToString() == "5"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"numberIntergerProp\": {\"_eq\": 5}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereIntegerNullableToStringEqualToNullTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.IntNullable.ToString() == null
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"intNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereIntegerNullableToStringEqualToNumberTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.IntNullable.ToString() == "5"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"intNullable\": {\"_eq\": \"5\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereDoubleToStringEqualToNumberTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.NumberDoubleProp.ToString(CultureInfo.InvariantCulture) == "-5.13"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"numberDoubleProp\": {\"_eq\": \"-5.13\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereLongToStringEqualToNumberTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.NumberLongProp.ToString(CultureInfo.InvariantCulture) == "3372036854775807"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"numberLongProp\": {\"_eq\": \"3372036854775807\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereBoolToStringEqualToTrueTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.BooleanProp.ToString() == "True"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"booleanProp\": {\"_eq\": \"True\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereDecimalToStringEqualToNumberTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.Amount.ToString(CultureInfo.InvariantCulture) == "312312.5434353"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"amount\": {\"_eq\": \"312312.5434353\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereDecimalNullableToStringEqualToNullTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.AmountNullable.ToString() == null
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"amountNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereDecimalNullableToStringEqualToNumberTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.AmountNullable.ToString() == "312312.5434353"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"amountNullable\": {\"_eq\": \"312312.5434353\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereDateTimeToStringEqualToDateTimeTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.AnyDate.ToString(CultureInfo.InvariantCulture) != "2023-12-04T04:02:05Z"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"anyDate\": {\"_eq\": \"2023-12-4T04:02:05Z\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereDateTimeNullableToStringEqualToNullTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.DateNullable.ToString() == null
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"dateNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereDateTimeNullableToStringEqualToDateTimeTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.DateNullable.ToString() == "2023-12-04T04:02:05Z"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"dateNullable\": {\"_eq\": \"2023-12-04T04:02:05Z\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+#if NET6_0_OR_GREATER
+    [Fact]
+    public void WhereDateOnlyToStringEqualToDateTimeTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.DateOnly.ToString() == "2023-12-4"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"dateOnly\": {\"_eq\": \"2023-12-4\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+#endif
+    
+    [Fact]
+    public void WhereGuidToStringEqualToGuidTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.Uuid.ToString() == "00000000-0000-0000-0000-000000000000"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"uuid\": {\"_eq\": \"00000000-0000-0000-0000-000000000000\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+
+    [Fact]
+    public void WhereGuidNullableToStringEqualToNullTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.UuidNullable.ToString() == null
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"uuidNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereGuidNullableToStringEqualToGuidTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.UuidNullable.ToString() == "00000000-0000-0000-0000-000000000000"
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"uuidNullable\": {\"_eq\": \"00000000-0000-0000-0000-000000000000\"}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+
+    #endregion
 
     [Fact]
     public void WhereIntGreaterThanTest()
