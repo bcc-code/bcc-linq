@@ -161,10 +161,11 @@ public class FilterTests
     public void should_not_cast_value_to_date()
     {
         var json = @"{ ""AnyDate"": { ""_eq"": ""2009-gd06-15T13:45:30"" } }";
-        var filter = new Filter<TestClass>(json);
 
-        var value = ((Filter<DateTime>)filter.Properties["AnyDate"]).Properties["_eq"];
-
-        Assert.IsNotType<DateTime>(value);
+        Assert.Throws<InvalidCastException>(() =>
+        {
+            var filter = new Filter<TestClass>(json);
+            var value = ((Filter<DateTime>)filter.Properties["AnyDate"]).Properties["_eq"];
+        });
     }
 }

@@ -6,7 +6,9 @@ public static class FilterToLambdaParser
 {
     public static Expression<Func<T, bool>> Parse<T>(Filter<T> filter) where T : class
     {
+#if !DEBUG
         try
+#endif
         {
             var parameter = Expression.Parameter(typeof(T), typeof(T).FullName?.ToLower());
             var filterExpressionsList = GetExpressionsForFilter(filter, parameter);
@@ -16,11 +18,13 @@ public static class FilterToLambdaParser
             var lambda = Expression.Lambda<Func<T, bool>>(expressionBody, parameter);
             return lambda;
         }
+#if !DEBUG
         catch (Exception e)
         {
             Console.WriteLine(e);
             throw;
         }
+#endif
     }
 
     private static List<Expression> GetExpressionsForFilter(
@@ -84,10 +88,32 @@ public static class FilterToLambdaParser
                 var property = parentKey.Split('.')
                     .Aggregate((Expression)parameter, Expression.Property);
 
+                var valueType = property.Type;
+                
+                // check if we expect an array:
+                if (new[] { "_in", "_nin" }.Contains(prop.Key))
+                {
+                    // tell OperandToExpressionResolver.ConvertValue to expect an array by passing IList<T>
+                    valueType = typeof(IList<>).MakeGenericType(valueType);
+                }
+                
+                // check if we except a tuple
+                if (new[] { "_between", "_nbetween" }.Contains(prop.Key))
+                {
+                    if (valueType.IsValueType)
+                    {
+                        valueType = typeof(ValueTuple<,>).MakeGenericType(valueType, valueType);
+                    }
+                    else
+                    {
+                        valueType = typeof(Tuple<,>).MakeGenericType(valueType, valueType);
+                    }
+                }
+
                 var expressionForProperty = OperandToExpressionResolver.GetExpressionForRule(
                     property,
                     prop.Key,
-                    OperandToExpressionResolver.ConvertValue(property.Type, prop.Value));
+                    OperandToExpressionResolver.ConvertValue(valueType, prop.Value));
                 allExpressions.Add(expressionForProperty);
             }
         }
