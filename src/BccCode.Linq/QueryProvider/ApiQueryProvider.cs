@@ -659,6 +659,21 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             throw new NotSupportedException(
                                 "string.IsNullOrEmpty is currently only supported in a Where clause with a member expression");
                         }
+                    case nameof(string.ToString):
+                    {
+                        if (node.Arguments.Count != 0)
+                        {
+                            throw new NotSupportedException(
+                                "string.ToString method call is currently only supported in a Where clause without arguments");
+                        }
+
+                        // Useless call of ToString():
+                        // Optimize query by removing the ToString() call from the expression tree.
+                        var obj = Visit(node.Object);
+                        Debug.Assert(obj != null);
+                        Debug.Assert(obj.NodeType == ExpressionType.Default);
+                        return Expression.Empty();
+                    }
                     default:
                         throw new NotSupportedException($"Not supported method call: {node.Method.DeclaringType?.FullName}.{node.Method.Name}");
                 }
@@ -746,9 +761,104 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         _where.Append("}}");
 
                         return Expression.Empty();
+                    case nameof(object.ToString):
+                    {
+                        if (node.Arguments.Count != 0)
+                        {
+                            throw new NotSupportedException(
+                                "object.ToString method call is currently only supported in a Where clause without arguments");
+                        }
+
+                        Debug.Assert(node.Object != null);
+                        var objectType = node.Object.Type;
+                        if (objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                        {
+                            objectType = Nullable.GetUnderlyingType(objectType);
+                            Debug.Assert(objectType != null);
+                        }
+
+                        if (TypeHelper.IsNumberType(objectType))
+                        {
+                            throw new NotSupportedException(
+                                "object.ToString on number types (int, long, short, ...) is not supported in a Where clause");
+                        }
+                        else if (objectType == typeof(bool))
+                        {
+                            throw new NotSupportedException(
+                                $"ToString on type {objectType.FullName} is not supported in a Where clause");
+                        }
+
+                        if (objectType == typeof(string) || objectType == typeof(Guid) || objectType == typeof(DateTime)
+#if NET6_0_OR_GREATER
+                                                                 || objectType == typeof(DateOnly)
+#endif
+                           )
+                        {
+                            // Officially supported types with ToString()
+                        }
+                        else
+                        {
+                            Debug.WriteLine($"{nameof(ApiQueryProvider)}: Using object.ToString() call on type {objectType.FullName} is not officially tested in a Where clause. You might end up getting unexpected results.");
+                        }
+
+                        // We skipp interpreting ToString() because it will already be passed as string in JSON
+
+                        var obj = Visit(node.Object);
+                        Debug.Assert(obj != null);
+                        Debug.Assert(obj.NodeType == ExpressionType.Default);
+                        return Expression.Empty();
+                    }
+                        break;
                     default:
                         throw new NotSupportedException($"Not supported method call: {node.Method.DeclaringType?.FullName}.{node.Method.Name}");
                 }
+            }
+            else if (node.Method.Name == "ToString")
+            {
+                if (node.Arguments.Count != 0)
+                {
+                    throw new NotSupportedException(
+                        "ToString method call is currently only supported in a Where clause without arguments");
+                }
+                
+                Debug.Assert(node.Object != null);
+                var objectType = node.Object.Type;
+                if (objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    objectType = Nullable.GetUnderlyingType(objectType);
+                    Debug.Assert(objectType != null);
+                }
+                
+                if (TypeHelper.IsNumberType(objectType))
+                {
+                    throw new NotSupportedException(
+                        "ToString on number types (int, long, short, ...) is not supported in a Where clause");
+                }
+                else if (objectType == typeof(bool))
+                {
+                    throw new NotSupportedException(
+                        $"ToString on type {objectType.FullName} is not supported in a Where clause");
+                }
+
+                if (objectType == typeof(string) || objectType == typeof(Guid) || objectType == typeof(DateTime)
+#if NET6_0_OR_GREATER
+                    || objectType == typeof(DateOnly)
+#endif
+                   )
+                {
+                    // Officially supported types with ToString()
+                }
+                else
+                {
+                    Debug.WriteLine($"{nameof(ApiQueryProvider)}: Using ToString() call on type {objectType.FullName} is not officially tested in a Where clause. You might end up getting unexpected results.");
+                }
+
+                // We skipp interpreting ToString() because it will already be passed as string in JSON
+
+                var obj = Visit(node.Object);
+                Debug.Assert(obj != null);
+                Debug.Assert(obj.NodeType == ExpressionType.Default);
+                return Expression.Empty();
             }
             else
             {
@@ -1342,13 +1452,13 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         if (type.IsGenericType &&
             type.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            type = Nullable.GetUnderlyingType(type) ?? throw new NotSupportedException("Could not get type of Nullable<> during visiting constant expression");
             // ReSharper disable once PossibleNullReferenceException
 #pragma warning disable CS8602
             value = type.GetProperty(nameof(Nullable<int>.Value)).GetMethod.Invoke(
                 value, Array.Empty<object>());
 #pragma warning restore CS8602
             Debug.Assert(value != null);
+            type = Nullable.GetUnderlyingType(type) ?? throw new NotSupportedException("Could not get type of Nullable<> during visiting constant expression");
         }
 
         if (type == typeof(string))
@@ -1371,7 +1481,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 #pragma warning restore CS8605
             if (valueDateTime != valueDateTime.Date)
             {
-                stringBuilder.Append(valueDateTime.ToString("O", CultureInfo.InvariantCulture) + "Z");
+                stringBuilder.Append(valueDateTime.ToString("O", CultureInfo.InvariantCulture));
             }
             else
             {
@@ -1383,7 +1493,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         {
             stringBuilder.Append("\"");
 #pragma warning disable CS8605
-            stringBuilder.Append(((DateTimeOffset)value).ToUniversalTime().ToString("O", CultureInfo.InvariantCulture) + "Z");
+            stringBuilder.Append(((DateTimeOffset)value).ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
 #pragma warning restore CS8605
             stringBuilder.Append("\"");
         }

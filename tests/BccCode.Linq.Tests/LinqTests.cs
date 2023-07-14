@@ -787,12 +787,12 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            where p.AnyDate != new DateTime(2013, 12, 4, 4, 2, 5)
+            where p.AnyDate == new DateTime(2013, 12, 4, 4, 2, 5, DateTimeKind.Utc)
             select p;
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"anyDate\": {\"_eq\": \"2023-12-04T04:02:05Z\"}}", api.LastRequest?.Filter);
+        Assert.Equal("{\"anyDate\": {\"_eq\": \"2013-12-04T04:02:05.0000000Z\"}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
@@ -827,12 +827,12 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            where p.DateNullable == new DateTime(2013, 12, 4, 4, 2, 5)
+            where p.DateNullable == new DateTime(2013, 12, 4, 4, 2, 5, DateTimeKind.Utc)
             select p;
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"dateNullable\": {\"_eq\": \"2023-12-04T04:02:05Z\"}}", api.LastRequest?.Filter);
+        Assert.Equal("{\"dateNullable\": {\"_eq\": \"2013-12-04T04:02:05.0000000Z\"}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
@@ -848,12 +848,12 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            where p.DateOnly != new DateOnly(2013, 12, 4)
+            where p.DateOnly == new DateOnly(2013, 12, 4)
             select p;
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"dateOnly\": {\"_eq\": \"2023-12-04\"}}", api.LastRequest?.Filter);
+        Assert.Equal("{\"dateOnly\": {\"_eq\": \"2013-12-04\"}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
@@ -976,14 +976,10 @@ public class LinqQueryProviderTests
             where p.NumberIntergerProp.ToString() == "5"
             select p;
 
-        var persons = query.ToList();
-        Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"numberIntergerProp\": {\"_eq\": 5}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
-        Assert.Empty(persons);
+        Assert.Throws<NotSupportedException>(() =>
+        {
+            var persons = query.ToList();
+        });
     }
     
     [Fact]
@@ -996,14 +992,10 @@ public class LinqQueryProviderTests
             where p.IntNullable.ToString() == null
             select p;
 
-        var persons = query.ToList();
-        Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"intNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
-        Assert.Empty(persons);
+        Assert.Throws<NotSupportedException>(() =>
+        {
+            var persons = query.ToList();
+        });
     }
     
     [Fact]
@@ -1016,14 +1008,10 @@ public class LinqQueryProviderTests
             where p.IntNullable.ToString() == "5"
             select p;
 
-        var persons = query.ToList();
-        Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"intNullable\": {\"_eq\": \"5\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
-        Assert.Empty(persons);
+        Assert.Throws<NotSupportedException>(() =>
+        {
+            var persons = query.ToList();
+        });
     }
     
     [Fact]
@@ -1033,17 +1021,14 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            where p.NumberDoubleProp.ToString(CultureInfo.InvariantCulture) == "-5.13"
+            // ReSharper disable once SpecifyACultureInStringConversionExplicitly
+            where p.NumberDoubleProp.ToString() == "-5.13"
             select p;
 
-        var persons = query.ToList();
-        Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"numberDoubleProp\": {\"_eq\": \"-5.13\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
-        Assert.Empty(persons);
+        Assert.Throws<NotSupportedException>(() =>
+        {
+            var persons = query.ToList();
+        });
     }
     
     [Fact]
@@ -1053,17 +1038,13 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            where p.NumberLongProp.ToString(CultureInfo.InvariantCulture) == "3372036854775807"
+            where p.NumberLongProp.ToString() == "3372036854775807"
             select p;
 
-        var persons = query.ToList();
-        Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"numberLongProp\": {\"_eq\": \"3372036854775807\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
-        Assert.Empty(persons);
+        Assert.Throws<NotSupportedException>(() =>
+        {
+            var persons = query.ToList();
+        });
     }
     
     [Fact]
@@ -1076,14 +1057,10 @@ public class LinqQueryProviderTests
             where p.BooleanProp.ToString() == "True"
             select p;
 
-        var persons = query.ToList();
-        Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"booleanProp\": {\"_eq\": \"True\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
-        Assert.Empty(persons);
+        Assert.Throws<NotSupportedException>(() =>
+        {
+            var persons = query.ToList();
+        });
     }
     
     [Fact]
@@ -1093,17 +1070,14 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            where p.Amount.ToString(CultureInfo.InvariantCulture) == "312312.5434353"
+            // ReSharper disable once SpecifyACultureInStringConversionExplicitly
+            where p.Amount.ToString() == "312312.5434353"
             select p;
 
-        var persons = query.ToList();
-        Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"amount\": {\"_eq\": \"312312.5434353\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
-        Assert.Empty(persons);
+        Assert.Throws<NotSupportedException>(() =>
+        {
+            var persons = query.ToList();
+        });
     }
     
     [Fact]
@@ -1116,14 +1090,10 @@ public class LinqQueryProviderTests
             where p.AmountNullable.ToString() == null
             select p;
 
-        var persons = query.ToList();
-        Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"amountNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
-        Assert.Empty(persons);
+        Assert.Throws<NotSupportedException>(() =>
+        {
+            var persons = query.ToList();
+        });
     }
     
     [Fact]
@@ -1136,14 +1106,10 @@ public class LinqQueryProviderTests
             where p.AmountNullable.ToString() == "312312.5434353"
             select p;
 
-        var persons = query.ToList();
-        Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"amountNullable\": {\"_eq\": \"312312.5434353\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
-        Assert.Empty(persons);
+        Assert.Throws<NotSupportedException>(() =>
+        {
+            var persons = query.ToList();
+        });
     }
     
     [Fact]
@@ -1153,12 +1119,13 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            where p.AnyDate.ToString(CultureInfo.InvariantCulture) != "2023-12-04T04:02:05Z"
+            // ReSharper disable once SpecifyACultureInStringConversionExplicitly
+            where p.AnyDate.ToString() == "2023-12-04T04:02:05Z"
             select p;
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"anyDate\": {\"_eq\": \"2023-12-4T04:02:05Z\"}}", api.LastRequest?.Filter);
+        Assert.Equal("{\"anyDate\": {\"_eq\": \"2023-12-04T04:02:05Z\"}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
@@ -1214,12 +1181,12 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            where p.DateOnly.ToString() == "2023-12-4"
+            where p.DateOnly.ToString() == "2023-12-04"
             select p;
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"dateOnly\": {\"_eq\": \"2023-12-4\"}}", api.LastRequest?.Filter);
+        Assert.Equal("{\"dateOnly\": {\"_eq\": \"2023-12-04\"}}", api.LastRequest?.Filter);
         Assert.Equal("*", api.LastRequest?.Fields);
         Assert.Null(api.LastRequest?.Sort);
         Assert.Null(api.LastRequest?.Offset);
