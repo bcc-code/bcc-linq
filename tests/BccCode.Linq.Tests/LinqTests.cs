@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using BccCode.Linq.Async;
+﻿using BccCode.Linq.Async;
 
 namespace BccCode.Linq.Tests;
 
@@ -537,14 +536,6 @@ public class LinqQueryProviderTests
             where m.Uid.ToString() == "16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"
             select m;
 
-        Assert.Throws<NotSupportedException>(() =>
-            {
-                // ReSharper disable once UnusedVariable
-                var manufacturer = query.FirstOrDefault();
-            }
-        );
-        
-        /*
         var manufacturer = query.FirstOrDefault();
         Assert.Equal("manufacturers", api.LastEndpoint);
         Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequest?.Filter);
@@ -557,7 +548,6 @@ public class LinqQueryProviderTests
         //       from the expression tree, the result will be still the first row of the mockup data.
         //Assert.Equal(new Guid("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"), manufacturer?.Uid);
         Assert.Equal(new Guid("4477e983-be5c-43d5-b3d0-5f26971bf2f3"), manufacturer?.Uid);
-        */
     }
 
     public void WhereStringEqualToNullTest()
