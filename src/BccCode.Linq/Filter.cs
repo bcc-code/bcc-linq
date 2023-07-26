@@ -120,8 +120,18 @@ public class Filter<T> : Filter
                     throw new ArgumentException(
                         $"JSON filter rule is invalid. Value under {key} is not pair.");
                 }
-                deserializedJson[key] = OperandToExpressionResolver.ConvertValue(propertyInfo?.PropertyType ?? GetFilterType(), (array[0].ToString(), array[1].ToString()));
 
+                var propertyType = propertyInfo?.PropertyType ?? GetFilterType();
+                var tupleType = propertyType.IsValueType
+                    ? typeof(ValueTuple<,>).MakeGenericType(propertyType, propertyType)
+                    : typeof(Tuple<,>).MakeGenericType(propertyType, propertyType);
+
+                deserializedJson[key] = Activator.CreateInstance(tupleType,
+                    OperandToExpressionResolver.ConvertValue(propertyInfo?.PropertyType ?? GetFilterType(),
+                        array[0].ToString()),
+                    OperandToExpressionResolver.ConvertValue(propertyInfo?.PropertyType ?? GetFilterType(),
+                        array[1].ToString())
+                );
             }
             else if (key.StartsWith("_"))
             {

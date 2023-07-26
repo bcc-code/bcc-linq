@@ -7,8 +7,7 @@ public static class FilterInverter
 {
     public static Filter Invert(Filter filter)
     {
-
-        var inverted = Activator.CreateInstance(filter.GetType(), "{}") as Filter;
+        var inverted = (Filter)Activator.CreateInstance(filter.GetType(), "{}");
 
         foreach (var key in filter.Properties.Keys.ToList())
         {

@@ -23,8 +23,8 @@ public class InvertFilterTests
     [Fact]
     public void should_invert_a_logical_filter_operators()
     {
-        var filter = new Filter<TestClass>("{\"_and\":[{\"StrProp\":{\"_eq\":\"this\"}},{\"NumberIntergerProp\":{\"_neq\":\"that\"}}]}");
-        var expected = new Filter<TestClass>("{\"_or\":[{\"StrProp\":{\"_neq\":\"this\"}},{\"NumberIntergerProp\":{\"_eq\":\"that\"}}]}");
+        var filter = new Filter<TestClass>("{\"_and\":[{\"StrProp\":{\"_eq\":\"this\"}},{\"NumberIntergerProp\":{\"_neq\":\"125\"}}]}");
+        var expected = new Filter<TestClass>("{\"_or\":[{\"StrProp\":{\"_neq\":\"this\"}},{\"NumberIntergerProp\":{\"_eq\":\"125\"}}]}");
         var result = filter.GetInvertedFilter();
 
         Assert.True(expected.Properties.Keys.SequenceEqual(result.Properties.Keys));

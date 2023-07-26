@@ -19,8 +19,8 @@ public class RemoveFieldFromFilterTests
     {
         var filter =
             new Filter<TestClass>(
-                "{\"Nested\":{\"deeper\":{\"_eq\":\"lorem\"},\"leave\":{\"_eq\":\"x\"}},\"NumberIntergerProp\":{\"_eq\":\"ipsum\"}}");
-        var expected = new Filter<TestClass>("{\"Nested\":{\"leave\":{\"_eq\":\"x\"}},\"NumberIntergerProp\":{\"_eq\":\"ipsum\"}}");
+                "{\"Nested\":{\"deeper\":{\"_eq\":\"lorem\"},\"leave\":{\"_eq\":\"x\"}},\"NumberIntergerProp\":{\"_eq\":\"125\"}}");
+        var expected = new Filter<TestClass>("{\"Nested\":{\"leave\":{\"_eq\":\"x\"}},\"NumberIntergerProp\":{\"_eq\":\"125\"}}");
         filter.RemoveFieldFromFilter("deeper", "Nested");
 
         Assert.True(

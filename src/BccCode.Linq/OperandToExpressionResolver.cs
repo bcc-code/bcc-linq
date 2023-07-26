@@ -1,5 +1,8 @@
-﻿using System.Globalization;
+﻿using System.Collections;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using BccCode.Linq.Exceptions;
 
@@ -8,8 +11,111 @@ namespace BccCode.Linq;
 public static class OperandToExpressionResolver
 {
 
-    public static object ConvertValue(Type type, object value)
+    public static object? ConvertValue(Type type, object? value)
     {
+        if (value == null)
+            return null;
+
+        var valueType = value.GetType();
+        if (valueType == type)
+            return value;
+
+        // converts value to an array
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IList<>))
+        {
+            // run for an array
+            if (value is not IEnumerable valueEnumerable)
+            {
+                throw new InvalidCastException(
+                    $"Value {value} of type {valueType.FullName} does not implement {typeof(IEnumerable)}. It cannot be casted to {type.FullName}");
+            }
+
+            var listBaseType = type.GenericTypeArguments[0];
+            var listType = typeof(List<>).MakeGenericType(listBaseType);
+            var list = Activator.CreateInstance(listType);
+
+            var listAddMethodInfo = listType.GetMethod(nameof(List<object>.Add), BindingFlags.Public | BindingFlags.Instance);
+            Debug.Assert(listAddMethodInfo != null);
+            
+            foreach (var itemValue in valueEnumerable)
+            {
+                listAddMethodInfo.Invoke(list,
+                    new[] { ConvertValue(listBaseType, itemValue) }
+                );
+            }
+
+            var toArrayMethodInfo = listType.GetMethod(nameof(List<object>.ToArray), BindingFlags.Public | BindingFlags.Instance);
+            Debug.Assert(toArrayMethodInfo != null);
+
+            return toArrayMethodInfo.Invoke(list, Array.Empty<object>());
+        }
+
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ValueTuple<,>))
+        {
+            if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(ValueTuple<,>))
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                return type.GetConstructor(new[] { type.GenericTypeArguments[0], type.GenericTypeArguments[1] })
+                    .Invoke(new[]
+                    {
+                        ConvertValue(
+                            type.GenericTypeArguments[0],
+                            valueType.GetField(nameof(ValueTuple<int, int>.Item1)).GetValue(value)
+                        ),
+                        ConvertValue(
+                            type.GenericTypeArguments[1],
+                            valueType.GetField(nameof(ValueTuple<int, int>.Item1)).GetValue(value)
+                        )
+                    });
+            }
+            else if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(Tuple<,>))
+            {
+                return type.GetConstructor(new[] { type.GenericTypeArguments[0], type.GenericTypeArguments[1] })
+                    .Invoke(new[]
+                    {
+                        ConvertValue(
+                            type.GenericTypeArguments[0],
+                            valueType.GetProperty(nameof(Tuple<object, object>.Item1)).GetValue(value)
+                        ),
+                        ConvertValue(
+                            type.GenericTypeArguments[1],
+                            valueType.GetProperty(nameof(Tuple<object, object>.Item1)).GetValue(value)
+                        )
+                    });
+            }
+        }
+        
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Tuple<,>))
+        {
+            if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(ValueTuple<,>))
+            {
+                return Tuple.Create(
+                    ConvertValue(
+                        type.GenericTypeArguments[0],
+                        valueType.GetField(nameof(ValueTuple<int, int>.Item1)).GetValue(value)
+                    ),
+                    ConvertValue(
+                        type.GenericTypeArguments[1],
+                        valueType.GetField(nameof(ValueTuple<int, int>.Item1)).GetValue(value)
+                    )
+                );
+            }
+            else if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(Tuple<,>))
+            {
+                return Tuple.Create(
+                    ConvertValue(
+                        type.GenericTypeArguments[0],
+                        // ReSharper disable once PossibleNullReferenceException
+                        valueType.GetProperty(nameof(Tuple<object, object>.Item1)).GetValue(value)
+                    ),
+                    ConvertValue(
+                        type.GenericTypeArguments[1],
+                        // ReSharper disable once PossibleNullReferenceException
+                        valueType.GetProperty(nameof(Tuple<object, object>.Item1)).GetValue(value)
+                    )
+                );
+            }
+        }
 
         try
         {
@@ -34,6 +140,8 @@ public static class OperandToExpressionResolver
         }
         catch (Exception ex)
         {
+            throw new InvalidCastException(
+                $"Could not cast value {value} (of type {valueType.FullName}) to {type.FullName}");
         }
 
         return value;
@@ -107,7 +215,7 @@ public static class OperandToExpressionResolver
 
             case "_between" or "_nbetween":
                 {
-                    value = ConvertValue(property.Type, value);
+                    value = ConvertValue(typeof(ValueTuple<,>).MakeGenericType(property.Type, property.Type), value);
 
                     return value switch
                     {
