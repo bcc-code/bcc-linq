@@ -557,6 +557,54 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         return base.VisitUnary(node);
     }
 
+    private Expression VisitWhereMethodCallToString(MethodCallExpression node)
+    {
+        if (node.Arguments.Count != 0)
+        {
+            throw new NotSupportedException(
+                "object.ToString method call is currently only supported in a Where clause without arguments");
+        }
+
+        Debug.Assert(node.Object != null);
+        var objectType = node.Object.Type;
+        if (objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Nullable<>))
+        {
+            objectType = Nullable.GetUnderlyingType(objectType);
+            Debug.Assert(objectType != null);
+        }
+
+        if (TypeHelper.IsNumberType(objectType))
+        {
+            throw new NotSupportedException(
+                "object.ToString on number types (int, long, short, ...) is not supported in a Where clause");
+        }
+        else if (objectType == typeof(bool))
+        {
+            throw new NotSupportedException(
+                $"ToString on type {objectType.FullName} is not supported in a Where clause");
+        }
+
+        if (objectType == typeof(string) || objectType == typeof(Guid) || objectType == typeof(DateTime)
+#if NET6_0_OR_GREATER
+                                         || objectType == typeof(DateOnly)
+#endif
+           )
+        {
+            // Officially supported types with ToString()
+        }
+        else
+        {
+            Debug.WriteLine($"{nameof(ApiQueryProvider)}: Using object.ToString() call on type {objectType.FullName} is not officially tested in a Where clause. You might end up getting unexpected results.");
+        }
+
+        // We skipp interpreting ToString() because it will already be passed as string in JSON
+
+        var obj = Visit(node.Object);
+        Debug.Assert(obj != null);
+        Debug.Assert(obj.NodeType == ExpressionType.Default);
+        return Expression.Empty();
+    }
+    
     protected override Expression VisitMethodCall(MethodCallExpression node)
     {
         if (_visitMode == VisitLinqLambdaMode.Where)
@@ -762,103 +810,14 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
                         return Expression.Empty();
                     case nameof(object.ToString):
-                    {
-                        if (node.Arguments.Count != 0)
-                        {
-                            throw new NotSupportedException(
-                                "object.ToString method call is currently only supported in a Where clause without arguments");
-                        }
-
-                        Debug.Assert(node.Object != null);
-                        var objectType = node.Object.Type;
-                        if (objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                        {
-                            objectType = Nullable.GetUnderlyingType(objectType);
-                            Debug.Assert(objectType != null);
-                        }
-
-                        if (TypeHelper.IsNumberType(objectType))
-                        {
-                            throw new NotSupportedException(
-                                "object.ToString on number types (int, long, short, ...) is not supported in a Where clause");
-                        }
-                        else if (objectType == typeof(bool))
-                        {
-                            throw new NotSupportedException(
-                                $"ToString on type {objectType.FullName} is not supported in a Where clause");
-                        }
-
-                        if (objectType == typeof(string) || objectType == typeof(Guid) || objectType == typeof(DateTime)
-#if NET6_0_OR_GREATER
-                                                                 || objectType == typeof(DateOnly)
-#endif
-                           )
-                        {
-                            // Officially supported types with ToString()
-                        }
-                        else
-                        {
-                            Debug.WriteLine($"{nameof(ApiQueryProvider)}: Using object.ToString() call on type {objectType.FullName} is not officially tested in a Where clause. You might end up getting unexpected results.");
-                        }
-
-                        // We skipp interpreting ToString() because it will already be passed as string in JSON
-
-                        var obj = Visit(node.Object);
-                        Debug.Assert(obj != null);
-                        Debug.Assert(obj.NodeType == ExpressionType.Default);
-                        return Expression.Empty();
-                    }
-                        break;
+                        return VisitWhereMethodCallToString(node);
                     default:
                         throw new NotSupportedException($"Not supported method call: {node.Method.DeclaringType?.FullName}.{node.Method.Name}");
                 }
             }
             else if (node.Method.Name == "ToString")
             {
-                if (node.Arguments.Count != 0)
-                {
-                    throw new NotSupportedException(
-                        "ToString method call is currently only supported in a Where clause without arguments");
-                }
-                
-                Debug.Assert(node.Object != null);
-                var objectType = node.Object.Type;
-                if (objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                {
-                    objectType = Nullable.GetUnderlyingType(objectType);
-                    Debug.Assert(objectType != null);
-                }
-                
-                if (TypeHelper.IsNumberType(objectType))
-                {
-                    throw new NotSupportedException(
-                        "ToString on number types (int, long, short, ...) is not supported in a Where clause");
-                }
-                else if (objectType == typeof(bool))
-                {
-                    throw new NotSupportedException(
-                        $"ToString on type {objectType.FullName} is not supported in a Where clause");
-                }
-
-                if (objectType == typeof(string) || objectType == typeof(Guid) || objectType == typeof(DateTime)
-#if NET6_0_OR_GREATER
-                    || objectType == typeof(DateOnly)
-#endif
-                   )
-                {
-                    // Officially supported types with ToString()
-                }
-                else
-                {
-                    Debug.WriteLine($"{nameof(ApiQueryProvider)}: Using ToString() call on type {objectType.FullName} is not officially tested in a Where clause. You might end up getting unexpected results.");
-                }
-
-                // We skipp interpreting ToString() because it will already be passed as string in JSON
-
-                var obj = Visit(node.Object);
-                Debug.Assert(obj != null);
-                Debug.Assert(obj.NodeType == ExpressionType.Default);
-                return Expression.Empty();
+                return VisitWhereMethodCallToString(node);
             }
             else
             {
