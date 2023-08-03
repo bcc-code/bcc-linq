@@ -30,7 +30,7 @@ internal static class Seeds
     public static IReadOnlyCollection<ManufacturerInfo> Manufacturers
         => _manufacturers ??= ImmutableList.Create(new[]
         {
-            new ManufacturerInfo { Name = "Opel", EstablishedYear = 1862 },
-            new ManufacturerInfo { Name = "Volkswagen", EstablishedYear = 1937 }
+            new ManufacturerInfo { Uid = new Guid("4477e983-be5c-43d5-b3d0-5f26971bf2f3"), Name = "Opel", EstablishedYear = 1862 },
+            new ManufacturerInfo { Uid = new Guid("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"), Name = "Volkswagen", EstablishedYear = 1937 }
         });
 }

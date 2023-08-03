@@ -36,6 +36,7 @@ public class Car
 
 public class ManufacturerInfo
 {
+    public Guid Uid { get; set; }
     public string Name { get; set; }
     public int EstablishedYear { get; set; }
 }
