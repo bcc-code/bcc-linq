@@ -4,6 +4,70 @@ namespace BccCode.Linq.Tests;
 
 public class LinqQueryProviderTests
 {
+    #region Any
+
+    [Fact]
+    public void AnyTest()
+    {
+        var api = new ApiClientMockup();
+
+        var anyResult = api.Persons.Any();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Filter);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.True(anyResult);
+    }
+    
+    [Fact]
+    public void AnyPredicateTest()
+    {
+        var api = new ApiClientMockup();
+
+        var anyResult = api.Persons.Any(p => p.Age > 26);
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequest?.Filter);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.True(anyResult);
+    }
+    
+    [Fact]
+    public async void AnyAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var anyResult = await api.Persons.AnyAsync();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Filter);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.True(anyResult);
+    }
+    
+    [Fact]
+    public async void AnyPredicateAsyncTest()
+    {
+        var api = new ApiClientMockup();
+
+        var anyResult = await api.Persons.AnyAsync(p => p.Age > 26);
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequest?.Filter);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.True(anyResult);
+    }
+
+    #endregion
+    
     #region ElementAt
 
     [Fact]

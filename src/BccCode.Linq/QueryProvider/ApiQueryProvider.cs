@@ -192,7 +192,10 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
     public TResult? Execute<TResult>(Expression expression)
     {
-        object result = ((IQueryProvider)this).Execute(expression);
+        var translatedExpression = TranslateExpression(expression, QueryableTypeMode.Enumerable);
+        var lambdaExpression = Expression.Lambda<Func<TResult>>(translatedExpression);
+        Func<TResult?> lambdaFunc = lambdaExpression.Compile();
+        var result = lambdaFunc.Invoke();
         return result == null ? default : (TResult)result;
     }
 
@@ -265,6 +268,35 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
     #region Visitors
 
+    
+    /// <summary>
+    /// Visits a where clause which is to be processed throw the API.
+    ///
+    /// It does not return any expression since the whole predicate is assumed to be interpretable by the API.
+    /// The expression tree parser will throw an exception when the where clause cannot be interpreted by the API.
+    /// </summary>
+    /// <param name="node">
+    /// The lambda predicate expression of the where clause
+    /// </param>
+    /// <param name="apiCaller">
+    /// The api caller object to which the where clause shall be added.
+    /// </param>
+    private void VisitWhereClause(LambdaExpression node, IApiCaller apiCaller)
+    {
+        _visitMode = VisitLinqLambdaMode.Where;
+        _activeParameters.Add(node.Parameters[0], apiCaller);
+        _where = new StringBuilder();
+        
+        Visit(node.Body);
+        
+        _visitMode = VisitLinqLambdaMode.Undefined;
+        _activeParameters.Remove(node.Parameters[0]);
+        apiCaller.Request.Filter = string.IsNullOrEmpty(apiCaller.Request.Filter)
+            ? _where.ToString()
+            : $"{{ \"_and\" : [ {apiCaller.Request.Filter} , {_where} ] }}";
+        _where = null;
+    }
+    
     protected override Expression VisitConstant(ConstantExpression node)
     {
         if (_visitMode == VisitLinqLambdaMode.Where)
@@ -829,6 +861,58 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         {
             switch (node.Method.Name)
             {
+                case nameof(Queryable.Any):
+                {
+                    //Arg 0: source
+                    var source = Visit(node.Arguments[0]);
+                    Debug.Assert(source != null);
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                    {
+                        // ... the source was not a ApiQueryable and is not
+                        // part of the API. So we just do nothing and pass it
+                    }
+                    else
+                    {
+                        apiCaller.Request.Limit = 1;
+                        
+                        if (node.Arguments.Count == 1)
+                        {
+                            // We remove here the Take method call from the expression tree,
+                            // because the Take is done by the API.
+                            return Expression.Call(
+                                instance: null,
+                                method: System.Linq.Internal.Enumerable.AnyMethodInfo.MakeGenericMethod(
+                                    node.Method.GetGenericArguments()[0]),
+                                arguments: new[] { source });
+                        }
+                        else if (node.Arguments.Count == 2 &&
+                                 node.Arguments[1] is UnaryExpression u &&
+                                 u.Operand is LambdaExpression l)
+                        {
+                            Debug.Assert(l.Parameters.Count == 1);
+
+                            VisitWhereClause(l, apiCaller);
+
+                            // We remove here the predicate from the expression tree, because
+                            // the where logic is processed by the API.
+                            // NOTE: In case some where expressions cannot be passed over to the API,
+                            //       this would be the place where you can still decide to keep a
+                            //       modified Where expression in the tree for the parts which the API
+                            //       cannot handle.
+                            return Expression.Call(
+                                instance: null,
+                                method: System.Linq.Internal.Enumerable.AnyMethodInfo.MakeGenericMethod(
+                                    node.Method.GetGenericArguments()[0]),
+                                arguments: new[] { source });
+                        }
+                        else
+                        {
+                            throw new NotSupportedException(
+                                $"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
+                        }
+                    }
+                }
+                    break;
                 case nameof(Queryable.ElementAt):
                 {
                     var source = Visit(node.Arguments[0]);
@@ -960,18 +1044,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         {
                             Debug.Assert(l.Parameters.Count == 1);
 
-                            _visitMode = VisitLinqLambdaMode.Where;
-                            _activeParameters.Add(l.Parameters[0], apiCaller);
-                            _where = new StringBuilder();
-
-                            Visit(l.Body);
-
-                            _visitMode = VisitLinqLambdaMode.Undefined;
-                            _activeParameters.Remove(l.Parameters[0]);
-                            apiCaller.Request.Filter = string.IsNullOrEmpty(apiCaller.Request.Filter)
-                                ? _where.ToString()
-                                : $"{{ \"_and\" : [ {apiCaller.Request.Filter} , {_where} ] }}";
-                            _where = null;
+                            VisitWhereClause(l, apiCaller);
 
                             // We remove here the Where method call from the expression tree, because
                             // the where logic is processed by the API.
