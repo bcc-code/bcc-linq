@@ -1001,11 +1001,6 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             {
                                 Debug.Assert(l.Parameters.Count == 1);
 
-                                if (l.Body is MemberExpression m && (m.Type.IsPrimitive || m.Type == typeof(string)))
-                                {
-                                    throw new Exception($"Selecting '{m.Member.Name}' as a scalar value is not supported due to serialization limitations. Instead, create an anonymous object containing the '{m.Member.Name}' field. e.g. o => new {{ o.{m.Member.Name} }}.");
-                                }
-
                                 _visitMode = VisitLinqLambdaMode.Select;
                                 _activeParameters.Add(l.Parameters[0], apiCaller);
 
