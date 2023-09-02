@@ -765,7 +765,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     case nameof(Enumerable.Contains):
                         {
                             // .Where(p => titles.Contains(p.Title))
-                            if (node.Arguments.Count != 3)
+                            if (node.Arguments.Count != 2)
                             {
                                 throw new NotSupportedException(
                                     $"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without comparer.");
@@ -774,11 +774,11 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             if (node.Arguments[0] is ConstantExpression c)
                             {
                                 Debug.Assert(_where != null);
-                                _where.Append("{");
+                                _where.Append("{\"");
                                 var arg1 = Visit(node.Arguments[1]);
                                 Debug.Assert(arg1 != null);
                                 Debug.Assert(arg1.NodeType == ExpressionType.Default);
-                                _where.Append(": {\"");
+                                _where.Append("\": {\"");
                                 _where.Append(_inverseOperator ? "_nin" : "_in");
                                 _where.Append("\": [");
 

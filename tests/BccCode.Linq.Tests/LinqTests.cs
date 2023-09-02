@@ -1312,6 +1312,48 @@ public class LinqQueryProviderTests
     #endregion
 
     [Fact]
+    public void WhereContainsInlineGuidArrayTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where new []{Guid.Empty}.Contains(p.Uuid)
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"uuid\": {\"_in\": [\"00000000-0000-0000-0000-000000000000\"]}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+
+    [Fact]
+    public void WhereContainsVariableGuidArrayTest()
+    {
+        var api = new ApiClientMockup();
+
+        var uuids = new[] { Guid.Empty };
+
+        var query =
+            from p in api.Empty
+            where uuids.Contains(p.Uuid)
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.LastEndpoint);
+        Assert.Equal("{\"uuid\": {\"_in\": [\"00000000-0000-0000-0000-000000000000\"]}}", api.LastRequest?.Filter);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Empty(persons);
+    }
+
+    [Fact]
     public void WhereIntGreaterThanTest()
     {
         var api = new ApiClientMockup();
