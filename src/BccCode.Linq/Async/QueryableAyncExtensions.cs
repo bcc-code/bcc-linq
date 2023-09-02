@@ -1,4 +1,5 @@
-﻿using BccCode.Linq.ApiClient;
+﻿using System.Linq.Expressions;
+using BccCode.Linq.ApiClient;
 
 namespace BccCode.Linq.Async;
 
@@ -81,6 +82,67 @@ public static class QueryableAsyncExtensions
         return list;
     }
 
+    #region Any
+
+    /// <summary>
+    ///     Asynchronously determines whether a sequence contains any elements.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
+    /// <param name="source">An <see cref="IQueryable{T}" /> to check for being empty.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+    /// <returns>
+    ///     A task that represents the asynchronous operation.
+    ///     The task result contains <see langword="true" /> if the source sequence contains any elements; otherwise, <see langword="false" />.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="source" /> is <see langword="null" />.</exception>
+    /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
+    public static async Task<bool> AnyAsync<TSource>(
+        this IQueryable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+
+        var firstOrDefault = await source.FirstOrDefaultAsync(cancellationToken);
+        if (firstOrDefault == null)
+            return false;
+
+        return true;
+    }
+    
+    /// <summary>
+    ///     Asynchronously determines whether any element of a sequence satisfies a condition.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
+    /// <param name="source">An <see cref="IQueryable{T}" /> whose elements to test for a condition.</param>
+    /// <param name="predicate">A function to test each element for a condition.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+    /// <returns>
+    ///     A task that represents the asynchronous operation.
+    ///     The task result contains <see langword="true" /> if any elements in the source sequence pass the test in the specified
+    ///     predicate; otherwise, <see langword="false" />.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <paramref name="source" /> or <paramref name="predicate" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
+    public static async Task<bool> AnyAsync<TSource>(
+        this IQueryable<TSource> source,
+        Expression<Func<TSource, bool>> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+
+        var firstOrDefault = await source.Where(predicate).FirstOrDefaultAsync(cancellationToken);
+        if (firstOrDefault == null)
+            return false;
+
+        return true;
+    }
+
+    #endregion
+    
     #region ElementAt/ElementAtOrDefault
     
     /// <summary>

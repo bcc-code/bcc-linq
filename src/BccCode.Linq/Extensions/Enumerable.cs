@@ -7,6 +7,13 @@ namespace System.Linq.Internal;
 /// </summary>
 internal static class Enumerable
 {
+    internal static readonly MethodInfo AnyMethodInfo
+        = typeof(System.Linq.Enumerable)
+            .GetTypeInfo().GetDeclaredMethods(nameof(System.Linq.Enumerable.Any))
+            .Single(
+                mi => mi.GetGenericArguments().Length == 1
+                      && mi.GetParameters().Length == 1);
+
     internal static readonly MethodInfo FirstMethodInfo
         = typeof(System.Linq.Enumerable)
             .GetTypeInfo().GetDeclaredMethods(nameof(System.Linq.Enumerable.First))
