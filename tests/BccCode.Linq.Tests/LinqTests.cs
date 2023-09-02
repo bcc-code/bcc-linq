@@ -313,12 +313,13 @@ public class LinqQueryProviderTests
             from p in api.Persons
             select p.Name;
 
-        // Currently not supported
-        Assert.Throws<Exception>(() =>
-        {
-            // ReSharper disable once UnusedVariable
-            var persons = query.ToList();
-        });
+        var persons = query.ToList();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("name", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal(5, persons.Count);
     }
 
     [Fact]
@@ -330,12 +331,13 @@ public class LinqQueryProviderTests
             from p in api.Persons
             select p.Age;
 
-        // Currently not supported
-        Assert.Throws<Exception>(() =>
-        {
-            // ReSharper disable once UnusedVariable
-            var persons = query.ToList();
-        });
+        var persons = query.ToList();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("age", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal(5, persons.Count);
     }
 
     [Fact]
