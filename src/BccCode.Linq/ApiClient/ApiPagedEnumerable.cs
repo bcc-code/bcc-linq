@@ -82,7 +82,7 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
         int page = 1;
         do
         {
-            pageData = await RequestPageAsync(page++, cancellationToken);
+            pageData = await RequestPageAsync(page, cancellationToken);
             if (pageData == null)
                 break;
 
@@ -92,6 +92,8 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
             }
             
             resultList.Data.AddRange(pageData.Data);
+
+            page++;
         } while (pageData.Data.Count == RowsPerPage);
 
         if (resultList.Data.Count == 0)
