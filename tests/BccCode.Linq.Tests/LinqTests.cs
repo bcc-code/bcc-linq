@@ -1,4 +1,5 @@
-﻿using BccCode.Linq.Async;
+﻿using System.Text;
+using BccCode.Linq.Async;
 
 namespace BccCode.Linq.Tests;
 
@@ -280,6 +281,49 @@ public class LinqQueryProviderTests
         Assert.Null(api.LastRequest?.Offset);
         Assert.Equal(1, api.LastRequest?.Limit);
         Assert.Null(testClass);
+    }
+
+    #endregion
+
+    #region Search
+
+    [Fact]
+    public void SearchConstantTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Persons.Search("Chuck Norris");
+
+        var persons = query.ToList();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("Chuck Norris", api.LastRequest?.Search);
+        Assert.Equal(5, persons.Count);
+    }
+    
+    [Fact]
+    public void SearchStringBuilderTest()
+    {
+        var api = new ApiClientMockup();
+
+        var sb = new StringBuilder();
+        sb.Append("Chuck");
+        sb.Append(' ');
+        sb.Append("Norris");
+
+        var query = api.Persons.Search(sb.ToString());
+
+        var persons = query.ToList();
+        Assert.Equal("persons", api.LastEndpoint);
+        Assert.Equal("*", api.LastRequest?.Fields);
+        Assert.Null(api.LastRequest?.Sort);
+        Assert.Null(api.LastRequest?.Offset);
+        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("Chuck Norris", api.LastRequest?.Search);
+        Assert.Equal(5, persons.Count);
     }
 
     #endregion
