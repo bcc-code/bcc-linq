@@ -1,4 +1,4 @@
-﻿using BccCode.Linq.ApiClient;
+﻿using BccCode.ApiClient;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BccCode.Linq.Tests;

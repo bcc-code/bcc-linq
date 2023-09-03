@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace BccCode.Linq.ApiClient;
+namespace BccCode.ApiClient;
 
 /// <summary>
 /// Internal. Makes it possible to easily getting the API request for a instance of <see cref="ApiPagedEnumerable{T}"/>
@@ -9,14 +9,6 @@ namespace BccCode.Linq.ApiClient;
 internal interface IApiCaller : IEnumerable
 {
     public IApiRequest Request { get; }
-}
-
-internal class ResultList<TEntity> : IResultList<TEntity>
-{
-    public IMetadata? Meta { get; set; }
-    public List<TEntity> Data { get; } = new();
-
-    IReadOnlyList<TEntity> IResultList<TEntity>.Data => Data;
 }
 
 /// <summary>
@@ -63,22 +55,23 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
         Request = apiClient.ConstructApiRequest(_path);
     }
 
-    private IResultList<T>? RequestPage(int page)
+    private ResultList<T>? RequestPage(int page)
     {
         Request.Page = page;
-        return _apiClient.Get<IResultList<T>>(_path, Request);
+        return _apiClient.Get<ResultList<T>>(_path, Request);
     }
 
-    private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = default)
+    private Task<ResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = default)
     {
         Request.Page = page;
-        return _apiClient.GetAsync<IResultList<T>>(_path, Request, cancellationToken);
+        return _apiClient.GetAsync<ResultList<T>>(_path, Request, cancellationToken);
     }
 
-    public async Task<IResultList<T>?> FetchAsync(CancellationToken cancellationToken = default)
+    public async Task<ResultList<T>?> FetchAsync(CancellationToken cancellationToken = default)
     {
         var resultList = new ResultList<T>();
-        IResultList<T>? pageData;
+        resultList.Data = new List<T>();
+        ResultList<T>? pageData;
         int page = 1;
         do
         {
@@ -90,11 +83,11 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
             {
                 resultList.Meta = pageData.Meta;
             }
-            
-            resultList.Data.AddRange(pageData.Data);
+
+            resultList.AddData(pageData.Data);
 
             page++;
-        } while (pageData.Data.Count == RowsPerPage);
+        } while ((pageData.Data?.Count ?? 0) == RowsPerPage);
 
         if (resultList.Data.Count == 0)
             return null;
@@ -104,7 +97,7 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
 
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        IResultList<T>? pageData;
+        ResultList<T>? pageData;
         int page = 1;
         do
         {
@@ -121,7 +114,7 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
 
     public IEnumerator<T> GetEnumerator()
     {
-        IResultList<T>? pageData;
+        ResultList<T>? pageData;
         int page = 1;
         do
         {
