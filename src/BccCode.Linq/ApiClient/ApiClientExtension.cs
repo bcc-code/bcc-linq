@@ -1,4 +1,6 @@
-﻿namespace BccCode.Linq.ApiClient;
+﻿using BccCode.Linq;
+
+namespace BccCode.ApiClient;
 
 public static class ApiClientExtension
 {

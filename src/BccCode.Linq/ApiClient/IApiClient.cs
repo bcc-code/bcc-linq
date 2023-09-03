@@ -1,4 +1,4 @@
-﻿namespace BccCode.Linq.ApiClient;
+﻿namespace BccCode.ApiClient;
 
 public interface IApiClient
 {

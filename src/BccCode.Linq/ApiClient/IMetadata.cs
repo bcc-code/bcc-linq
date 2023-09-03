@@ -1,4 +1,4 @@
-﻿namespace BccCode.Linq.ApiClient;
+﻿namespace BccCode.ApiClient;
 
 public interface IMetadata : IReadOnlyDictionary<string, object>
 {

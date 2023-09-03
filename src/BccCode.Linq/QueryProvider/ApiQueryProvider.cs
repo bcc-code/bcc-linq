@@ -4,9 +4,8 @@ using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using BccCode.Linq.ApiClient;
+using BccCode.ApiClient;
 using BccCode.Linq.Async;
-using Microsoft.Extensions.Primitives;
 
 namespace BccCode.Linq;
 
