@@ -124,4 +124,31 @@ public static class QueryableExtensions
     }
     
     #endregion
+
+    #region Search
+
+    internal static readonly MethodInfo SearchMethodInfo
+        = typeof(QueryableExtensions)
+            .GetTypeInfo().GetDeclaredMethods(nameof(Search))
+            .Single();
+
+    public static IQueryable<TEntity> Search<TEntity>(this IQueryable<TEntity> source, string searchString)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+
+        if (source.Provider is ApiQueryProvider)
+        {
+            return source.Provider.CreateQuery<TEntity>(
+                Expression.Call(
+                    instance: null,
+                    method: SearchMethodInfo.MakeGenericMethod(
+                        typeof(TEntity)),
+                    arguments: new []{source.Expression, Expression.Constant(searchString)}));
+        }
+ 
+        throw new NotSupportedException("Linq method Search was not replaced by the queryable provider. You can only use this method with a IQueryable<> object from an Bcc Code API. If you already use a IQueryable<> object from a Bcc Code API, try to call Search earlier in your Linq command chain.");
+    }
+
+    #endregion
 }

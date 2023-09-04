@@ -1423,6 +1423,34 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     }
                 }
                     break;
+                case nameof(QueryableExtensions.Search):
+                {
+                    //Arg 0: source
+                    var source = Visit(node.Arguments[0]);
+                    Debug.Assert(source != null);
+                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                    {
+                        // ... the source was not a ApiQueryable and is not
+                        // part of the API. So we just do nothing and pass it
+                    }
+                    else if (node.Arguments.Count == 2 && node.Arguments[1] is ConstantExpression c)
+                    {
+                        if (c.Type != typeof(string))
+                            throw new NotSupportedException(
+                                "The parameter for QueryableExtensions.Search must be a constant string expression");
+                        apiCaller.Request.Search = (string?)c.Value;
+
+                        // We remove here the Search method call from the expression tree,
+                        // because the Take is done by the API.
+                        return source;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(
+                            $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} signature.");
+                    }
+                }
+                    break;
                 default:
                     return base.VisitMethodCall(node);
             }
