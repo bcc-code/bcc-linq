@@ -12,25 +12,6 @@ namespace BccCode.Linq.Tests;
 /// </summary>
 public class ApiClientMockupBase : IApiClient
 {
-    private class ResultList<T> : IResultList<T>
-    {
-        public ResultList(List<T> data, Dictionary<string, object>? meta)
-        {
-            Data = data;
-            Meta = new Metadata(meta);
-        }
-
-        public List<T> Data { get; }
-        public IMetadata Meta { get; }
-
-        #region IResultList<T>
-
-        IReadOnlyList<T> IResultList<T>.Data => Data;
-        IMetadata IMeta.Meta => Meta;
-
-        #endregion
-    }
-
     private readonly Dictionary<Type, IList> _inMemoryData = new();
 
     public string? LastEndpoint { get; set; }
@@ -61,7 +42,7 @@ public class ApiClientMockupBase : IApiClient
         var resultType = typeof(TResult);
 
         Debug.Assert(resultType.IsGenericType);
-        if (resultType.GetGenericTypeDefinition() == typeof(IResultList<>))
+        if (resultType.GetGenericTypeDefinition() == typeof(ResultList<>))
         {
             var type = resultType.GenericTypeArguments[0];
             if (_inMemoryData.TryGetValue(type, out var inMemory))
