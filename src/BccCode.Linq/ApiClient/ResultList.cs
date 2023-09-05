@@ -6,62 +6,10 @@ using Newtonsoft.Json;
 namespace BccCode.ApiClient;
 
 [DataContract(Name = "ResultList")]
-public abstract class ResultList
-{
-    protected ResultList(Metadata? meta = null)
-    {
-    }
-
-    /// <summary>
-    /// Gets or Sets Meta
-    /// </summary>
-    [DataMember(Name = "meta", EmitDefaultValue = false)]
-    public Metadata? Meta { get; set; }
-
-    [JsonIgnore]
-    public IEnumerable<object>? Data { get; set; }
-
-    public abstract void AddData(IEnumerable? data);
-
-    [Obsolete($"Use property {nameof(Data)} instead")]
-    public virtual IEnumerable<object> GetData() => Data ?? new List<object>();
-
-    [Obsolete($"Use property {nameof(Data)}.Count() instead")]
-    public virtual long GetCount() => Data?.LongCount() ?? 0;
-}
-
-
-public class ResultList<T> : ResultList, IResultList<T>, IEquatable<ResultList<T>>, IValidatableObject
+public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidatableObject
 {
     public ResultList()
     {
-    }
-
-    public ResultList(ResultList<T> resultList)
-    {
-        Data = resultList.Data;
-        Meta = resultList.Meta;
-    }
-
-    public ResultList(IResultList<T> resultList)
-    {
-        if (resultList.Data is List<T> dataList)
-        {
-            Data = dataList;
-        }
-        else
-        {
-            Data = new List<T>(resultList.Data);
-        }
-
-        if (resultList.Meta is Metadata metadata)
-        {
-            Meta = metadata;
-        }
-        else
-        {
-            Meta = new Metadata(resultList.Meta);
-        }
     }
 
     /// <summary>
@@ -81,7 +29,7 @@ public class ResultList<T> : ResultList, IResultList<T>, IEquatable<ResultList<T
     [DataMember(Name = "data", EmitDefaultValue = false)]
     public new List<T>? Data { get; set; }
 
-    public override void AddData(IEnumerable? data)
+    public void AddData(IEnumerable? data)
     {
         Data ??= new List<T>();
         if (data != null)
@@ -91,13 +39,13 @@ public class ResultList<T> : ResultList, IResultList<T>, IEquatable<ResultList<T
     }
 
     [Obsolete("Use property Data instead")]
-    public override IEnumerable<object> GetData()
+    public IEnumerable<object> GetData()
     {
         return (Data ?? new List<T>()).Cast<object>();
     }
 
     [Obsolete("Use property Data.Count() instead")]
-    public override long GetCount()
+    public long GetCount()
     {
         if (Data is List<T> listData)
         {
@@ -106,6 +54,12 @@ public class ResultList<T> : ResultList, IResultList<T>, IEquatable<ResultList<T
 
         return Data?.LongCount() ?? 0;
     }
+    
+    /// <summary>
+    /// Gets or Sets Meta
+    /// </summary>
+    [DataMember(Name = "meta", EmitDefaultValue = false)]
+    public Metadata? Meta { get; set; }
 
     /// <summary>
     /// Returns the JSON string presentation of the object
