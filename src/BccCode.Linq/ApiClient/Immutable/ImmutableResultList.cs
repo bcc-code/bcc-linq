@@ -3,7 +3,6 @@ using System.Runtime.Serialization;
 
 namespace BccCode.ApiClient.Immutable;
 
-[DataContract(Name = "ResultList")]
 public class ImmutableResultList<T> : IResultList<T>
 {
     public ImmutableResultList(IResultList<T> resultList)
@@ -15,9 +14,7 @@ public class ImmutableResultList<T> : IResultList<T>
             Meta = resultList.Meta.ToImmutableMetadata();
     }
 
-    [DataMember(Name = "data", EmitDefaultValue = false)]
     public IReadOnlyList<T>? Data { get; }
     
-    [DataMember(Name = "meta", EmitDefaultValue = false)]
     public IMetadata Meta { get; }
 }
