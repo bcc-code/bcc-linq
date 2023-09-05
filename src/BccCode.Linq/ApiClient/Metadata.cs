@@ -25,18 +25,44 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     {
         return _dict.GetEnumerator();
     }
-    
+
     /// <summary>
     /// Returns the page limit of the request.
     /// </summary>
-    public int Limit =>
-        this.TryGetValue("limit", out var limit) ? (int)limit : default;
+    public int Limit
+    {
+        get
+        {
+            if (!this.TryGetValue("limit", out var limit))
+                return default;
+
+            // We support only type `int` here, but JSON serializer writes it as long.
+            // Therefore we need this cast logic here. 
+            if (limit is long limitLong)
+                return (int)limitLong;
+
+            return ((int?)limit) ?? default;
+        }
+    }
 
     /// <summary>
     /// Returns how many rows have been skipped from the start.
     /// </summary>
-    public int Skipped =>
-        this.TryGetValue("skipped", out var skipped) ? (int)skipped : default;
+    public int Skipped
+    {
+        get
+        {
+            if (!this.TryGetValue("skipped", out var skipped))
+                return default;
+
+            // We support only type `int` here, but JSON serializer writes it as long.
+            // Therefore we need this cast logic here.
+            if (skipped is long skippedLong)
+                return (int)skippedLong;
+
+            return ((int?)skipped) ?? default;
+        }
+    }
 
     /// <summary>
     /// Returns the number of rows, passed by the metadata property <c>"total"</c>.
