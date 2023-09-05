@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using BccCode.ApiClient.Immutable;
 
 namespace BccCode.ApiClient;
 
@@ -55,23 +56,23 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
         Request = apiClient.ConstructApiRequest(_path);
     }
 
-    private ResultList<T>? RequestPage(int page)
+    private IResultList<T>? RequestPage(int page)
     {
         Request.Page = page;
-        return _apiClient.Get<ResultList<T>>(_path, Request);
+        return _apiClient.Get<IResultList<T>>(_path, Request);
     }
 
-    private Task<ResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = default)
+    private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = default)
     {
         Request.Page = page;
-        return _apiClient.GetAsync<ResultList<T>>(_path, Request, cancellationToken);
+        return _apiClient.GetAsync<IResultList<T>>(_path, Request, cancellationToken);
     }
 
-    public async Task<ResultList<T>?> FetchAsync(CancellationToken cancellationToken = default)
+    public async Task<IResultList<T>?> FetchAsync(CancellationToken cancellationToken = default)
     {
         var resultList = new ResultList<T>();
         resultList.Data = new List<T>();
-        ResultList<T>? pageData;
+        IResultList<T>? pageData;
         int page = 1;
         do
         {
@@ -81,7 +82,7 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
 
             if (page == 1)
             {
-                resultList.Meta = pageData.Meta;
+                resultList.Meta = new Metadata(pageData.Meta);
             }
 
             resultList.AddData(pageData.Data);
@@ -92,17 +93,18 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
         if (resultList.Data.Count == 0)
             return null;
 
-        return resultList;
+        return resultList.ToImmutableResultList();
     }
 
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        ResultList<T>? pageData;
+        IResultList<T>? pageData;
         int page = 1;
         do
         {
             pageData = await RequestPageAsync(page++, cancellationToken);
-            if (pageData == null)
+
+            if (pageData?.Data == null)
                 yield break;
 
             foreach (var row in pageData.Data)
@@ -114,12 +116,12 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
 
     public IEnumerator<T> GetEnumerator()
     {
-        ResultList<T>? pageData;
+        IResultList<T>? pageData;
         int page = 1;
         do
         {
             pageData = RequestPage(page++);
-            if (pageData == null)
+            if (pageData?.Data == null)
                 yield break;
 
             foreach (var row in pageData.Data)
