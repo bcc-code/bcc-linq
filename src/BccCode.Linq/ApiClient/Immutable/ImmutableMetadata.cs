@@ -4,7 +4,6 @@ using System.Runtime.Serialization;
 
 namespace BccCode.ApiClient.Immutable;
 
-[DataContract(Name = "Metadata")]
 public class ImmutableMetadata : IMetadata
 {
     private readonly ImmutableDictionary<string, object> _dict;
