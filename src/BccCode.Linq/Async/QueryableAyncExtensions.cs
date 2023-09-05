@@ -279,7 +279,7 @@ public static class QueryableAsyncExtensions
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
     /// <returns>
-    /// A <see cref="ResultList{T}"/> that contains elements from the input sequence with the metadata from the first page.
+    /// A <see cref="IResultList{T}"/> that contains elements from the input sequence with the metadata from the first page.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     /// <paramref name="source"/> is <c>null</c>.
@@ -287,7 +287,7 @@ public static class QueryableAsyncExtensions
     /// <exception cref="InvalidOperationException">
     /// The parsed query in <paramref name="source"/> cannot be casted to the internal class <see cref="ApiPagedEnumerable{T}"/>.
     /// </exception>
-    public static async Task<ResultList<TSource>?> FetchAsync<TSource>(this IQueryable<TSource> source,
+    public static async Task<IResultList<TSource>?> FetchAsync<TSource>(this IQueryable<TSource> source,
         CancellationToken cancellationToken = default)
     {
         if (source == null)

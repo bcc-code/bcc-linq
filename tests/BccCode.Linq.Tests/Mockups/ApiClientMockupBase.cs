@@ -42,7 +42,8 @@ public class ApiClientMockupBase : IApiClient
         var resultType = typeof(TResult);
 
         Debug.Assert(resultType.IsGenericType);
-        if (resultType.GetGenericTypeDefinition() == typeof(ResultList<>))
+        if (resultType.GetGenericTypeDefinition() == typeof(ResultList<>) ||
+            resultType.GetGenericTypeDefinition() == typeof(IResultList<>))
         {
             var type = resultType.GenericTypeArguments[0];
             if (_inMemoryData.TryGetValue(type, out var inMemory))
