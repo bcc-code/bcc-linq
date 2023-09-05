@@ -13,7 +13,7 @@ public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidat
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ResultList" /> class.
+    /// Initializes a new instance of the <see cref="ResultList{T}" /> class.
     /// </summary>
     /// <param name="data">data.</param>
     /// <param name="meta">meta.</param>
@@ -27,7 +27,7 @@ public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidat
     /// Gets or Sets Data
     /// </summary>
     [DataMember(Name = "data", EmitDefaultValue = false)]
-    public new List<T>? Data { get; set; }
+    public List<T>? Data { get; set; }
 
     public void AddData(IEnumerable? data)
     {
@@ -65,7 +65,7 @@ public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidat
     /// Returns the JSON string presentation of the object
     /// </summary>
     /// <returns>JSON string presentation of the object</returns>
-    public virtual string ToJson()
+    public string ToJson()
     {
         return JsonConvert.SerializeObject(this, Formatting.Indented);
     }
@@ -140,11 +140,7 @@ public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidat
 
     IReadOnlyList<T>? IResultList<T>.Data => Data;
 
-    #endregion
-
-    #region IMeta
-
-    IMetadata? IMeta.Meta => Meta;
+    IMetadata? IResultList<T>.Meta => Meta;
 
     #endregion
 }

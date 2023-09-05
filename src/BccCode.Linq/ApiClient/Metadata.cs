@@ -17,7 +17,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     {
         if (dict is Dictionary<string, object> dictTypeRight)
             _dict = dictTypeRight;
-        
+
         _dict = new Dictionary<string, object>(dict);
     }
     
@@ -114,7 +114,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
 
     public bool ContainsKey(string key)
     {
-        return _dict?.ContainsKey(key) ?? false;
+        return _dict.ContainsKey(key);
     }
 
     public bool Remove(string key)
@@ -122,16 +122,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
         return _dict.Remove(key);
     }
 
-    public bool TryGetValue(string key, out object? value)
-    {
-        if (_dict == null)
-        {
-            value = default;
-            return false;
-        }
-        
-        return _dict.TryGetValue(key, out value);
-    }
+    public bool TryGetValue(string key, out object value) => _dict.TryGetValue(key, out value);
 
     public object this[string key] => _dict[key] ?? throw new KeyNotFoundException();
 
@@ -254,7 +245,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return _dict?.GetEnumerator() ?? Enumerable.Empty<KeyValuePair<string, object>>().GetEnumerator();
+        return _dict.GetEnumerator();
     }
 
     #endregion
