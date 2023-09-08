@@ -1,4 +1,4 @@
-﻿namespace BccCode.ApiClient.Immutable;
+﻿namespace BccCode.Linq.ApiClient.Immutable;
 
 public static class ImmutableExtension
 {

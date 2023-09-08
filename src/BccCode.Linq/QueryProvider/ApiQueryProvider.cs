@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using BccCode.ApiClient;
+using BccCode.Linq.ApiClient;
 using BccCode.Linq.Async;
 
 namespace BccCode.Linq;
@@ -82,7 +82,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     /// This lock object is used to make sure this does not happen.
     /// </summary>
     private readonly object _queryBuilderLock = new();
-    private readonly IApiClient _apiClient;
+    private readonly IQueryableApiClient _apiClient;
 
     /// <summary>
     /// The URL path to the endpoint passed to the API client.
@@ -113,7 +113,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     /// The URL path passed to the API client on request.
     /// </param>
     /// <exception cref="ArgumentNullException"></exception>
-    public ApiQueryProvider(IApiClient apiClient, string path = "")
+    public ApiQueryProvider(IQueryableApiClient apiClient, string path = "")
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _path = path;
@@ -1464,7 +1464,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
     /// <summary>
     /// Transforms a constant expression to a <see cref="ApiQueryable{T}"/> class to a
-    /// constant instance of a <see cref="ApiPagedEnumerable{T}"/> class.
+    /// constant instance of a <see cref="QueryablePagedEnumerable{T}"/> class.
     /// </summary>
     /// <param name="node"></param>
     /// <returns></returns>
@@ -1475,7 +1475,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
         if (!_mapFromToApiCallers.TryGetValue(node, out var apiCaller))
         {
-            var apiPagedEnumerableType = typeof(ApiPagedEnumerable<>).MakeGenericType(type);
+            var apiPagedEnumerableType = typeof(QueryablePagedEnumerable<>).MakeGenericType(type);
             apiCaller = (IApiCaller)Activator.CreateInstance(apiPagedEnumerableType, _apiClient, _path);
 
             _mapFromToApiCallers.Add(node, apiCaller);

@@ -4,13 +4,13 @@ using System.Globalization;
 using System.Net;
 using System.Security.Policy;
 using System.Text;
-using BccCode.ApiClient;
+using BccCode.Linq.ApiClient;
 
 namespace BccCode.Linq.ApiClient
 {
-    public static class IApiRequestExtensions
+    public static class IQueryableParametersExtensions
     {
-        public static string ToQueryString(this IApiQueryParameters request)
+        public static string ToQueryString(this IQueryableParameters request)
         {            
             var urlParameters = new Dictionary<string, string>();
             if (request.Fields != null)

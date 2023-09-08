@@ -1,5 +1,5 @@
 ﻿using System.Linq.Expressions;
-using BccCode.ApiClient;
+using BccCode.Linq.ApiClient;
 
 namespace BccCode.Linq.Async;
 
@@ -285,7 +285,7 @@ public static class QueryableAsyncExtensions
     /// <paramref name="source"/> is <c>null</c>.
     /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// The parsed query in <paramref name="source"/> cannot be casted to the internal class <see cref="ApiPagedEnumerable{T}"/>.
+    /// The parsed query in <paramref name="source"/> cannot be casted to the internal class <see cref="QueryablePagedEnumerable{T}"/>.
     /// </exception>
     public static async Task<IResultList<TSource>?> FetchAsync<TSource>(this IQueryable<TSource> source,
         CancellationToken cancellationToken = default)
@@ -295,10 +295,10 @@ public static class QueryableAsyncExtensions
 
         var asyncEnumerable = source.AsAsyncEnumerable(cancellationToken);
 
-        if (asyncEnumerable is not ApiPagedEnumerable<TSource> apiPagedEnumerable)
+        if (asyncEnumerable is not QueryablePagedEnumerable<TSource> apiPagedEnumerable)
         {
             throw new InvalidOperationException(
-                $"The finalized Linq expression does not return a instance of {typeof(ApiPagedEnumerable<TSource>)}. This query cannot be used with method {nameof(FetchAsync)}.");
+                $"The finalized Linq expression does not return a instance of {typeof(QueryablePagedEnumerable<TSource>)}. This query cannot be used with method {nameof(FetchAsync)}.");
         }
 
         return await apiPagedEnumerable.FetchAsync(cancellationToken);

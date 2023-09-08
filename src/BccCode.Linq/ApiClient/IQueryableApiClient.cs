@@ -1,10 +1,10 @@
-﻿namespace BccCode.ApiClient;
+﻿namespace BccCode.Linq.ApiClient;
 
-public interface IApiClient
+public interface IQueryableApiClient
 {
     /// <summary>
     /// Creates an API request instance for a specific API endpoint
-    /// which must implement <see cref="IApiClient"/>. 
+    /// which must implement <see cref="IQueryableApiClient"/>. 
     /// </summary>
     /// <param name="path">
     /// URL path of the API endpoint.
@@ -12,7 +12,7 @@ public interface IApiClient
     /// <returns>
     /// A new API request model.
     /// </returns>
-    IApiQueryParameters ConstructApiRequest(string path);
+    IQueryableParameters ConstructApiRequest(string path);
 
     /// <summary>
     /// Returns a list of entries.
@@ -25,7 +25,7 @@ public interface IApiClient
     /// </param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    TResult? Get<TResult>(string path, IApiQueryParameters query)
+    TResult? Query<TResult>(string path, IQueryableParameters query)
         where TResult : class;
 
     /// <summary>
@@ -40,6 +40,6 @@ public interface IApiClient
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<T?> GetAsync<T>(string path, IApiQueryParameters query, CancellationToken cancellationToken = default)
+    Task<T?> QueryAsync<T>(string path, IQueryableParameters query, CancellationToken cancellationToken = default)
         where T : class;
 }

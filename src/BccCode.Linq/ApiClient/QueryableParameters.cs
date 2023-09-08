@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
-using BccCode.ApiClient;
+using BccCode.Linq.ApiClient;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BccCode.ApiClient
+namespace BccCode.Linq.ApiClient
 {
-    public class ApiQueryParameters : IApiQueryParameters
+    public class QueryableParameters : IQueryableParameters
     {
         
         /// <summary>

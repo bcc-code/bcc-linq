@@ -1,22 +1,22 @@
 ﻿using System.Collections;
-using BccCode.ApiClient.Immutable;
+using BccCode.Linq.ApiClient.Immutable;
 
-namespace BccCode.ApiClient;
+namespace BccCode.Linq.ApiClient;
 
 /// <summary>
-/// Internal. Makes it possible to easily getting the API request for a instance of <see cref="ApiPagedEnumerable{T}"/>
+/// Internal. Makes it possible to easily getting the API request for a instance of <see cref="QueryablePagedEnumerable{T}"/>
 /// without knowing the generic data type.
 /// </summary>
 internal interface IApiCaller : IEnumerable
 {
-    public IApiQueryParameters Request { get; }
+    public IQueryableParameters Request { get; }
 }
 
 /// <summary>
 /// A class returning data from the API by requesting data per page. 
 /// </summary>
 /// <typeparam name="T"></typeparam>
-internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApiCaller
+internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApiCaller
 {
     /// <summary>
     /// The maximum number of rows per page allowed by the API.
@@ -24,7 +24,7 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
     // ReSharper disable once MemberCanBePrivate.Global
     public const int MaxRowsPerPage = 1000;
 
-    private readonly IApiClient _apiClient;
+    private readonly IQueryableApiClient _apiClient;
     private readonly string _path;
     private int _rowsPerPage = 100;
 
@@ -47,9 +47,9 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
     /// <summary>
     /// The API request which will be passed to a single API call. 
     /// </summary>
-    public IApiQueryParameters Request { get; }
+    public IQueryableParameters Request { get; }
 
-    public ApiPagedEnumerable(IApiClient apiClient, string path)
+    public QueryablePagedEnumerable(IQueryableApiClient apiClient, string path)
     {
         _apiClient = apiClient;
         _path = path;
@@ -59,13 +59,13 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
     private IResultList<T>? RequestPage(int page)
     {
         Request.Page = page;
-        return _apiClient.Get<IResultList<T>>(_path, Request);
+        return _apiClient.Query<IResultList<T>>(_path, Request);
     }
 
     private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = default)
     {
         Request.Page = page;
-        return _apiClient.GetAsync<IResultList<T>>(_path, Request, cancellationToken);
+        return _apiClient.QueryAsync<IResultList<T>>(_path, Request, cancellationToken);
     }
 
     public async Task<IResultList<T>?> FetchAsync(CancellationToken cancellationToken = default)

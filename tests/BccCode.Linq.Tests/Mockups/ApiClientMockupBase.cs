@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
-using BccCode.ApiClient;
+using BccCode.Linq.ApiClient;
 
 namespace BccCode.Linq.Tests;
 
@@ -10,12 +10,12 @@ namespace BccCode.Linq.Tests;
 ///
 /// This class is build for testing the QueryProvider 
 /// </summary>
-public class ApiClientMockupBase : IApiClient
+public class ApiClientMockupBase : IQueryableApiClient
 {
     private readonly Dictionary<Type, IList> _inMemoryData = new();
 
     public string? LastEndpoint { get; set; }
-    public IApiQueryParameters? LastRequestQuery { get; set; }
+    public IQueryableParameters? LastRequestQuery { get; set; }
 
     public void RegisterData(Type type, IEnumerable enumerable)
     {
@@ -33,7 +33,7 @@ public class ApiClientMockupBase : IApiClient
 
     #region IApiClient
 
-    public TResult? Get<TResult>(string endpoint, IApiQueryParameters query)
+    public TResult? Query<TResult>(string endpoint, IQueryableParameters query)
         where TResult : class
     {
         LastEndpoint = endpoint;
@@ -60,18 +60,18 @@ public class ApiClientMockupBase : IApiClient
         throw new Exception("Invalid call of method No In-Memory data registered in ApiClientMockup");
     }
 
-    public Task<TResult?> GetAsync<TResult>(string endpoint, IApiQueryParameters request, CancellationToken cancellationToken = default)
+    public Task<TResult?> QueryAsync<TResult>(string endpoint, IQueryableParameters request, CancellationToken cancellationToken = default)
         where TResult : class
     {
         LastEndpoint = endpoint;
         LastRequestQuery = request;
 
         return Task.FromResult(
-            Get<TResult>(endpoint, request)
+            Query<TResult>(endpoint, request)
         );
     }
 
-    IApiQueryParameters IApiClient.ConstructApiRequest(string path)
+    IQueryableParameters IQueryableApiClient.ConstructApiRequest(string path)
     {
         // NOTE: The Mockup API does just use a single ApiRequest class.
         //       A real API client might use different request model classes for different endpoints.

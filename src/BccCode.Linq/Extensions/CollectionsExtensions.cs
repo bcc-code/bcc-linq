@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
-using BccCode.ApiClient;
+using BccCode.Linq.ApiClient;
 
 namespace BccCode.Linq.Extensions;
 
@@ -20,7 +20,7 @@ public static class CollectionsExtensions
         return source.Where(exp);
     }
 
-    public static IQueryable<T> ApplyApiRequest<T>(this IQueryable<T> source, IApiQueryParameters query,
+    public static IQueryable<T> ApplyApiRequest<T>(this IQueryable<T> source, IQueryableParameters query,
         int? defaultLimit = 100,
         string? defaultSort = null)
         where T : class

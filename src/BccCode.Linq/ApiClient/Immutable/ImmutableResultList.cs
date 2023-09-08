@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Runtime.Serialization;
 
-namespace BccCode.ApiClient.Immutable;
+namespace BccCode.Linq.ApiClient.Immutable;
 
 public class ImmutableResultList<T> : IResultList<T>
 {

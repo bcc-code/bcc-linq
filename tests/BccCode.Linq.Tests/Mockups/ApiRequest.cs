@@ -1,9 +1,9 @@
-﻿using BccCode.ApiClient;
+﻿using BccCode.Linq.ApiClient;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BccCode.Linq.Tests;
 
-internal class ApiRequest : IApiQueryParameters
+internal class ApiRequest : IQueryableParameters
 {
     [FromQuery(Name = "fields")]
     public string? Fields { get; set; }

@@ -1,6 +1,6 @@
-﻿namespace BccCode.ApiClient;
+﻿namespace BccCode.Linq.ApiClient;
 
-public interface IApiQueryParameters
+public interface IQueryableParameters
 {
     /// <summary>
     /// Choose the fields that are returned in the current dataset. This parameter supports dot notation to request

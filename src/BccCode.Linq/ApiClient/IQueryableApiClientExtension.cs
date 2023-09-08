@@ -1,8 +1,8 @@
 ﻿using BccCode.Linq;
 
-namespace BccCode.ApiClient;
+namespace BccCode.Linq.ApiClient;
 
-public static class ApiClientExtension
+public static class IQueryableApiClientExtension
 {
     // TODO this design leads to a lot of 'Provider' objects in memory. We should maybe redesign this so that the provider is instantiated once as long as the API client lives.
 
@@ -17,7 +17,7 @@ public static class ApiClientExtension
     /// </param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static IQueryable<T> GetQueryable<T>(this IApiClient apiClient, string path)
+    public static IQueryable<T> GetQueryable<T>(this IQueryableApiClient apiClient, string path)
     {
         var provider = new ApiQueryProvider(apiClient, path);
         return new ApiQueryable<T>(provider);

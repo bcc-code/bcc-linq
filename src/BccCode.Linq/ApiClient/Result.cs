@@ -14,7 +14,7 @@ using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
 
-namespace BccCode.ApiClient;
+namespace BccCode.Linq.ApiClient;
 
 public abstract class Result
 {

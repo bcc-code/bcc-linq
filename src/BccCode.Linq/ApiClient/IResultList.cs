@@ -1,4 +1,4 @@
-﻿namespace BccCode.ApiClient;
+﻿namespace BccCode.Linq.ApiClient;
 
 public interface IResultList<out T>
 {

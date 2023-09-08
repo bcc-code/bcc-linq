@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace BccCode.ApiClient;
+namespace BccCode.Linq.ApiClient;
 
 [DataContract(Name = "ResultList")]
 public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidatableObject

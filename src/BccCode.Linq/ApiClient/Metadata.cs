@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Runtime.Serialization;
 
-namespace BccCode.ApiClient;
+namespace BccCode.Linq.ApiClient;
 
 [DataContract(Name = "Metadata")]
 public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
