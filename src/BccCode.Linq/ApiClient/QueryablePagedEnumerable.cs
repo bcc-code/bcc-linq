@@ -94,6 +94,7 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
             if (hasLimit && !usePaging && initialLimit!.Value < (totalRequested + pageSize))
             {
                 pageSize = initialLimit!.Value - totalRequested;
+                QueryParameters.Limit = pageSize;
             }
             pageData = await RequestPageAsync(cancellationToken);            
             if (pageData == null)
@@ -146,6 +147,7 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
             if (hasLimit && !usePaging && initialLimit!.Value < (totalRequested + pageSize))
             {
                 pageSize = initialLimit!.Value - totalRequested;
+                QueryParameters.Limit = pageSize;
             }
             pageData = await RequestPageAsync(cancellationToken);
             if (pageData?.Data == null)
@@ -190,6 +192,7 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
             if (hasLimit && !usePaging && initialLimit!.Value < (totalRequested + pageSize))
             {
                 pageSize = initialLimit!.Value - totalRequested;
+                QueryParameters.Limit = pageSize;
             }
             pageData = RequestPage();
             if (pageData?.Data == null)
