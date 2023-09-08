@@ -89,14 +89,14 @@ public class ResultListSerializationTest
   }
 }");
         Assert.NotNull(resultList);
-        Assert.NotNull(resultList.Data);
-        Assert.Empty(resultList.Data);
-        Assert.Equal(0, resultList.GetCount());
-        Assert.Equal(0, resultList.GetData().Count());
-        Assert.NotNull(resultList.Meta);
-        Assert.Equal((long)0, resultList.Meta["total"]);
-        Assert.Equal(0, resultList.Meta.Total);
-        Assert.Equal(0, resultList.Meta.FilterCount);
+        Assert.NotNull(resultList?.Data);
+        Assert.Empty(resultList?.Data);
+        Assert.Equal(0, resultList?.Data?.Count);
+        Assert.Equal(0, resultList?.GetData()?.Count());
+        Assert.NotNull(resultList?.Meta);
+        Assert.Equal((long)0, resultList?.Meta["total"]);
+        Assert.Equal(0, resultList?.Meta?.Total);
+        Assert.Equal(0, resultList?.Meta?.FilterCount);
     }
     
     [Fact]

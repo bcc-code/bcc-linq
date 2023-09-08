@@ -38,22 +38,11 @@ public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidat
         }
     }
 
-    [Obsolete("Use property Data instead")]
     public IEnumerable<object> GetData()
     {
         return (Data ?? new List<T>()).Cast<object>();
     }
 
-    [Obsolete("Use property Data.Count() instead")]
-    public long GetCount()
-    {
-        if (Data is List<T> listData)
-        {
-            return listData.Count;
-        }
-
-        return Data?.LongCount() ?? 0;
-    }
     
     /// <summary>
     /// Gets or Sets Meta
