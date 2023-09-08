@@ -9,7 +9,7 @@ namespace BccCode.Linq.ApiClient;
 /// </summary>
 internal interface IApiCaller : IEnumerable
 {
-    public IQueryableParameters Request { get; }
+    public IQueryableParameters QueryParameters { get; }
 }
 
 /// <summary>
@@ -47,25 +47,26 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
     /// <summary>
     /// The API request which will be passed to a single API call. 
     /// </summary>
-    public IQueryableParameters Request { get; }
+    public IQueryableParameters QueryParameters { get; }
 
-    public QueryablePagedEnumerable(IQueryableApiClient apiClient, string path)
+    public QueryablePagedEnumerable(IQueryableApiClient apiClient, string path, Action<IQueryableParameters>? parametersCallback)
     {
         _apiClient = apiClient;
         _path = path;
-        Request = apiClient.ConstructQueryableParameters(_path);
+        QueryParameters = apiClient.ConstructQueryableParameters(_path);
+        parametersCallback?.Invoke(QueryParameters);        
     }
 
     private IResultList<T>? RequestPage(int page)
     {
-        Request.Page = page;
-        return _apiClient.Query<IResultList<T>>(_path, Request);
+        QueryParameters.Page = page;
+        return _apiClient.Query<IResultList<T>>(_path, QueryParameters);
     }
 
     private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = default)
     {
-        Request.Page = page;
-        return _apiClient.QueryAsync<IResultList<T>>(_path, Request, cancellationToken);
+        QueryParameters.Page = page;
+        return _apiClient.QueryAsync<IResultList<T>>(_path, QueryParameters, cancellationToken);
     }
 
     public async Task<IResultList<T>?> FetchAsync(CancellationToken cancellationToken = default)
@@ -92,6 +93,7 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
 
         if (resultList.Data.Count == 0)
             return null;
+
 
         return resultList.ToImmutableResultList();
     }

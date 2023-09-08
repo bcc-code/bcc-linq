@@ -88,6 +88,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     /// The URL path to the endpoint passed to the API client.
     /// </summary>
     private readonly string _path;
+    private readonly Action<IQueryableParameters>? _parametersCallback;
 
     /// <summary>
     /// An internal mode used during expression visiting to know what kind of action should be taken.
@@ -113,10 +114,11 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     /// The URL path passed to the API client on request.
     /// </param>
     /// <exception cref="ArgumentNullException"></exception>
-    public ApiQueryProvider(IQueryableApiClient apiClient, string path = "")
+    public ApiQueryProvider(IQueryableApiClient apiClient, string path = "", Action<IQueryableParameters>? parametersCallback = null)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _path = path;
+        _parametersCallback = parametersCallback;
     }
 
     #region IQueryProvider
@@ -160,15 +162,15 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
             // finalize IApiRequest ...
             foreach (var apiCaller in _mapFromToApiCallers.Values)
             {
-                if (apiCaller.Request.Fields == null)
+                if (apiCaller.QueryParameters.Fields == null)
                 {
                     // the linq 'Select' option has not been used --> set * to get all fields
-                    apiCaller.Request.Fields = "*";
+                    apiCaller.QueryParameters.Fields = "*";
                 }
-                else if (apiCaller.Request.Fields.Split(',').All(p => p.EndsWith(".*")))
+                else if (apiCaller.QueryParameters.Fields.Split(',').All(p => p.EndsWith(".*")))
                 {
                     // the linq 'Select' option has not been used, but the Include option --> set * to get all fields of the main entity
-                    apiCaller.Request.Fields = $"*,{apiCaller.Request.Fields}";
+                    apiCaller.QueryParameters.Fields = $"*,{apiCaller.QueryParameters.Fields}";
                 }
             }
                 
@@ -290,9 +292,9 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         
         _visitMode = VisitLinqLambdaMode.Undefined;
         _activeParameters.Remove(node.Parameters[0]);
-        apiCaller.Request.Filter = string.IsNullOrEmpty(apiCaller.Request.Filter)
+        apiCaller.QueryParameters.Filter = string.IsNullOrEmpty(apiCaller.QueryParameters.Filter)
             ? _where.ToString()
-            : $"{{ \"_and\" : [ {apiCaller.Request.Filter} , {_where} ] }}";
+            : $"{{ \"_and\" : [ {apiCaller.QueryParameters.Filter} , {_where} ] }}";
         _where = null;
     }
     
@@ -391,9 +393,9 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
                             if (initializedStringBuilder)
                             {
-                                apiCaller.Request.Fields = string.IsNullOrEmpty(apiCaller.Request.Fields)
+                                apiCaller.QueryParameters.Fields = string.IsNullOrEmpty(apiCaller.QueryParameters.Fields)
                                     ? _selectField.ToString()
-                                    : $"{apiCaller.Request.Fields},{_selectField}";
+                                    : $"{apiCaller.QueryParameters.Fields},{_selectField}";
 
                                 _selectField = null;
                             }
@@ -413,17 +415,17 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     case VisitLinqLambdaMode.OrderBy:
                         {
                             var memberPath = ApiMemberPath();
-                            apiCaller.Request.Sort = string.IsNullOrEmpty(apiCaller.Request.Sort)
+                            apiCaller.QueryParameters.Sort = string.IsNullOrEmpty(apiCaller.QueryParameters.Sort)
                                 ? memberPath
-                                : $"{apiCaller.Request.Sort},{memberPath}";
+                                : $"{apiCaller.QueryParameters.Sort},{memberPath}";
                             return Expression.Empty();
                         }
                     case VisitLinqLambdaMode.OrderByDescending:
                         {
                             var memberPath = ApiMemberPath();
-                            apiCaller.Request.Sort = string.IsNullOrEmpty(apiCaller.Request.Sort)
+                            apiCaller.QueryParameters.Sort = string.IsNullOrEmpty(apiCaller.QueryParameters.Sort)
                                 ? $"-{memberPath}"
-                                : $"{apiCaller.Request.Sort},-{memberPath}";
+                                : $"{apiCaller.QueryParameters.Sort},-{memberPath}";
                             return Expression.Empty();
                         }
                     case VisitLinqLambdaMode.Include:
@@ -872,7 +874,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     }
                     else
                     {
-                        apiCaller.Request.Limit = 1;
+                        apiCaller.QueryParameters.Limit = 1;
                         
                         if (node.Arguments.Count == 1)
                         {
@@ -926,8 +928,8 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         if (c.Type != typeof(int))
                             throw new NotSupportedException(
                                 "The parameter for Queryable.ElementAt/ElementAtOrDefault must be a constant integer expression");
-                        apiCaller.Request.Offset = (int)c.Value;
-                        apiCaller.Request.Limit = 1;
+                        apiCaller.QueryParameters.Offset = (int)c.Value;
+                        apiCaller.QueryParameters.Limit = 1;
 
                         // We remove here the Take method call from the expression tree,
                         // because the Take is done by the API.
@@ -957,8 +959,8 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         if (c.Type != typeof(int))
                             throw new NotSupportedException(
                                 "The parameter for Queryable.ElementAt/ElementAtOrDefault must be a constant integer expression");
-                        apiCaller.Request.Offset = (int)c.Value;
-                        apiCaller.Request.Limit = 1;
+                        apiCaller.QueryParameters.Offset = (int)c.Value;
+                        apiCaller.QueryParameters.Limit = 1;
 
                         // We remove here the Take method call from the expression tree,
                         // because the Take is done by the API.
@@ -985,7 +987,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     }
                     else if (node.Arguments.Count == 1)
                     {
-                        apiCaller.Request.Limit = 1;
+                        apiCaller.QueryParameters.Limit = 1;
 
                         // We remove here the Take method call from the expression tree,
                         // because the Take is done by the API.
@@ -1012,7 +1014,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     }
                     else if (node.Arguments.Count == 1)
                     {
-                        apiCaller.Request.Limit = 1;
+                        apiCaller.QueryParameters.Limit = 1;
 
                         // We remove here the Take method call from the expression tree,
                         // because the Take is done by the API.
@@ -1079,7 +1081,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                                 // Lambda: row => row
                                 if (l.Body is ParameterExpression p && p == l.Parameters[0])
                                 {
-                                    apiCaller.Request.Fields = "*";
+                                    apiCaller.QueryParameters.Fields = "*";
                                 }
                                 else
                                 {
@@ -1146,7 +1148,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     }
                     else if (node.Arguments.Count == 1)
                     {
-                        apiCaller.Request.Limit = 2;
+                        apiCaller.QueryParameters.Limit = 2;
 
                         // We remove here the Take method call from the expression tree,
                         // because the Take is done by the API.
@@ -1173,7 +1175,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     }
                     else if (node.Arguments.Count == 1)
                     {
-                        apiCaller.Request.Limit = 2;
+                        apiCaller.QueryParameters.Limit = 2;
 
                         // We remove here the Take method call from the expression tree,
                         // because the Take is done by the API.
@@ -1268,7 +1270,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                                 nameof(Queryable.Max) => "max",
                                 _ => throw new ArgumentOutOfRangeException()
                             };
-                            apiCaller.Request.Aggregate = function;
+                            apiCaller.QueryParameters.Aggregate = function;
 
                             // We remove here the aggregation method call from the expression tree,
                             // because the aggregation is done by the API.
@@ -1295,7 +1297,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             if (c.Type != typeof(int))
                                 throw new NotSupportedException(
                                     "The parameter for Queryable.Take must be a constant integer expression");
-                            apiCaller.Request.Limit = (int)c.Value;
+                            apiCaller.QueryParameters.Limit = (int)c.Value;
 
                             // We remove here the Take method call from the expression tree,
                             // because the Take is done by the API.
@@ -1321,7 +1323,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             if (c.Type != typeof(int))
                                 throw new NotSupportedException(
                                     "The parameter for Queryable.Skip must be a constant integer expression");
-                            apiCaller.Request.Offset = (int)c.Value;
+                            apiCaller.QueryParameters.Offset = (int)c.Value;
 
                             // We remove here the Skip method call from the expression tree,
                             // because the Take is done by the API.
@@ -1363,9 +1365,9 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
                             Visit(l.Body);
 
-                            apiCaller.Request.Fields = string.IsNullOrEmpty(apiCaller.Request.Fields)
+                            apiCaller.QueryParameters.Fields = string.IsNullOrEmpty(apiCaller.QueryParameters.Fields)
                                 ? $"{_includeChain}.*"
-                                : $"{apiCaller.Request.Fields},{_includeChain}.*";
+                                : $"{apiCaller.QueryParameters.Fields},{_includeChain}.*";
 
                             _visitMode = VisitLinqLambdaMode.Undefined;
                             _activeParameters.Remove(l.Parameters[0]);
@@ -1403,9 +1405,9 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
                             Visit(l.Body);
 
-                            apiCaller.Request.Fields = string.IsNullOrEmpty(apiCaller.Request.Fields)
+                            apiCaller.QueryParameters.Fields = string.IsNullOrEmpty(apiCaller.QueryParameters.Fields)
                                 ? $"{_includeChain}.*"
-                                : $"{apiCaller.Request.Fields},{_includeChain}.*";
+                                : $"{apiCaller.QueryParameters.Fields},{_includeChain}.*";
 
                             _visitMode = VisitLinqLambdaMode.Undefined;
                             _activeParameters.Remove(l.Parameters[0]);
@@ -1437,7 +1439,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         if (c.Type != typeof(string))
                             throw new NotSupportedException(
                                 "The parameter for QueryableExtensions.Search must be a constant string expression");
-                        apiCaller.Request.Search = (string?)c.Value;
+                        apiCaller.QueryParameters.Search = (string?)c.Value;
 
                         // We remove here the Search method call from the expression tree,
                         // because the Take is done by the API.
@@ -1476,7 +1478,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         if (!_mapFromToApiCallers.TryGetValue(node, out var apiCaller))
         {
             var apiPagedEnumerableType = typeof(QueryablePagedEnumerable<>).MakeGenericType(type);
-            apiCaller = (IApiCaller)Activator.CreateInstance(apiPagedEnumerableType, _apiClient, _path);
+            apiCaller = (IApiCaller)Activator.CreateInstance(apiPagedEnumerableType, _apiClient, _path, _parametersCallback);
 
             _mapFromToApiCallers.Add(node, apiCaller);
         }
