@@ -12,7 +12,7 @@ public interface IQueryableApiClient
     /// <returns>
     /// A new API request model.
     /// </returns>
-    IQueryableParameters ConstructApiRequest(string path);
+    IQueryableParameters ConstructQueryableParameters(string path);
 
     /// <summary>
     /// Returns a list of entries.

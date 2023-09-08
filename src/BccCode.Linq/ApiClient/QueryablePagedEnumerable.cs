@@ -53,7 +53,7 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
     {
         _apiClient = apiClient;
         _path = path;
-        Request = apiClient.ConstructApiRequest(_path);
+        Request = apiClient.ConstructQueryableParameters(_path);
     }
 
     private IResultList<T>? RequestPage(int page)

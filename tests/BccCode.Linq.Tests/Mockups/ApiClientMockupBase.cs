@@ -71,7 +71,7 @@ public class ApiClientMockupBase : IQueryableApiClient
         );
     }
 
-    IQueryableParameters IQueryableApiClient.ConstructApiRequest(string path)
+    IQueryableParameters IQueryableApiClient.ConstructQueryableParameters(string path)
     {
         // NOTE: The Mockup API does just use a single ApiRequest class.
         //       A real API client might use different request model classes for different endpoints.
