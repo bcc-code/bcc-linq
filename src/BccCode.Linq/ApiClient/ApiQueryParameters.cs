@@ -5,9 +5,9 @@ using System.Xml.Linq;
 using BccCode.ApiClient;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BccCode.Linq.ApiClient
+namespace BccCode.ApiClient
 {
-    public class ApiRequest : IApiRequest
+    public class ApiQueryParameters : IApiQueryParameters
     {
         
         /// <summary>

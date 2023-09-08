@@ -15,7 +15,7 @@ public class ApiClientMockupBase : IApiClient
     private readonly Dictionary<Type, IList> _inMemoryData = new();
 
     public string? LastEndpoint { get; set; }
-    public IApiRequest? LastRequest { get; set; }
+    public IApiQueryParameters? LastRequestQuery { get; set; }
 
     public void RegisterData(Type type, IEnumerable enumerable)
     {
@@ -33,11 +33,11 @@ public class ApiClientMockupBase : IApiClient
 
     #region IApiClient
 
-    public TResult? Get<TResult>(string endpoint, IApiRequest request)
+    public TResult? Get<TResult>(string endpoint, IApiQueryParameters query)
         where TResult : class
     {
         LastEndpoint = endpoint;
-        LastRequest = request;
+        LastRequestQuery = query;
 
         var resultType = typeof(TResult);
 
@@ -60,18 +60,18 @@ public class ApiClientMockupBase : IApiClient
         throw new Exception("Invalid call of method No In-Memory data registered in ApiClientMockup");
     }
 
-    public Task<TResult?> GetAsync<TResult>(string endpoint, IApiRequest request, CancellationToken cancellationToken = default)
+    public Task<TResult?> GetAsync<TResult>(string endpoint, IApiQueryParameters request, CancellationToken cancellationToken = default)
         where TResult : class
     {
         LastEndpoint = endpoint;
-        LastRequest = request;
+        LastRequestQuery = request;
 
         return Task.FromResult(
             Get<TResult>(endpoint, request)
         );
     }
 
-    IApiRequest IApiClient.ConstructApiRequest(string path)
+    IApiQueryParameters IApiClient.ConstructApiRequest(string path)
     {
         // NOTE: The Mockup API does just use a single ApiRequest class.
         //       A real API client might use different request model classes for different endpoints.

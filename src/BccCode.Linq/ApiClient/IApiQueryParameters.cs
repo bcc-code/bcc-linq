@@ -1,6 +1,6 @@
 ﻿namespace BccCode.ApiClient;
 
-public interface IApiRequest
+public interface IApiQueryParameters
 {
     /// <summary>
     /// Choose the fields that are returned in the current dataset. This parameter supports dot notation to request

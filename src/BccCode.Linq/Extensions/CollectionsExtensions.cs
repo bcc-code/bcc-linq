@@ -20,19 +20,19 @@ public static class CollectionsExtensions
         return source.Where(exp);
     }
 
-    public static IQueryable<T> ApplyApiRequest<T>(this IQueryable<T> source, IApiRequest request,
+    public static IQueryable<T> ApplyApiRequest<T>(this IQueryable<T> source, IApiQueryParameters query,
         int? defaultLimit = 100,
         string? defaultSort = null)
         where T : class
     {
         var type = typeof(T);
         
-        if (request.Filter != null)
+        if (query.Filter != null)
         {
-            source = source.Where(FilterToLambdaParser.Parse(new Filter<T>(request.Filter)));
+            source = source.Where(FilterToLambdaParser.Parse(new Filter<T>(query.Filter)));
         }
 
-        var sort = request.Sort ?? defaultSort;
+        var sort = query.Sort ?? defaultSort;
         if (sort != null)
         {
             var sortByFields = sort.Split(',');
@@ -140,28 +140,28 @@ public static class CollectionsExtensions
                 source = orderedSource;
         }
 
-        if (request.Offset != null && request.Offset != 0)
+        if (query.Offset != null && query.Offset != 0)
         {
-            if (request.Offset < 0)
+            if (query.Offset < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(request) + "." + nameof(request.Offset), "The offset must be equal or greater than zero.");
+                throw new ArgumentOutOfRangeException(nameof(query) + "." + nameof(query.Offset), "The offset must be equal or greater than zero.");
             }
 
-            if (request.Page != null && request.Page != 1 /* ignore the default value for page */)
+            if (query.Page != null && query.Page != 1 /* ignore the default value for page */)
             {
                 throw new NotSupportedException("Page and Offset cannot be used at the same time in a API request.");
             }
             
-            source = source.Skip(request.Offset.Value);
+            source = source.Skip(query.Offset.Value);
         }
 
-        var limit = request.Limit ?? defaultLimit;
+        var limit = query.Limit ?? defaultLimit;
         
-        if (request.Page != null)
+        if (query.Page != null)
         {
-            if (request.Page < 1)
+            if (query.Page < 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(request) + "." + nameof(request.Offset), "The page must be equal or greater than 1.");
+                throw new ArgumentOutOfRangeException(nameof(query) + "." + nameof(query.Offset), "The page must be equal or greater than 1.");
             }
 
             if (limit == null)
@@ -169,7 +169,7 @@ public static class CollectionsExtensions
                 throw new NotSupportedException("No limit defined. You cannot use page without a limit");
             }
 
-            source = source.Skip((request.Page.Value - 1) * limit.Value);
+            source = source.Skip((query.Page.Value - 1) * limit.Value);
         }
 
         if (limit != null)

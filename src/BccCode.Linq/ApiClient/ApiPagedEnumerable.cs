@@ -9,7 +9,7 @@ namespace BccCode.ApiClient;
 /// </summary>
 internal interface IApiCaller : IEnumerable
 {
-    public IApiRequest Request { get; }
+    public IApiQueryParameters Request { get; }
 }
 
 /// <summary>
@@ -47,7 +47,7 @@ internal class ApiPagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApi
     /// <summary>
     /// The API request which will be passed to a single API call. 
     /// </summary>
-    public IApiRequest Request { get; }
+    public IApiQueryParameters Request { get; }
 
     public ApiPagedEnumerable(IApiClient apiClient, string path)
     {

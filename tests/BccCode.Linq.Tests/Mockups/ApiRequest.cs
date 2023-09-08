@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BccCode.Linq.Tests;
 
-internal class ApiRequest : IApiRequest
+internal class ApiRequest : IApiQueryParameters
 {
     [FromQuery(Name = "fields")]
     public string? Fields { get; set; }

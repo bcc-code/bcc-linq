@@ -14,11 +14,11 @@ public class LinqQueryProviderTests
 
         var anyResult = api.Persons.Any();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.True(anyResult);
     }
     
@@ -29,11 +29,11 @@ public class LinqQueryProviderTests
 
         var anyResult = api.Persons.Any(p => p.Age > 26);
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequest?.Filter);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequestQuery?.Filter);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.True(anyResult);
     }
     
@@ -44,11 +44,11 @@ public class LinqQueryProviderTests
 
         var anyResult = await api.Persons.AnyAsync();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.True(anyResult);
     }
     
@@ -59,11 +59,11 @@ public class LinqQueryProviderTests
 
         var anyResult = await api.Persons.AnyAsync(p => p.Age > 26);
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequest?.Filter);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequestQuery?.Filter);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.True(anyResult);
     }
 
@@ -78,10 +78,10 @@ public class LinqQueryProviderTests
 
         var persons = api.Persons.ElementAt(2);
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Equal(2, api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Equal(2, api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
         //       from the expression tree, the result will be still the first element of the mockup data.
         //Assert.Equal("Chelsey Logan", persons.Name);
@@ -95,10 +95,10 @@ public class LinqQueryProviderTests
 
         var persons = await api.Persons.ElementAtAsync(2);
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Equal(2, api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Equal(2, api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
         //       from the expression tree, the result will be still the first element of the mockup data.
         //Assert.Equal("Chelsey Logan", persons.Name);
@@ -116,10 +116,10 @@ public class LinqQueryProviderTests
 
         var persons = api.Persons.ElementAtOrDefault(2);
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Equal(2, api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Equal(2, api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
         //       from the expression tree, the result will be still the first element of the mockup data.
         //Assert.Equal("Chelsey Logan", persons.Name);
@@ -133,10 +133,10 @@ public class LinqQueryProviderTests
 
         var persons = await api.Persons.ElementAtOrDefaultAsync(2);
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Equal(2, api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Equal(2, api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
         //       from the expression tree, the result will be still the first element of the mockup data.
         //Assert.Equal("Chelsey Logan", persons.Name);
@@ -150,10 +150,10 @@ public class LinqQueryProviderTests
 
         var persons = api.Persons.ElementAtOrDefault(int.MaxValue);
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Equal(int.MaxValue, api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Equal(int.MaxValue, api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
         //       from the expression tree, the result will be still the first element of the mockup data.
         //Assert.Equal(null, persons.Name);
@@ -167,10 +167,10 @@ public class LinqQueryProviderTests
 
         var testClass = api.Empty.ElementAtOrDefault(0);
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Equal(0, api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Equal(0, api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.Null(testClass);
     }
     
@@ -181,10 +181,10 @@ public class LinqQueryProviderTests
 
         var persons = await api.Persons.ElementAtOrDefaultAsync(int.MaxValue);
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Equal(int.MaxValue, api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Equal(int.MaxValue, api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret ElementAt clauses. Since we remove the ElementAt clause
         //       from the expression tree, the result will be still the first element of the mockup data.
         //Assert.Equal(null, persons.Name);
@@ -202,10 +202,10 @@ public class LinqQueryProviderTests
 
         var persons = api.Persons.First();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.Equal("Archibald Mcbride", persons.Name);
     }
     
@@ -216,10 +216,10 @@ public class LinqQueryProviderTests
 
         var persons = await api.Persons.FirstAsync();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.Equal("Archibald Mcbride", persons.Name);
     }
 
@@ -234,10 +234,10 @@ public class LinqQueryProviderTests
 
         var persons = api.Persons.FirstOrDefault();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.Equal("Archibald Mcbride", persons?.Name);
     }
     
@@ -248,10 +248,10 @@ public class LinqQueryProviderTests
 
         var testClass = api.Empty.FirstOrDefault();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.Null(testClass);
     }
     
@@ -262,10 +262,10 @@ public class LinqQueryProviderTests
 
         var persons = await api.Persons.FirstOrDefaultAsync();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.Equal("Archibald Mcbride", persons?.Name);
     }
     
@@ -276,10 +276,10 @@ public class LinqQueryProviderTests
 
         var testClass = await api.Empty.FirstOrDefaultAsync();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.Null(testClass);
     }
 
@@ -296,11 +296,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
-        Assert.Equal("Chuck Norris", api.LastRequest?.Search);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
+        Assert.Equal("Chuck Norris", api.LastRequestQuery?.Search);
         Assert.Equal(5, persons.Count);
     }
     
@@ -318,11 +318,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
-        Assert.Equal("Chuck Norris", api.LastRequest?.Search);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
+        Assert.Equal("Chuck Norris", api.LastRequestQuery?.Search);
         Assert.Equal(5, persons.Count);
     }
 
@@ -341,10 +341,10 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -359,10 +359,10 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("name", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("name", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -377,10 +377,10 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("age", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("age", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -398,10 +398,10 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("name", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("name", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -419,10 +419,10 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("car,car.manufacturer", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("car,car.manufacturer", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -441,10 +441,10 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("name,age", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("name,age", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -463,10 +463,10 @@ public class LinqQueryProviderTests
             var persons = api.Persons.Single();
         });
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(2, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(2, api.LastRequestQuery?.Limit);
     }
     
     [Fact]
@@ -480,10 +480,10 @@ public class LinqQueryProviderTests
             var persons = await api.Persons.SingleAsync();
         });
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(2, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(2, api.LastRequestQuery?.Limit);
     }
 
     #endregion
@@ -500,10 +500,10 @@ public class LinqQueryProviderTests
             var persons = api.Persons.SingleOrDefault();
         });
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(2, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(2, api.LastRequestQuery?.Limit);
     }
     
     [Fact]
@@ -513,10 +513,10 @@ public class LinqQueryProviderTests
 
         var testClass = api.Empty.SingleOrDefault();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(2, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(2, api.LastRequestQuery?.Limit);
         Assert.Null(testClass);
     }
     
@@ -531,10 +531,10 @@ public class LinqQueryProviderTests
             var persons = await api.Persons.SingleOrDefaultAsync();
         });
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(2, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(2, api.LastRequestQuery?.Limit);
     }
     
     [Fact]
@@ -544,10 +544,10 @@ public class LinqQueryProviderTests
 
         var testClass = await api.Empty.SingleOrDefaultAsync();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(2, api.LastRequest?.Limit);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(2, api.LastRequestQuery?.Limit);
         Assert.Null(testClass);
     }
     
@@ -570,11 +570,11 @@ public class LinqQueryProviderTests
 
         var manufacturer = query.FirstOrDefault();
         Assert.Equal("manufacturers", api.LastEndpoint);
-        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.NotNull(manufacturer);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the first row of the mockup data.
@@ -595,11 +595,11 @@ public class LinqQueryProviderTests
 
         var manufacturer = query.FirstOrDefault();
         Assert.Equal("manufacturers", api.LastEndpoint);
-        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.NotNull(manufacturer);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the first row of the mockup data.
@@ -622,11 +622,11 @@ public class LinqQueryProviderTests
 
         var manufacturer = query.FirstOrDefault();
         Assert.Equal("manufacturers", api.LastEndpoint);
-        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.NotNull(manufacturer);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the first row of the mockup data.
@@ -648,11 +648,11 @@ public class LinqQueryProviderTests
 
         var manufacturer = query.FirstOrDefault();
         Assert.Equal("manufacturers", api.LastEndpoint);
-        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(1, api.LastRequest?.Limit);
+        Assert.Equal("{\"uid\": {\"_eq\": \"16b41e40-ee3c-4837-b9a9-57b76c7d1d9d\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(1, api.LastRequestQuery?.Limit);
         Assert.NotNull(manufacturer);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the first row of the mockup data.
@@ -671,11 +671,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"strProp\": {\"_eq\": null}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"strProp\": {\"_eq\": null}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -691,11 +691,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"strProp\": {\"_eq\": \"\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"strProp\": {\"_eq\": \"\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -711,11 +711,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"numberIntergerProp\": {\"_eq\": 5}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"numberIntergerProp\": {\"_eq\": 5}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -731,11 +731,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"intNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"intNullable\": {\"_eq\": null}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -751,11 +751,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"intNullable\": {\"_eq\": 5}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"intNullable\": {\"_eq\": 5}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -772,11 +772,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"numberDoubleProp\": {\"_eq\": -5.13}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"numberDoubleProp\": {\"_eq\": -5.13}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -792,11 +792,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"numberLongProp\": {\"_eq\": 3372036854775807}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"numberLongProp\": {\"_eq\": 3372036854775807}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -812,11 +812,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"booleanProp\": {\"_eq\": true}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"booleanProp\": {\"_eq\": true}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -832,11 +832,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"amount\": {\"_eq\": 312312.5434353}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"amount\": {\"_eq\": 312312.5434353}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -852,11 +852,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"amountNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"amountNullable\": {\"_eq\": null}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -872,11 +872,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"amountNullable\": {\"_eq\": 312312.5434353}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"amountNullable\": {\"_eq\": 312312.5434353}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -892,11 +892,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"anyDate\": {\"_eq\": \"2013-12-04T04:02:05.0000000Z\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"anyDate\": {\"_eq\": \"2013-12-04T04:02:05.0000000Z\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -912,11 +912,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"dateNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"dateNullable\": {\"_eq\": null}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -932,11 +932,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"dateNullable\": {\"_eq\": \"2013-12-04T04:02:05.0000000Z\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"dateNullable\": {\"_eq\": \"2013-12-04T04:02:05.0000000Z\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -953,11 +953,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"dateOnly\": {\"_eq\": \"2013-12-04\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"dateOnly\": {\"_eq\": \"2013-12-04\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
 #endif
@@ -974,11 +974,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"uuid\": {\"_eq\": \"00000000-0000-0000-0000-000000000000\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"uuid\": {\"_eq\": \"00000000-0000-0000-0000-000000000000\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -994,11 +994,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"uuidNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"uuidNullable\": {\"_eq\": null}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -1014,11 +1014,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"uuidNullable\": {\"_eq\": \"00000000-0000-0000-0000-000000000000\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"uuidNullable\": {\"_eq\": \"00000000-0000-0000-0000-000000000000\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
 
@@ -1038,11 +1038,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"strProp\": {\"_eq\": null}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"strProp\": {\"_eq\": null}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -1058,11 +1058,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"strProp\": {\"_eq\": \"\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"strProp\": {\"_eq\": \"\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -1225,11 +1225,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"anyDate\": {\"_eq\": \"2023-12-04T04:02:05Z\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"anyDate\": {\"_eq\": \"2023-12-04T04:02:05Z\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -1245,11 +1245,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"dateNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"dateNullable\": {\"_eq\": null}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -1265,11 +1265,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"dateNullable\": {\"_eq\": \"2023-12-04T04:02:05Z\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"dateNullable\": {\"_eq\": \"2023-12-04T04:02:05Z\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -1286,11 +1286,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"dateOnly\": {\"_eq\": \"2023-12-04\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"dateOnly\": {\"_eq\": \"2023-12-04\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
 #endif
@@ -1307,11 +1307,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"uuid\": {\"_eq\": \"00000000-0000-0000-0000-000000000000\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"uuid\": {\"_eq\": \"00000000-0000-0000-0000-000000000000\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
 
@@ -1327,11 +1327,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"uuidNullable\": {\"_eq\": null}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"uuidNullable\": {\"_eq\": null}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
     
@@ -1347,11 +1347,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"uuidNullable\": {\"_eq\": \"00000000-0000-0000-0000-000000000000\"}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"uuidNullable\": {\"_eq\": \"00000000-0000-0000-0000-000000000000\"}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
 
@@ -1369,11 +1369,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"uuid\": {\"_in\": [\"00000000-0000-0000-0000-000000000000\"]}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"uuid\": {\"_in\": [\"00000000-0000-0000-0000-000000000000\"]}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
 
@@ -1391,11 +1391,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.LastEndpoint);
-        Assert.Equal("{\"uuid\": {\"_in\": [\"00000000-0000-0000-0000-000000000000\"]}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"uuid\": {\"_in\": [\"00000000-0000-0000-0000-000000000000\"]}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Empty(persons);
     }
 
@@ -1411,11 +1411,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -1434,9 +1434,9 @@ public class LinqQueryProviderTests
 
         var persons = await query.ToListAsync();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
+        Assert.Equal("{\"age\": {\"_gt\": 26}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -1455,11 +1455,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("{\"age\": {\"_lte\": 26}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Equal("{\"age\": {\"_lte\": 26}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -1478,9 +1478,9 @@ public class LinqQueryProviderTests
 
         var persons = await query.ToListAsync();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Equal("{\"age\": {\"_lte\": 26}}", api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
+        Assert.Equal("{\"age\": {\"_lte\": 26}}", api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -1503,11 +1503,11 @@ public class LinqQueryProviderTests
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("{\"_and\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Reid Cantrell\"}}]}",
-            api.LastRequest?.Filter);
-        Assert.Equal("country", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("country", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -1530,9 +1530,9 @@ public class LinqQueryProviderTests
         var persons = await query.ToListAsync();
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("{\"_and\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Reid Cantrell\"}}]}",
-            api.LastRequest?.Filter);
-        Assert.Equal("country", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("country", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
 
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
@@ -1557,11 +1557,11 @@ public class LinqQueryProviderTests
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("{\"_or\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Chelsey Logan\"}}]}",
-            api.LastRequest?.Filter);
-        Assert.Equal("country,name", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("country,name", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);
@@ -1585,9 +1585,9 @@ public class LinqQueryProviderTests
         var persons = await query.ToListAsync();
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal("{\"_or\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Chelsey Logan\"}}]}",
-            api.LastRequest?.Filter);
-        Assert.Equal("country,name", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("country,name", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);
@@ -1612,11 +1612,11 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"_or\": [{\"_or\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Chelsey Logan\"}}]}, {\"country\": {\"_eq\": \"US\"}}]}",
-            api.LastRequest?.Filter);
-        Assert.Equal("country,name", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("country,name", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(4, persons.Count);
@@ -1641,9 +1641,9 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"_or\": [{\"_or\": [{\"age\": {\"_gt\": 26}}, {\"name\": {\"_eq\": \"Chelsey Logan\"}}]}, {\"country\": {\"_eq\": \"US\"}}]}",
-            api.LastRequest?.Filter);
-        Assert.Equal("country,name", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("country,name", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(4, persons.Count);
@@ -1664,11 +1664,11 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_starts_with\": \"Chelsey\"}}",
-            api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -1689,9 +1689,9 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_starts_with\": \"Chelsey\"}}",
-            api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -1712,11 +1712,11 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_ends_with\": \"Cantrell\"}}",
-            api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -1737,9 +1737,9 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_ends_with\": \"Cantrell\"}}",
-            api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(1, persons.Count);
@@ -1760,11 +1760,11 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_empty\": null}}",
-            api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(0, persons.Count);
@@ -1785,9 +1785,9 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"name\": {\"_empty\": null}}",
-            api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(0, persons.Count);
@@ -1808,11 +1808,11 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"_and\": [{\"car\": {\"_neq\": null}}, {\"car\": {\"model\": {\"_eq\": \"Opel\"}}}]}",
-            api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -1833,9 +1833,9 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.LastEndpoint);
         Assert.Equal(
             "{\"_and\": [{\"car\": {\"_neq\": null}}, {\"car\": {\"model\": {\"_eq\": \"Opel\"}}}]}",
-            api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
+            api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
         // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(2, persons.Count);
@@ -1858,11 +1858,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Equal("name", api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Equal("name", api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -1878,9 +1878,9 @@ public class LinqQueryProviderTests
 
         var persons = await query.ToListAsync();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Equal("name", api.LastRequest?.Sort);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Equal("name", api.LastRequestQuery?.Sort);
         Assert.Equal(5, persons.Count);
     }
 
@@ -1896,11 +1896,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Equal("-name", api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Equal("-name", api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -1916,9 +1916,9 @@ public class LinqQueryProviderTests
 
         var persons = await query.ToListAsync();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Equal("-name", api.LastRequest?.Sort);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Equal("-name", api.LastRequestQuery?.Sort);
         Assert.Equal(5, persons.Count);
     }
 
@@ -1934,11 +1934,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Equal("name,-age,country", api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Equal("name,-age,country", api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -1954,9 +1954,9 @@ public class LinqQueryProviderTests
 
         var persons = await query.ToListAsync();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Equal("name,-age,country", api.LastRequest?.Sort);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Equal("name,-age,country", api.LastRequestQuery?.Sort);
         Assert.Equal(5, persons.Count);
     }
 
@@ -1972,11 +1972,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Equal("car.manufacturer", api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Equal("car.manufacturer", api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         Assert.Equal(5, persons.Count);
     }
 
@@ -1993,11 +1993,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Equal(2, api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Equal(2, api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);
@@ -2017,11 +2017,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Equal(3, api.LastRequest?.Limit);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Equal(3, api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);
@@ -2037,11 +2037,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Equal(2, api.LastRequest?.Offset);
-        Assert.Equal(3, api.LastRequest?.Limit);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Equal(2, api.LastRequestQuery?.Offset);
+        Assert.Equal(3, api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);
@@ -2060,9 +2060,9 @@ public class LinqQueryProviderTests
 
         var persons = await query.ToListAsync();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*", api.LastRequest?.Fields);
-        Assert.Equal("car.manufacturer", api.LastRequest?.Sort);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*", api.LastRequestQuery?.Fields);
+        Assert.Equal("car.manufacturer", api.LastRequestQuery?.Sort);
         Assert.Equal(5, persons.Count);
     }
 
@@ -2080,11 +2080,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*,car.*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*,car.*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);
@@ -2101,11 +2101,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*,car.manufacturer.*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*,car.manufacturer.*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);
@@ -2123,11 +2123,11 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("persons", api.LastEndpoint);
-        Assert.Null(api.LastRequest?.Filter);
-        Assert.Equal("*,car.*,car.manufacturerInfo.*", api.LastRequest?.Fields);
-        Assert.Null(api.LastRequest?.Sort);
-        Assert.Null(api.LastRequest?.Offset);
-        Assert.Null(api.LastRequest?.Limit);
+        Assert.Null(api.LastRequestQuery?.Filter);
+        Assert.Equal("*,car.*,car.manufacturerInfo.*", api.LastRequestQuery?.Fields);
+        Assert.Null(api.LastRequestQuery?.Sort);
+        Assert.Null(api.LastRequestQuery?.Offset);
+        Assert.Null(api.LastRequestQuery?.Limit);
         // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
         //       from the expression tree, the result will be still the total count of the mockup data.
         //Assert.Equal(3, persons.Count);

@@ -10,7 +10,7 @@ namespace BccCode.Linq.ApiClient
 {
     public static class IApiRequestExtensions
     {
-        public static string ToQueryString(this IApiRequest request)
+        public static string ToQueryString(this IApiQueryParameters request)
         {            
             var urlParameters = new Dictionary<string, string>();
             if (request.Fields != null)

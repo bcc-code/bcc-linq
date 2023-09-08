@@ -12,7 +12,7 @@ public interface IApiClient
     /// <returns>
     /// A new API request model.
     /// </returns>
-    IApiRequest ConstructApiRequest(string path);
+    IApiQueryParameters ConstructApiRequest(string path);
 
     /// <summary>
     /// Returns a list of entries.
@@ -20,12 +20,12 @@ public interface IApiClient
     /// <param name="path">
     /// URL path of the API endpoint.
     /// </param>
-    /// <param name="request">
+    /// <param name="query">
     /// The API request parameters.
     /// </param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    TResult? Get<TResult>(string path, IApiRequest request)
+    TResult? Get<TResult>(string path, IApiQueryParameters query)
         where TResult : class;
 
     /// <summary>
@@ -34,12 +34,12 @@ public interface IApiClient
     /// <param name="path">
     /// URL path of the API endpoint.
     /// </param>
-    /// <param name="request">
+    /// <param name="query">
     /// The API request parameters.
     /// </param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<T?> GetAsync<T>(string path, IApiRequest request, CancellationToken cancellationToken = default)
+    Task<T?> GetAsync<T>(string path, IApiQueryParameters query, CancellationToken cancellationToken = default)
         where T : class;
 }
