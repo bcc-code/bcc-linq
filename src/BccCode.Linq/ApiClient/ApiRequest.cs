@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BccCode.Linq.ApiClient
 {
-    public class ApiGetRequest : IApiRequest
+    public class ApiRequest : IApiRequest
     {
         
         /// <summary>
