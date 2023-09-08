@@ -114,7 +114,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     /// The URL path passed to the API client on request.
     /// </param>
     /// <exception cref="ArgumentNullException"></exception>
-    public ApiQueryProvider(IQueryableApiClient apiClient, string path = "", Action<IQueryableParameters>? parametersCallback = null)
+    public ApiQueryProvider(IQueryableApiClient apiClient, string path = "", Action<IQueryableParameters>? parametersCallback = default(Action<IQueryableParameters>))
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _path = path;

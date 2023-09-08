@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Threading;
 using BccCode.Linq.ApiClient.Immutable;
 
 namespace BccCode.Linq.ApiClient;
@@ -57,39 +58,62 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
         parametersCallback?.Invoke(QueryParameters);        
     }
 
-    private IResultList<T>? RequestPage(int page)
+    private ResultList<T>? RequestPage()
     {
-        QueryParameters.Page = page;
-        return _apiClient.Query<IResultList<T>>(_path, QueryParameters);
+        return _apiClient.Query<ResultList<T>>(_path, QueryParameters);
     }
 
-    private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = default)
+    private Task<ResultList<T>?> RequestPageAsync(CancellationToken cancellationToken = default)
     {
-        QueryParameters.Page = page;
-        return _apiClient.QueryAsync<IResultList<T>>(_path, QueryParameters, cancellationToken);
+        return _apiClient.QueryAsync<ResultList<T>>(_path, QueryParameters, cancellationToken);
     }
 
     public async Task<IResultList<T>?> FetchAsync(CancellationToken cancellationToken = default)
     {
         var resultList = new ResultList<T>();
         resultList.Data = new List<T>();
-        IResultList<T>? pageData;
-        int page = 1;
+        ResultList<T>? pageData;
+        int? initialLimit = QueryParameters.Limit;
+        int? initialOffset = QueryParameters.Offset;
+        int? initialPage = QueryParameters.Page;
+        var hasLimit = initialLimit.HasValue && initialLimit > 0;
+        var usePaging = initialPage.HasValue && initialPage > 0;
+
+        int pageSize = usePaging && hasLimit ? initialLimit!.Value : 
+                       (hasLimit && initialLimit!.Value < RowsPerPage ? initialLimit!.Value : RowsPerPage);
+        int offset = usePaging ? (initialPage!.Value-1) * pageSize : (initialOffset ?? 0);
+
+        // Modify query paramter values for paging
+        QueryParameters.Page = null;
+        QueryParameters.Offset = offset > 0 ? offset : null;
+        QueryParameters.Limit = pageSize;
+        
+        int totalRequested = 0;      
         do
         {
-            pageData = await RequestPageAsync(page, cancellationToken);
+            if (hasLimit && !usePaging && initialLimit!.Value < (totalRequested + pageSize))
+            {
+                pageSize = initialLimit!.Value - totalRequested;
+            }
+            pageData = await RequestPageAsync(cancellationToken);            
             if (pageData == null)
                 break;
 
-            if (page == 1)
+            if (totalRequested == 0) //First page
             {
                 resultList.Meta = new Metadata(pageData.Meta);
             }
 
             resultList.AddData(pageData.Data);
 
-            page++;
-        } while ((pageData.Data?.Count ?? 0) == RowsPerPage);
+            QueryParameters.Offset = (QueryParameters.Offset ?? 0) + pageSize;
+            totalRequested += pageSize;
+        } while ((pageData.Data?.Count ?? 0) == pageSize && (!hasLimit || totalRequested < initialLimit!.Value));
+
+        // Restore query paramter values
+        QueryParameters.Page = initialPage;
+        QueryParameters.Offset = initialOffset;
+        QueryParameters.Limit = initialLimit;
 
         if (resultList.Data.Count == 0)
             return null;
@@ -100,12 +124,30 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
 
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        IResultList<T>? pageData;
-        int page = 1;
+        ResultList<T>? pageData;
+        int? initialLimit = QueryParameters.Limit;
+        int? initialOffset = QueryParameters.Offset;
+        int? initialPage = QueryParameters.Page;
+        var hasLimit = initialLimit.HasValue && initialLimit > 0;
+        var usePaging = initialPage.HasValue && initialPage > 0;
+
+        int pageSize = usePaging && hasLimit ? initialLimit!.Value :
+                       (hasLimit && initialLimit!.Value < RowsPerPage ? initialLimit!.Value : RowsPerPage);
+        int offset = usePaging ? (initialPage!.Value - 1) * pageSize : (initialOffset ?? 0);
+
+        // Modify query paramter values for paging
+        QueryParameters.Page = null;
+        QueryParameters.Offset = offset > 0 ? offset : null;
+        QueryParameters.Limit = pageSize;
+
+        int totalRequested = 0;
         do
         {
-            pageData = await RequestPageAsync(page++, cancellationToken);
-
+            if (hasLimit && !usePaging && initialLimit!.Value < (totalRequested + pageSize))
+            {
+                pageSize = initialLimit!.Value - totalRequested;
+            }
+            pageData = await RequestPageAsync(cancellationToken);
             if (pageData?.Data == null)
                 yield break;
 
@@ -113,16 +155,43 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
             {
                 yield return row;
             }
-        } while (pageData.Data.Count == RowsPerPage);
+
+            QueryParameters.Offset = (QueryParameters.Offset ?? 0) + pageSize;
+            totalRequested += pageSize;
+        } while ((pageData.Data?.Count ?? 0) == pageSize && (!hasLimit || totalRequested < initialLimit!.Value));
+
+        // Restore query paramter values
+        QueryParameters.Page = initialPage;
+        QueryParameters.Offset = initialOffset;
+        QueryParameters.Limit = initialLimit;
     }
 
     public IEnumerator<T> GetEnumerator()
     {
-        IResultList<T>? pageData;
-        int page = 1;
+        ResultList<T>? pageData;
+        int? initialLimit = QueryParameters.Limit;
+        int? initialOffset = QueryParameters.Offset;
+        int? initialPage = QueryParameters.Page;
+        var hasLimit = initialLimit.HasValue && initialLimit > 0;
+        var usePaging = initialPage.HasValue && initialPage > 0;
+
+        int pageSize = usePaging && hasLimit ? initialLimit!.Value :
+                       (hasLimit && initialLimit!.Value < RowsPerPage ? initialLimit!.Value : RowsPerPage);
+        int offset = usePaging ? (initialPage!.Value - 1) * pageSize : (initialOffset ?? 0);
+
+        // Modify query paramter values for paging
+        QueryParameters.Page = null;
+        QueryParameters.Offset = offset > 0 ? offset : null;
+        QueryParameters.Limit = pageSize;
+
+        int totalRequested = 0;
         do
         {
-            pageData = RequestPage(page++);
+            if (hasLimit && !usePaging && initialLimit!.Value < (totalRequested + pageSize))
+            {
+                pageSize = initialLimit!.Value - totalRequested;
+            }
+            pageData = RequestPage();
             if (pageData?.Data == null)
                 yield break;
 
@@ -130,7 +199,15 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
             {
                 yield return row;
             }
-        } while (pageData.Data.Count == RowsPerPage);
+
+            QueryParameters.Offset = (QueryParameters.Offset ?? 0) + pageSize;
+            totalRequested += pageSize;
+        } while ((pageData.Data?.Count ?? 0) == pageSize && (!hasLimit || totalRequested < initialLimit!.Value));
+
+        // Restore query paramter values
+        QueryParameters.Page = initialPage;
+        QueryParameters.Offset = initialOffset;
+        QueryParameters.Limit = initialLimit;
     }
 
     #region IEnumerator
