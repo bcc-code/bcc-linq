@@ -105,7 +105,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     /// Returns the total item count of the collection you're querying if given, otherwise <c>null</c>.
     /// </summary>
     public long? TotalCount =>
-        this.TryGetValue("total_count", out var totalCount) ? (long?)totalCount : null;
+        this.TryGetValue("total_count", out var totalCount) ? (long?)totalCount : (this.TryGetValue("total", out var total) ? (long?)total : null);
 
     public void Add(string key, object value)
     {
