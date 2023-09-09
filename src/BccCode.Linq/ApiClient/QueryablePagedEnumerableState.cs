@@ -63,10 +63,6 @@ public class QueryablePagedEnumerableState
     public bool NextPage(int previousResultCount)
     {
         TotalRequested += previousResultCount;
-
-
-
-
         PageParameters.Offset = InitialOffset + TotalRequested;
 
         //Avoid sending redundant parameter
@@ -87,7 +83,6 @@ public class QueryablePagedEnumerableState
         {
             return false;
         }
-
 
         return true;
     }
