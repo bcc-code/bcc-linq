@@ -3,6 +3,11 @@
 public interface IQueryableApiClient
 {
     /// <summary>
+    /// Number of rows to request from server when making paged requests.
+    /// </summary>
+    int? QueryBatchSize { get; }
+
+    /// <summary>
     /// Creates an API request instance for a specific API endpoint
     /// which must implement <see cref="IQueryableApiClient"/>. 
     /// </summary>

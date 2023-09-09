@@ -60,6 +60,7 @@ namespace BccCode.Linq.ApiClient
         [FromQuery(Name = "page")]
         public int? Page { get; set; }
 
+
         /// <summary>
         /// Aggregate functions allow you to perform calculations on a set of values, returning a single result.
         /// 
@@ -149,6 +150,8 @@ namespace BccCode.Linq.ApiClient
         /// </summary>
         [FromQuery(Name = "meta")]
         public string? Meta { get; set; }
+
+        public virtual IQueryableParameters Clone() => (QueryableParameters)MemberwiseClone();
 
     }
 }

@@ -959,7 +959,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         if (c.Type != typeof(int))
                             throw new NotSupportedException(
                                 "The parameter for Queryable.ElementAt/ElementAtOrDefault must be a constant integer expression");
-                        apiCaller.QueryParameters.Offset = (int)c.Value;
+                        apiCaller.QueryParameters.Offset = (int)c.Value > 0 ? (int)c.Value : null;
                         apiCaller.QueryParameters.Limit = 1;
 
                         // We remove here the Take method call from the expression tree,

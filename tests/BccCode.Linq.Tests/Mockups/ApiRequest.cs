@@ -29,4 +29,6 @@ internal class ApiRequest : IQueryableParameters
     public string? Alias { get; set; }
     [FromQuery(Name = "meta")]
     public string? Meta { get; set; }
+
+    public IQueryableParameters Clone() => (ApiRequest)MemberwiseClone();
 }
