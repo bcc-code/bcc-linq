@@ -40,6 +40,7 @@ namespace BccCode.Linq.ApiClient
 
             return string.Join('&', urlParameters.Select(p => $"{p.Key}={WebUtility.UrlEncode(p.Value)}"));            
         }
+                
 
     }
 }

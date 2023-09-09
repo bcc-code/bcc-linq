@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Threading;
 using BccCode.Linq.ApiClient.Immutable;
 
 namespace BccCode.Linq.ApiClient;
@@ -16,7 +17,7 @@ internal interface IApiCaller : IEnumerable
 /// A class returning data from the API by requesting data per page. 
 /// </summary>
 /// <typeparam name="T"></typeparam>
-internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApiCaller
+internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IApiCaller
 {
     /// <summary>
     /// The maximum number of rows per page allowed by the API.
@@ -26,21 +27,21 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
 
     private readonly IQueryableApiClient _apiClient;
     private readonly string _path;
-    private int _rowsPerPage = 100;
+    private int _queryBatchSize = 100;
 
     /// <summary>
     /// Set the number of data models to be retrieved per API call. 
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public int RowsPerPage
+    public int QueryBatchSize
     {
-        get => _rowsPerPage;
+        get => _queryBatchSize;
         set
         {
             if (value <= 0 || value > MaxRowsPerPage)
                 throw new ArgumentOutOfRangeException($"The rows per page can be between 1 and {MaxRowsPerPage}");
 
-            _rowsPerPage = value;
+            _queryBatchSize = value;
         }
     }
 
@@ -53,59 +54,53 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
     {
         _apiClient = apiClient;
         _path = path;
+        QueryBatchSize = apiClient.QueryBatchSize ?? QueryBatchSize;
         QueryParameters = apiClient.ConstructQueryableParameters(_path);
         parametersCallback?.Invoke(QueryParameters);        
     }
 
-    private IResultList<T>? RequestPage(int page)
+    private ResultList<T>? RequestPage(IQueryableParameters parameters)
     {
-        QueryParameters.Page = page;
-        return _apiClient.Query<IResultList<T>>(_path, QueryParameters);
+        return _apiClient.Query<ResultList<T>>(_path, parameters);
     }
 
-    private Task<IResultList<T>?> RequestPageAsync(int page, CancellationToken cancellationToken = default)
+    private Task<ResultList<T>?> RequestPageAsync(IQueryableParameters parameters, CancellationToken cancellationToken = default)
     {
-        QueryParameters.Page = page;
-        return _apiClient.QueryAsync<IResultList<T>>(_path, QueryParameters, cancellationToken);
+        return _apiClient.QueryAsync<ResultList<T>>(_path, parameters, cancellationToken);
     }
 
+    
     public async Task<IResultList<T>?> FetchAsync(CancellationToken cancellationToken = default)
     {
         var resultList = new ResultList<T>();
         resultList.Data = new List<T>();
-        IResultList<T>? pageData;
-        int page = 1;
+        ResultList<T>? pageData;
+        var state = QueryablePagedEnumerableState.Create(QueryParameters, QueryBatchSize);         
         do
         {
-            pageData = await RequestPageAsync(page, cancellationToken);
+            pageData = await RequestPageAsync(state.PageParameters, cancellationToken);            
             if (pageData == null)
                 break;
 
-            if (page == 1)
+            if (state.TotalRequested == 0) //First page
             {
                 resultList.Meta = new Metadata(pageData.Meta);
             }
 
             resultList.AddData(pageData.Data);
 
-            page++;
-        } while ((pageData.Data?.Count ?? 0) == RowsPerPage);
-
-        if (resultList.Data.Count == 0)
-            return null;
-
+        } while (state.NextPage(pageData.Data?.Count ?? 0));
 
         return resultList.ToImmutableResultList();
     }
 
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        IResultList<T>? pageData;
-        int page = 1;
+        ResultList<T>? pageData;
+        var state = QueryablePagedEnumerableState.Create(QueryParameters, QueryBatchSize);
         do
         {
-            pageData = await RequestPageAsync(page++, cancellationToken);
-
+            pageData = await RequestPageAsync(state.PageParameters, cancellationToken);
             if (pageData?.Data == null)
                 yield break;
 
@@ -113,16 +108,17 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
             {
                 yield return row;
             }
-        } while (pageData.Data.Count == RowsPerPage);
+
+        } while (state.NextPage(pageData.Data?.Count ?? 0));
     }
 
     public IEnumerator<T> GetEnumerator()
     {
-        IResultList<T>? pageData;
-        int page = 1;
+        ResultList<T>? pageData;
+        var state = QueryablePagedEnumerableState.Create(QueryParameters, QueryBatchSize);
         do
         {
-            pageData = RequestPage(page++);
+            pageData = RequestPage(state.PageParameters);
             if (pageData?.Data == null)
                 yield break;
 
@@ -130,7 +126,8 @@ internal class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>
             {
                 yield return row;
             }
-        } while (pageData.Data.Count == RowsPerPage);
+
+        } while (state.NextPage(pageData.Data?.Count ?? 0));
     }
 
     #region IEnumerator

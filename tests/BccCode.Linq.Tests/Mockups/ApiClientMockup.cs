@@ -14,7 +14,7 @@ public class ApiClientMockup : ApiClientMockupBase
     }
 
     // strongly typed entities
-    public IQueryable<Person> Persons => this.GetQueryable<Person>("persons");
-    public IQueryable<TestClass> Empty => this.GetQueryable<TestClass>("empty");
-    public IQueryable<ManufacturerInfo> Manufacturers => this.GetQueryable<ManufacturerInfo>("manufacturers");
+    public IQueryable<Person> Persons => this.GetQueryable<Person>("persons", a => this.ClientQuery = a);
+    public IQueryable<TestClass> Empty => this.GetQueryable<TestClass>("empty", a => this.ClientQuery = a);
+    public IQueryable<ManufacturerInfo> Manufacturers => this.GetQueryable<ManufacturerInfo>("manufacturers", a => this.ClientQuery = a);
 }

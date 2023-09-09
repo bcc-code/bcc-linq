@@ -14,8 +14,11 @@ public class ApiClientMockupBase : IQueryableApiClient
 {
     private readonly Dictionary<Type, IList> _inMemoryData = new();
 
-    public string? LastEndpoint { get; set; }
-    public IQueryableParameters? LastRequestQuery { get; set; }
+    public string? PageEndpoint { get; set; }
+    public IQueryableParameters? ClientQuery { get; set; }
+    public IQueryableParameters? PageQuery { get; set; }
+
+    public int? QueryBatchSize => 100;
 
     public void RegisterData(Type type, IEnumerable enumerable)
     {
@@ -36,8 +39,8 @@ public class ApiClientMockupBase : IQueryableApiClient
     public TResult? Query<TResult>(string endpoint, IQueryableParameters query)
         where TResult : class
     {
-        LastEndpoint = endpoint;
-        LastRequestQuery = query;
+        PageEndpoint = PageEndpoint ?? endpoint;
+        PageQuery = query;
 
         var resultType = typeof(TResult);
 
@@ -63,8 +66,8 @@ public class ApiClientMockupBase : IQueryableApiClient
     public Task<TResult?> QueryAsync<TResult>(string endpoint, IQueryableParameters request, CancellationToken cancellationToken = default)
         where TResult : class
     {
-        LastEndpoint = endpoint;
-        LastRequestQuery = request;
+        PageEndpoint = endpoint;
+        PageQuery = request;
 
         return Task.FromResult(
             Query<TResult>(endpoint, request)

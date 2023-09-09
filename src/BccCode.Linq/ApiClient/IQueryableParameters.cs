@@ -129,4 +129,6 @@ public interface IQueryableParameters
     /// <b>Filter Count (<c>filter_count</c>)</b>
     /// </summary>
     public string? Meta { get; set; }
+
+    public IQueryableParameters Clone();
 }
