@@ -406,6 +406,27 @@ public class LinqQueryProviderTests
     }
 
     [Fact]
+    public void SelectNewNestedSinglePropertyTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Persons
+            .OrderByDescending(p => p.Name)
+            .Select(a => new
+            {
+                r = a.Car
+            });
+
+        var persons = query.ToList();
+        Assert.Equal("persons", api.PageEndpoint);
+        Assert.Equal("car", api.ClientQuery?.Fields);
+        Assert.Equal("-name", api.ClientQuery?.Sort);
+        Assert.Null(api.ClientQuery?.Offset);
+        Assert.Null(api.ClientQuery?.Limit);
+        Assert.Equal(5, persons.Count);
+    }
+
+    [Fact]
     public void SelectNewNestedSingleFieldIfNullTest()
     {
         var api = new ApiClientMockup();
