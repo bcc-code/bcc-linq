@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Runtime.Serialization;
 
-namespace BccCode.Linq.ApiClient;
+namespace BccCode.Linq;
 
 [DataContract(Name = "Metadata")]
 public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
@@ -20,7 +20,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
 
         _dict = new Dictionary<string, object>(dict);
     }
-    
+
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
     {
         return _dict.GetEnumerator();
@@ -33,7 +33,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     {
         get
         {
-            if (!this.TryGetValue("limit", out var limit))
+            if (!TryGetValue("limit", out var limit))
                 return default;
 
             // We support only type `int` here, but JSON serializer writes it as long.
@@ -41,7 +41,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
             if (limit is long limitLong)
                 return (int)limitLong;
 
-            return ((int?)limit) ?? default;
+            return (int?)limit ?? default;
         }
     }
 
@@ -52,7 +52,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     {
         get
         {
-            if (!this.TryGetValue("skipped", out var skipped))
+            if (!TryGetValue("skipped", out var skipped))
                 return default;
 
             // We support only type `int` here, but JSON serializer writes it as long.
@@ -60,7 +60,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
             if (skipped is long skippedLong)
                 return (int)skippedLong;
 
-            return ((int?)skipped) ?? default;
+            return (int?)skipped ?? default;
         }
     }
 
@@ -72,7 +72,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     {
         get
         {
-            if (_dict.TryGetValue("filter_count", out object filterCount))
+            if (_dict.TryGetValue("filter_count", out var filterCount))
             {
                 if (filterCount is int filterCountInt)
                     return filterCountInt;
@@ -80,7 +80,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
                 return (long)filterCount;
             }
 
-            if (_dict.TryGetValue("total", out object total))
+            if (_dict.TryGetValue("total", out var total))
             {
                 if (total is int totalInt)
                     return totalInt;
@@ -98,7 +98,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     /// </summary>
     public long? FilterCount =>
 #pragma warning disable CS0618
-        this.TryGetValue("filter_count", out var filterCount) ? (long?)filterCount : Total;
+        TryGetValue("filter_count", out var filterCount) ? (long?)filterCount : Total;
 #pragma warning restore CS0618
 
     /// <summary>
@@ -108,7 +108,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     {
         get
         {
-            if (_dict.TryGetValue("total_count", out object totalCount))
+            if (_dict.TryGetValue("total_count", out var totalCount))
             {
                 if (totalCount is int filterCountInt)
                     return filterCountInt;
@@ -116,7 +116,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
                 return (long)totalCount;
             }
 
-            if (_dict.TryGetValue("total", out object total))
+            if (_dict.TryGetValue("total", out var total))
             {
                 if (total is int totalInt)
                     return totalInt;
@@ -160,7 +160,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     }
 
     #endregion
-    
+
     #region ICollection<KeyValuePair<string, object>>
 
     void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
@@ -193,7 +193,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     bool ICollection<KeyValuePair<string, object>>.IsReadOnly => _dict.IsReadOnly;
 
     #endregion
-    
+
     #region IReadOnlyCollection<KeyValuePair<string, object>>
 
     int IReadOnlyCollection<KeyValuePair<string, object>>.Count => ((IReadOnlyCollection<KeyValuePair<string, object>>)_dict).Count;
@@ -203,7 +203,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     IEnumerable<object> IReadOnlyDictionary<string, object>.Values => _dict.Values;
 
     #endregion
-    
+
     #region IDictionary
 
     void IDictionary.Add(object key, object value)
@@ -243,7 +243,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     #endregion
 
     #region ICollection
-    
+
     int ICollection.Count => ((ICollection)_dict).Count;
 
     void ICollection.CopyTo(Array array, int index)
@@ -262,7 +262,7 @@ public class Metadata : IMetadata, IDictionary, IDictionary<string, object>
     #endregion
 
     #region IEnumerator
-    
+
     IEnumerator IEnumerable.GetEnumerator()
     {
         return _dict.GetEnumerator();

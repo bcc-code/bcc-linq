@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace BccCode.Linq.ApiClient;
+namespace BccCode.Linq;
 
 [DataContract(Name = "ResultList")]
 public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidatableObject
@@ -19,8 +19,8 @@ public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidat
     /// <param name="meta">meta.</param>
     public ResultList(List<T>? data = default, Metadata? meta = default)
     {
-        this.Data = data;
-        this.Meta = meta;
+        Data = data;
+        Meta = meta;
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidat
         return (Data ?? new List<T>()).Cast<object>();
     }
 
-    
+
     /// <summary>
     /// Gets or Sets Meta
     /// </summary>
@@ -68,7 +68,7 @@ public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidat
     {
         if (input is ResultList<T> resultList)
         {
-            return this.Equals(resultList);            
+            return Equals(resultList);
         }
 
         return false;
@@ -86,15 +86,15 @@ public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidat
 
         return
             (
-                this.Data == input.Data ||
-                this.Data != null &&
+                Data == input.Data ||
+                Data != null &&
                 input.Data != null &&
-                this.Data.SequenceEqual(input.Data)
+                Data.SequenceEqual(input.Data)
             ) &&
             (
-                this.Meta == input.Meta ||
-                (this.Meta != null &&
-                this.Meta.Equals(input.Meta))
+                Meta == input.Meta ||
+                Meta != null &&
+                Meta.Equals(input.Meta)
             );
     }
 
@@ -106,11 +106,11 @@ public class ResultList<T> : IResultList<T>, IEquatable<ResultList<T>>, IValidat
     {
         unchecked // Overflow is fine, just wrap
         {
-            int hashCode = 41;
-            if (this.Data != null)
-                hashCode = hashCode * 59 + this.Data.GetHashCode();
-            if (this.Meta != null)
-                hashCode = hashCode * 59 + this.Meta.GetHashCode();
+            var hashCode = 41;
+            if (Data != null)
+                hashCode = hashCode * 59 + Data.GetHashCode();
+            if (Meta != null)
+                hashCode = hashCode * 59 + Meta.GetHashCode();
             return hashCode;
         }
     }

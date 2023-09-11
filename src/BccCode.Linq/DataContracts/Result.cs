@@ -13,8 +13,7 @@ using System.Text;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
-
-namespace BccCode.Linq.ApiClient;
+namespace BccCode.Linq;
 
 public abstract class Result
 {
@@ -37,7 +36,7 @@ public partial class Result<T> : Result, IResult<T>, IEquatable<Result<T>>, IVal
     /// <param name="data">data.</param>
     public Result(T data = default)
     {
-        this.Data = data;
+        Data = data;
     }
 
     public override object GetData()
@@ -80,7 +79,7 @@ public partial class Result<T> : Result, IResult<T>, IEquatable<Result<T>>, IVal
     /// <returns>Boolean</returns>
     public override bool Equals(object input)
     {
-        return input != null && input.GetType() == typeof(T) && this.Equals((T)input);
+        return input != null && input.GetType() == typeof(T) && Equals((T)input);
     }
 
     /// <summary>
@@ -94,11 +93,11 @@ public partial class Result<T> : Result, IResult<T>, IEquatable<Result<T>>, IVal
             return false;
 
         return
-            (
-                (this.Data == null && input.Data == null) ||
-                (this.Data != null &&
-                this.Data.Equals(input.Data))
-            );
+            
+                Data == null && input.Data == null ||
+                Data != null &&
+                Data.Equals(input.Data)
+            ;
     }
 
     /// <summary>
@@ -109,9 +108,9 @@ public partial class Result<T> : Result, IResult<T>, IEquatable<Result<T>>, IVal
     {
         unchecked // Overflow is fine, just wrap
         {
-            int hashCode = 41;
-            if (this.Data != null)
-                hashCode = hashCode * 59 + this.Data.GetHashCode();
+            var hashCode = 41;
+            if (Data != null)
+                hashCode = hashCode * 59 + Data.GetHashCode();
             return hashCode;
         }
     }
