@@ -1,4 +1,4 @@
-﻿namespace BccCode.Linq.Async;
+﻿namespace BccCode.Linq;
 
 /// <summary>
 /// Defines method to execute queries asynchronously that are described by an IQueryable object.

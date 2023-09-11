@@ -7,7 +7,7 @@ using BccCode.Linq.ApiClient;
 using BccCode.Linq.ApiClient.Immutable;
 using BccCode.Linq.Tests.Helpers;
 
-namespace RuleToLinqParser.Tests;
+namespace BccCode.Linq.Tests;
 
 public class MetadataTests
 {

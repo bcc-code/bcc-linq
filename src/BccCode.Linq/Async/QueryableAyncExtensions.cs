@@ -298,7 +298,7 @@ public static class QueryableAsyncExtensions
         if (asyncEnumerable is not QueryablePagedEnumerable<TSource> apiPagedEnumerable)
         {
             throw new InvalidOperationException(
-                $"The finalized Linq expression returns an instance of {asyncEnumerable.GetType()} instead of {typeof(QueryablePagedEnumerable<TSource>)}. This query cannot be used with method {nameof(FetchAsync)}. Consider using {nameof(ToListAsync)} instead.");
+                $"The finalized Linq expression returns an instance of {asyncEnumerable.GetType()} instead of {typeof(QueryablePagedEnumerable<TSource>)}. Queries using Select cannot be used with method {nameof(FetchAsync)}. Consider using {nameof(ToListAsync)} instead or applying tranformations after fetching data.");
         }
 
         return await apiPagedEnumerable.FetchAsync(cancellationToken);

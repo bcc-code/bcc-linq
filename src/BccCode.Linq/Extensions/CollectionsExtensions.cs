@@ -2,7 +2,7 @@
 using System.Reflection;
 using BccCode.Linq.ApiClient;
 
-namespace BccCode.Linq.Extensions;
+namespace BccCode.Linq;
 
 public static class CollectionsExtensions
 {

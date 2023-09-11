@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using BccCode.Linq;
 using BccCode.Linq.Examples.IQueryable;
-using BccCode.Linq.Extensions;
+using BccCode.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,13 +15,13 @@ var inMemoryDb = builder.Configuration.GetValue<bool>("Database:UseInMemoryDatab
 if (inMemoryDb)
 {
     builder.Services.AddDbContext<PersonsContext>(options =>
-        options.UseInMemoryDatabase("persons"));
+        Microsoft.EntityFrameworkCore.InMemoryDbContextOptionsExtensions.UseInMemoryDatabase(options, "persons"));
 }
 else
 {
     var connectionString = builder.Configuration.GetValue<string>("Database:Postgres");
     builder.Services.AddDbContext<PersonsContext>(options =>
-        options.UseNpgsql(connectionString));
+        Microsoft.EntityFrameworkCore.NpgsqlDbContextOptionsBuilderExtensions.UseNpgsql(options, connectionString));
 }
 
 
@@ -48,7 +46,7 @@ app.MapControllers();
 // "{ "someDate": { "_between": ["2023-03-14T00:00:00.0000000", "2023-03-16T00:00:00.0000000"] } }";
 app.MapGet("/persons", async ([FromQuery] string jsonFilter, PersonsContext db) =>
     await db.Persons
-        .ApplyRuleFilter(new Filter<Person>(jsonFilter))
+        .ApplyRuleFilter(new BccCode.Linq.Filter<Person>(jsonFilter))
         .ToListAsync());
 
 app.MapPost("/persons/seed", async (PersonsContext db) =>
