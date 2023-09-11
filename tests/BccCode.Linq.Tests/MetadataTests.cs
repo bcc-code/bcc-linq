@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BccCode.Linq.ApiClient;
-using BccCode.Linq.ApiClient.Immutable;
+using BccCode.Linq.Client;
 using BccCode.Linq.Tests.Helpers;
 
 namespace BccCode.Linq.Tests;

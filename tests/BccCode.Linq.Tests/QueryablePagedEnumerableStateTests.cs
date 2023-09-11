@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BccCode.Linq.ApiClient;
+using BccCode.Linq;
+using BccCode.Linq.Client;
 
 namespace RuleToLinqParser.Tests;
 

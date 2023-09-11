@@ -18,8 +18,4 @@
       <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     </ItemGroup>
 
-    <ItemGroup>
-      <EmbeddedResource Remove="Api\**" />
-    </ItemGroup>
-
 </Project>

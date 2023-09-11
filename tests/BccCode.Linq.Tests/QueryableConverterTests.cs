@@ -1,4 +1,6 @@
-﻿namespace BccCode.Linq.Tests;
+﻿using BccCode.Linq.Server;
+
+namespace BccCode.Linq.Tests;
 
 public class QueryableConverterTests
 {

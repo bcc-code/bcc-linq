@@ -1,4 +1,5 @@
 ﻿using BccCode.Linq.Extensions;
+using BccCode.Linq.Server;
 using BccCode.Linq.Tests.Helpers;
 
 namespace BccCode.Linq.Tests;

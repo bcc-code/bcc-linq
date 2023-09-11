@@ -1,5 +1,4 @@
-﻿using BccCode.Linq.ApiClient;
-using BccCode.Linq.Tests.Helpers;
+﻿using BccCode.Linq.Tests.Helpers;
 using Newtonsoft.Json;
 
 namespace BccCode.Linq.Tests.ApiClient;

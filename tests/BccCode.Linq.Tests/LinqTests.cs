@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using BccCode.Linq.Async;
+using BccCode.Linq.Client;
 
 namespace BccCode.Linq.Tests;
 

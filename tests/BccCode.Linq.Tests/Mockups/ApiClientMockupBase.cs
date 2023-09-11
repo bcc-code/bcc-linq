@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
-using BccCode.Linq.ApiClient;
+using BccCode.Linq.Client;
 
 namespace BccCode.Linq.Tests;
 
