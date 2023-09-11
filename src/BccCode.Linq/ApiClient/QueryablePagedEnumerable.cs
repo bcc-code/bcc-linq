@@ -55,18 +55,18 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
         _apiClient = apiClient;
         _path = path;
         QueryBatchSize = apiClient.QueryBatchSize ?? QueryBatchSize;
-        QueryParameters = apiClient.ConstructQueryableParameters(_path);
+        QueryParameters = apiClient.CreateQueryableParameters(_path);
         parametersCallback?.Invoke(QueryParameters);        
     }
 
     private ResultList<T>? RequestPage(IQueryableParameters parameters)
     {
-        return _apiClient.Query<ResultList<T>>(_path, parameters);
+        return _apiClient.FetchPage<ResultList<T>>(_path, parameters);
     }
 
     private Task<ResultList<T>?> RequestPageAsync(IQueryableParameters parameters, CancellationToken cancellationToken = default)
     {
-        return _apiClient.QueryAsync<ResultList<T>>(_path, parameters, cancellationToken);
+        return _apiClient.FetchPageAsync<ResultList<T>>(_path, parameters, cancellationToken);
     }
 
     

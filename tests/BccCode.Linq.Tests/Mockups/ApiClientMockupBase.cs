@@ -36,7 +36,7 @@ public class ApiClientMockupBase : IQueryableApiClient
 
     #region IApiClient
 
-    public TResult? Query<TResult>(string endpoint, IQueryableParameters query)
+    public TResult? FetchPage<TResult>(string endpoint, IQueryableParameters query)
         where TResult : class
     {
         PageEndpoint = PageEndpoint ?? endpoint;
@@ -63,18 +63,18 @@ public class ApiClientMockupBase : IQueryableApiClient
         throw new Exception("Invalid call of method No In-Memory data registered in ApiClientMockup");
     }
 
-    public Task<TResult?> QueryAsync<TResult>(string endpoint, IQueryableParameters request, CancellationToken cancellationToken = default)
+    public Task<TResult?> FetchPageAsync<TResult>(string endpoint, IQueryableParameters request, CancellationToken cancellationToken = default)
         where TResult : class
     {
         PageEndpoint = endpoint;
         PageQuery = request;
 
         return Task.FromResult(
-            Query<TResult>(endpoint, request)
+            FetchPage<TResult>(endpoint, request)
         );
     }
 
-    IQueryableParameters IQueryableApiClient.ConstructQueryableParameters(string path)
+    IQueryableParameters IQueryableApiClient.CreateQueryableParameters(string path)
     {
         // NOTE: The Mockup API does just use a single ApiRequest class.
         //       A real API client might use different request model classes for different endpoints.

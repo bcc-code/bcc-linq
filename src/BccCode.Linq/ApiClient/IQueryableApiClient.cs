@@ -17,7 +17,7 @@ public interface IQueryableApiClient
     /// <returns>
     /// A new API request model.
     /// </returns>
-    IQueryableParameters ConstructQueryableParameters(string path);
+    IQueryableParameters CreateQueryableParameters(string path);
 
     /// <summary>
     /// Returns a list of entries.
@@ -25,12 +25,12 @@ public interface IQueryableApiClient
     /// <param name="path">
     /// URL path of the API endpoint.
     /// </param>
-    /// <param name="query">
+    /// <param name="pageQueryParameters">
     /// The API request parameters.
     /// </param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    TResult? Query<TResult>(string path, IQueryableParameters query)
+    TResult? FetchPage<TResult>(string path, IQueryableParameters pageQueryParameters)
         where TResult : class;
 
     /// <summary>
@@ -39,12 +39,12 @@ public interface IQueryableApiClient
     /// <param name="path">
     /// URL path of the API endpoint.
     /// </param>
-    /// <param name="query">
+    /// <param name="pageQueryParameters">
     /// The API request parameters.
     /// </param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<T?> QueryAsync<T>(string path, IQueryableParameters query, CancellationToken cancellationToken = default)
+    Task<T?> FetchPageAsync<T>(string path, IQueryableParameters pageQueryParameters, CancellationToken cancellationToken = default)
         where T : class;
 }
