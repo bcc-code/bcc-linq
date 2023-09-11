@@ -6,7 +6,7 @@ using System.Security.Policy;
 using System.Text;
 using BccCode.Linq.ApiClient;
 
-namespace BccCode.Linq.ApiClient
+namespace BccCode.Linq
 {
     public static class IQueryableParametersExtensions
     {

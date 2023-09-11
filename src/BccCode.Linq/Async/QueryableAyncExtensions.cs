@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using BccCode.Linq.ApiClient;
 
-namespace BccCode.Linq.Async;
+namespace BccCode.Linq;
 
 /// <summary>
 /// Adds extension methods to run async. operations against an instance of <see cref="IQueryable{T}"/>. 
