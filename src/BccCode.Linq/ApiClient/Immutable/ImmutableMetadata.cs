@@ -76,10 +76,36 @@ public class ImmutableMetadata : IMetadata
     }
 
     public long? FilterCount => _dict.TryGetValue("filter_count", out var filterCount) ? (long?)filterCount : Total;
-    public long? TotalCount => _dict.TryGetValue("total_count", out var totalCount) ? (long?)totalCount : null;
+
+    /// <summary>
+    /// Returns the total item count of the collection you're querying if given, otherwise <c>null</c>.
+    /// </summary>
+    public long? TotalCount
+    {
+        get
+        {
+            if (_dict.TryGetValue("total_count", out object totalCount))
+            {
+                if (totalCount is int filterCountInt)
+                    return filterCountInt;
+
+                return (long)totalCount;
+            }
+
+            if (_dict.TryGetValue("total", out object total))
+            {
+                if (total is int totalInt)
+                    return totalInt;
+
+                return (long)total;
+            }
+
+            return default;
+        }
+    }
 
     #region IEnumerable<KeyValuePair<string, object>>
-    
+
     IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
     {
         return _dict.GetEnumerator();
