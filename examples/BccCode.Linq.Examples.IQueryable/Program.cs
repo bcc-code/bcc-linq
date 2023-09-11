@@ -16,13 +16,13 @@ var inMemoryDb = builder.Configuration.GetValue<bool>("Database:UseInMemoryDatab
 if (inMemoryDb)
 {
     builder.Services.AddDbContext<PersonsContext>(options =>
-        Microsoft.EntityFrameworkCore.InMemoryDbContextOptionsExtensions.UseInMemoryDatabase(options, "persons"));
+        options.UseInMemoryDatabase("persons"));
 }
 else
 {
     var connectionString = builder.Configuration.GetValue<string>("Database:Postgres");
     builder.Services.AddDbContext<PersonsContext>(options =>
-        Microsoft.EntityFrameworkCore.NpgsqlDbContextOptionsBuilderExtensions.UseNpgsql(options, connectionString));
+        options.UseNpgsql(connectionString));
 }
 
 
