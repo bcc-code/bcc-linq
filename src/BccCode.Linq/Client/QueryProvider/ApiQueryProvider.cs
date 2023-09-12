@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using BccCode.Linq.Client;
 
 namespace BccCode.Linq.Client;
 
@@ -96,6 +95,9 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     private readonly Dictionary<ParameterExpression, IApiCaller> _activeParameters = new();
     private StringBuilder? _where;
     private StringBuilder? _selectField;
+    private readonly Dictionary<IApiCaller, List<string>> _selectFields = new();
+    private readonly Dictionary<IApiCaller, List<string>> _includeChains = new();
+    private List<string>? _includeChainList;
     private StringBuilder? _includeChain;
     private bool _inverseOperator;
     private int _memberDepth;
@@ -161,20 +163,42 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
             // finalize IApiRequest ...
             foreach (var apiCaller in _mapFromToApiCallers.Values)
             {
-                if (apiCaller.QueryParameters.Fields == null)
-                {
-                    // the linq 'Select' option has not been used --> set * to get all fields
-                    apiCaller.QueryParameters.Fields = "*";
-                }
-                else if (apiCaller.QueryParameters.Fields.Split(',').All(p => p.EndsWith(".*")))
-                {
-                    // the linq 'Select' option has not been used, but the Include option --> set * to get all fields of the main entity
-                    apiCaller.QueryParameters.Fields = $"*,{apiCaller.QueryParameters.Fields}";
-                }
-            }
+                var fields = new StringBuilder(apiCaller.QueryParameters.Fields);
                 
+                if (_selectFields.TryGetValue(apiCaller, out var selectFieldList))
+                {
+                    foreach (var selectField in selectFieldList
+                                 .Distinct()  // remove the duplicates
+                             )
+                    {
+                        if (fields.Length > 0)
+                            fields.Append(",");
+                        fields.Append(selectField);
+                    }
+                }
+
+                if (fields.Length == 0)
+                    // the linq 'Select' option has not been used --> set * to get all fields
+                    fields.Append("*");
+                
+                if (_includeChains.TryGetValue(apiCaller, out var includeChainList))
+                {
+                    foreach (var includeChain in includeChainList)
+                    {
+                        fields.Append(",");
+                        fields.Append(includeChain);
+                    }
+                }
+                
+                if (fields.Length > 0)
+                    apiCaller.QueryParameters.Fields = fields.ToString();
+            }
+
             // Clear internal variables
             _mapFromToApiCallers.Clear();
+            _selectFields.Clear();
+            _includeChains.Clear();
+            // ReSharper disable once RedundantCheckBeforeAssignment
             if (_includeChain != null)
                 _includeChain = null;
 
@@ -392,10 +416,19 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
                             if (initializedStringBuilder)
                             {
-                                apiCaller.QueryParameters.Fields = string.IsNullOrEmpty(apiCaller.QueryParameters.Fields)
-                                    ? _selectField.ToString()
-                                    : $"{apiCaller.QueryParameters.Fields},{_selectField}";
+                                if (node.Type != typeof(string) && node.Type.IsClass || node.Type.IsInterface)
+                                {
+                                    // it is not a scalar type, add `.*` at the end of the field selection
+                                    _selectField.Append(".*");
+                                }
 
+                                if (!_selectFields.TryGetValue(apiCaller, out List<string> selectFieldsList))
+                                {
+                                    selectFieldsList = new List<string>();
+                                    _selectFields.Add(apiCaller, selectFieldsList);
+                                }
+
+                                selectFieldsList.Add(_selectField.ToString());
                                 _selectField = null;
                             }
                             else
@@ -1074,21 +1107,24 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             {
                                 Debug.Assert(l.Parameters.Count == 1);
 
-                                _visitMode = VisitLinqLambdaMode.Select;
-                                _activeParameters.Add(l.Parameters[0], apiCaller);
-
                                 // Lambda: row => row
                                 if (l.Body is ParameterExpression p && p == l.Parameters[0])
                                 {
-                                    apiCaller.QueryParameters.Fields = "*";
+                                    if (!_selectFields.TryGetValue(apiCaller, out var selectFieldsList))
+                                        selectFieldsList = new List<string>();
+                                    
+                                    selectFieldsList.Add("*");
                                 }
                                 else
                                 {
-                                    Visit(l.Body);
-                                }
+                                    _visitMode = VisitLinqLambdaMode.Select;
+                                    _activeParameters.Add(l.Parameters[0], apiCaller);
 
-                                _visitMode = VisitLinqLambdaMode.Undefined;
-                                _activeParameters.Remove(l.Parameters[0]);
+                                    Visit(l.Body);
+                                    
+                                    _visitMode = VisitLinqLambdaMode.Undefined;
+                                    _activeParameters.Remove(l.Parameters[0]);
+                                }
 
                                 // We compile here the select expression for further usage ...
                                 selector = l.Compile();
@@ -1359,14 +1395,21 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             _visitMode = VisitLinqLambdaMode.Include;
                             _activeParameters.Add(l.Parameters[0], apiCaller);
 
-                            // Starts a new include chain, frees up the old include chain when multiple include chains are used 
+                            // Starts a new include chain, frees up the old include chain when multiple include chains are used
+
                             _includeChain = new StringBuilder();
 
                             Visit(l.Body);
-
-                            apiCaller.QueryParameters.Fields = string.IsNullOrEmpty(apiCaller.QueryParameters.Fields)
-                                ? $"{_includeChain}.*"
-                                : $"{apiCaller.QueryParameters.Fields},{_includeChain}.*";
+                            
+                            var newIncludeChain = new StringBuilder(_includeChain.ToString());
+                            _includeChain.Append(".*");
+                            if (!_includeChains.TryGetValue(apiCaller, out _includeChainList))
+                            {
+                                _includeChainList = new List<string>();
+                                _includeChains.Add(apiCaller, _includeChainList);
+                            }
+                            _includeChainList.Add(_includeChain.ToString());
+                            _includeChain = newIncludeChain;
 
                             _visitMode = VisitLinqLambdaMode.Undefined;
                             _activeParameters.Remove(l.Parameters[0]);
@@ -1399,14 +1442,16 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         {
                             _visitMode = VisitLinqLambdaMode.ThenInclude;
                             _activeParameters.Add(l.Parameters[0], apiCaller);
+                            Debug.Assert(_includeChainList != null);
                             Debug.Assert(_includeChain != null);
                             Debug.Assert(_includeChain.Length > 0);
 
                             Visit(l.Body);
-
-                            apiCaller.QueryParameters.Fields = string.IsNullOrEmpty(apiCaller.QueryParameters.Fields)
-                                ? $"{_includeChain}.*"
-                                : $"{apiCaller.QueryParameters.Fields},{_includeChain}.*";
+                            
+                            var newIncludeChain = new StringBuilder(_includeChain.ToString());
+                            _includeChain.Append(".*");
+                            _includeChainList.Add(_includeChain.ToString());
+                            _includeChain = newIncludeChain;
 
                             _visitMode = VisitLinqLambdaMode.Undefined;
                             _activeParameters.Remove(l.Parameters[0]);
