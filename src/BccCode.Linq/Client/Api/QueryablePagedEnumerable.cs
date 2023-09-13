@@ -27,6 +27,7 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
 
     private readonly IQueryableApiClient _apiClient;
     private readonly string _path;
+    private readonly Action<IQueryableParameters>? _parametersCallback;
     private int _queryBatchSize = 100;
 
     /// <summary>
@@ -54,9 +55,10 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
     {
         _apiClient = apiClient;
         _path = path;
+        _parametersCallback = parametersCallback;
         QueryBatchSize = apiClient.QueryBatchSize ?? QueryBatchSize;
         QueryParameters = apiClient.CreateQueryableParameters(_path);
-        parametersCallback?.Invoke(QueryParameters);
+        _parametersCallback?.Invoke(QueryParameters);
     }
 
     private ResultList<T>? RequestPage(IQueryableParameters parameters)
@@ -75,6 +77,7 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
         var resultList = new ResultList<T>();
         resultList.Data = new List<T>();
         ResultList<T>? pageData;
+        _parametersCallback?.Invoke(QueryParameters);
         var state = QueryablePagedEnumerableState.Create(QueryParameters, QueryBatchSize);
         do
         {
@@ -97,6 +100,7 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
         ResultList<T>? pageData;
+        _parametersCallback?.Invoke(QueryParameters);
         var state = QueryablePagedEnumerableState.Create(QueryParameters, QueryBatchSize);
         do
         {
@@ -115,6 +119,7 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
     public IEnumerator<T> GetEnumerator()
     {
         ResultList<T>? pageData;
+        _parametersCallback?.Invoke(QueryParameters);
         var state = QueryablePagedEnumerableState.Create(QueryParameters, QueryBatchSize);
         do
         {
