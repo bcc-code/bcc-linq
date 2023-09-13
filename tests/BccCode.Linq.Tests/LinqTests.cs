@@ -449,6 +449,28 @@ public class LinqQueryProviderTests
     }
 
     [Fact]
+    public void SelectNewNestedFlattendResultTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            select new
+            {
+                Year = p.Car == null ? 0 : p.Car.YearOfProduction,
+                ManufacturerName = p.Car.ManufacturerInfo.Name
+            };
+
+        var persons = query.ToList();
+        Assert.Equal("persons", api.PageEndpoint);
+        Assert.Equal("car.*,car.yearOfProduction,car.manufacturerInfo.name", api.ClientQuery?.Fields);
+        Assert.Null(api.ClientQuery?.Sort);
+        Assert.Null(api.ClientQuery?.Offset);
+        Assert.Null(api.ClientQuery?.Limit);
+        Assert.Equal(5, persons.Count);
+    }
+
+    [Fact]
     public void SelectNewTwoFieldsTest()
     {
         var api = new ApiClientMockup();
@@ -2147,6 +2169,29 @@ public class LinqQueryProviderTests
         Assert.Equal("persons", api.PageEndpoint);
         Assert.Null(api.ClientQuery?.Filter);
         Assert.Equal("*,car.*,car.manufacturerInfo.*", api.ClientQuery?.Fields);
+        Assert.Null(api.ClientQuery?.Sort);
+        Assert.Null(api.ClientQuery?.Offset);
+        Assert.Null(api.ClientQuery?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret Take clauses. Since we remove the Take clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(3, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
+
+
+    [Fact]
+    public void IncludeThenIncludeAfterEnumerableTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Persons
+            .Include(p => p.CarHistory).ThenInclude(c => c.ManufacturerInfo)
+            ;
+
+        var persons = query.ToList();
+        Assert.Equal("persons", api.PageEndpoint);
+        Assert.Null(api.ClientQuery?.Filter);
+        Assert.Equal("*,carHistory.*,carHistory.manufacturerInfo.*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
         Assert.Null(api.ClientQuery?.Offset);
         Assert.Null(api.ClientQuery?.Limit);

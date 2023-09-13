@@ -61,13 +61,31 @@ public static class QueryableExtensions
                         ))
                     : source);
     }
-    
+
+
+    internal static readonly MethodInfo ThenIncludeAfterEnumerableMethodInfo
+        = typeof(QueryableExtensions)
+            .GetTypeInfo().GetDeclaredMethods(nameof(ThenInclude))
+            .Where(mi => mi.GetGenericArguments().Length == 3)
+            .Single(
+                mi =>
+                {
+                    var typeInfo = mi.GetParameters()[0].ParameterType.GenericTypeArguments[1];
+                    return typeInfo.IsGenericType
+                        && typeInfo.GetGenericTypeDefinition() == typeof(IEnumerable<>);
+                });
+
     internal static readonly MethodInfo ThenIncludeAfterReferenceMethodInfo
         = typeof(QueryableExtensions)
             .GetTypeInfo().GetDeclaredMethods(nameof(ThenInclude))
             .Single(
                 mi => mi.GetGenericArguments().Length == 3
                       && mi.GetParameters()[0].ParameterType.GenericTypeArguments[1].IsGenericParameter);
+
+
+
+
+
 
     /// <summary>
     /// Specifies additional related data to be further included based on a related type that was just included.
@@ -91,6 +109,22 @@ public static class QueryableExtensions
                     Expression.Call(
                         instance: null,
                         method: ThenIncludeAfterReferenceMethodInfo.MakeGenericMethod(
+                            typeof(TEntity), typeof(TPreviousProperty), typeof(TProperty)),
+                        arguments: new[] { source.Expression, Expression.Quote(navigationPropertyPath) }))
+                : source);
+
+
+
+    public static IIncludableQueryable<TEntity, TProperty> ThenInclude<TEntity, TPreviousProperty, TProperty>(
+        this IIncludableQueryable<TEntity, IEnumerable<TPreviousProperty>> source,
+        Expression<Func<TPreviousProperty, TProperty>> navigationPropertyPath)
+        where TEntity : class
+        => new IncludableQueryable<TEntity, TProperty>(
+            source.Provider is ApiQueryProvider
+                ? source.Provider.CreateQuery<TEntity>(
+                    Expression.Call(
+                        instance: null,
+                        method: ThenIncludeAfterEnumerableMethodInfo.MakeGenericMethod(
                             typeof(TEntity), typeof(TPreviousProperty), typeof(TProperty)),
                         arguments: new[] { source.Expression, Expression.Quote(navigationPropertyPath) }))
                 : source);
