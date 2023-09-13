@@ -6,6 +6,12 @@ public class Person
     public int Age { get; set; }
     public string Country { get; set; }
 
+    public List<Car> CarHistory { get; set; } = new List<Car>
+    {
+        new("Opel", "Astra", 2003),
+        new("Opel", "Rekord", 1985),
+    };
+
     public Car Car { get; set; } = new("Opel", "Astra", 2003);
     public DateTime AnyDate { get; set; }
 
@@ -27,6 +33,7 @@ public class Car
     public Car(string manufacturer, string model, int yearOfProduction)
     {
         Manufacturer = manufacturer;
+        ManufacturerInfo = new ManufacturerInfo { Name = manufacturer };
         Model = model;
         YearOfProduction = yearOfProduction;
     }
