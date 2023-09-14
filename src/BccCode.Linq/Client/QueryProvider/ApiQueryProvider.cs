@@ -1577,7 +1577,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         {
             stringBuilder.Append("\"");
 #pragma warning disable CS8605
-            DateTime valueDateTime = ((DateTime)value).ToUniversalTime();
+            DateTime valueDateTime = ((DateTime)value);
 #pragma warning restore CS8605
             if (valueDateTime != valueDateTime.Date)
             {
@@ -1593,7 +1593,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         {
             stringBuilder.Append("\"");
 #pragma warning disable CS8605
-            stringBuilder.Append(((DateTimeOffset)value).ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
+            stringBuilder.Append(((DateTimeOffset)value).ToString("O", CultureInfo.InvariantCulture));
 #pragma warning restore CS8605
             stringBuilder.Append("\"");
         }
