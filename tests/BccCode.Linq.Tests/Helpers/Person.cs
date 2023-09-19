@@ -15,6 +15,8 @@ public class Person
     public Car Car { get; set; } = new("Opel", "Astra", 2003);
     public DateTime AnyDate { get; set; }
 
+    public PersonType Type {  get; set; }
+
     public Person(string name, int age, string country, DateTime anyDate)
     {
         Name = name;
@@ -22,6 +24,14 @@ public class Person
         Country = country;
         AnyDate = anyDate;
     }
+}
+
+public enum PersonType
+{
+    Unknown = 0,
+    Customer = 1,
+    Staff = 2,
+    Partner = 3
 }
 
 public class Car

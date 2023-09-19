@@ -32,7 +32,7 @@ public class ResultListSerializationTest
 
         var jsonString = JsonConvert.SerializeObject(resultList);
 
-        Assert.Equal(@"{""data"":[{""Name"":""Chuck Norris"",""Age"":0,""Country"":""US"",""CarHistory"":null,""Car"":{""Manufacturer"":""Opel"",""Model"":""Astra"",""YearOfProduction"":2003,""ManufacturerInfo"":null},""AnyDate"":""1940-03-10T00:00:00""}],""meta"":{""total"":1}}", jsonString);
+        Assert.Equal(@"{""data"":[{""Name"":""Chuck Norris"",""Age"":0,""Country"":""US"",""CarHistory"":null,""Car"":{""Manufacturer"":""Opel"",""Model"":""Astra"",""YearOfProduction"":2003,""ManufacturerInfo"":null},""AnyDate"":""1940-03-10T00:00:00"",""Type"":0}],""meta"":{""total"":1}}", jsonString);
     }
     
     [Fact]
@@ -57,7 +57,7 @@ public class ResultListSerializationTest
 
         var jsonString = JsonConvert.SerializeObject(resultList);
 
-        Assert.Equal(@"{""data"":[{""Name"":""Chuck Norris"",""Age"":0,""Country"":""US"",""CarHistory"":null,""Car"":{""Manufacturer"":""Opel"",""Model"":""Astra"",""YearOfProduction"":2003,""ManufacturerInfo"":null},""AnyDate"":""1940-03-10T00:00:00""}]}", jsonString);
+        Assert.Equal(@"{""data"":[{""Name"":""Chuck Norris"",""Age"":0,""Country"":""US"",""CarHistory"":null,""Car"":{""Manufacturer"":""Opel"",""Model"":""Astra"",""YearOfProduction"":2003,""ManufacturerInfo"":null},""AnyDate"":""1940-03-10T00:00:00"",""Type"":0}]}", jsonString);
     }
     
     [Fact]
