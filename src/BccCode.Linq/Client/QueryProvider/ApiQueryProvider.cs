@@ -55,7 +55,15 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         /// function.
         /// </summary>
         // ReSharper restore InvalidXmlDocComment
-        ThenInclude
+        ThenInclude,
+
+        // ReSharper disable InvalidXmlDocComment
+        /// <summary>
+        /// Expression is inside a <see cref="QueryableExtensions.Convert" />
+        /// function.
+        /// </summary>
+        // ReSharper restore InvalidXmlDocComment
+        Convert
     }
 
     /// <summary>
@@ -474,6 +482,12 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         _includeChain.Append(ApiMemberPath());
                         return Expression.Empty();
                     }
+                    case VisitLinqLambdaMode.Convert:
+                        {
+                            //We assume conversion is implicitly handled on the server side
+                            _where.Append(ApiMemberPath(splitter: "\": {\""));
+                            return Expression.Empty();
+                        }
                     default:
                         throw new NotSupportedException($"Member {node.Member.Name} used in an unsupported manner");
                 }
@@ -613,6 +627,13 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
                         // We drop here the Not expression since we will invert it later in code...
                         return operandExpression;
+                    }
+                case ExpressionType.Convert:
+                    {
+                        _visitMode = VisitLinqLambdaMode.Convert;
+                        var expression = Visit(node.Operand);
+                        _visitMode = VisitLinqLambdaMode.Where;
+                        return expression;
                     }
                 default:
                     throw new NotSupportedException($"Unsupported unary expression type in Where clause: {node.NodeType}");

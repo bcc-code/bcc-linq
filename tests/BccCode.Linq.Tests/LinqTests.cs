@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using BccCode.Linq.Client;
+using BccCode.Linq.Tests.Helpers;
 
 namespace BccCode.Linq.Tests;
 
@@ -594,13 +595,57 @@ public class LinqQueryProviderTests
         Assert.Equal(2, api.ClientQuery?.Limit);
         Assert.Null(testClass);
     }
-    
+
     #endregion
-    
+
+    #region Enums
+
+    [Fact]
+    public void NumericEnumTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Persons.Where(t => t.Type == PersonType.Staff);
+
+        var persons = query.ToList();
+
+        Assert.Equal("{\"type\": {\"_eq\": 2}}", api.ClientQuery?.Filter);
+
+    }
+
+    [Fact]
+    public void StringEnumTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Persons.Where(t => t.Type.ToString() == PersonType.Staff.ToString());
+
+        var persons = query.ToList();
+
+        Assert.Equal("{\"type\": {\"_eq\": \"Staff\"}}", api.ClientQuery?.Filter);
+
+    }
+
+
+    [Fact(Skip = "This approach does not work.")]
+    public void StringEnumAltTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Persons.Where(t => t.Type.ToString().Equals(PersonType.Staff));
+
+        var persons = query.ToList();
+
+        Assert.Equal("{\"type\": {\"_eq\": \"Staff\"}}", api.ClientQuery?.Filter);
+
+    }
+
+    #endregion
+
     #region Where
 
     #region Where property equal to ...
-    
+
     [Fact]
     public void WhereGuidEqualStaticNewTest()
     {
@@ -2202,4 +2247,6 @@ public class LinqQueryProviderTests
     }
 
     #endregion
+
+
 }
