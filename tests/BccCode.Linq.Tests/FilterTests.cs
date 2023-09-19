@@ -169,4 +169,7 @@ public class FilterTests
             var value = ((Filter<DateTime>)filter.Properties["AnyDate"]).Properties["_eq"];
         });
     }
+
+
+
 }
