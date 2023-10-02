@@ -1884,6 +1884,31 @@ public class LinqQueryProviderTests
     }
 
     [Fact]
+    public void WhereEqualValueTypeTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Persons
+            where Equals(p.Age, 13)
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("persons", api.PageEndpoint);
+        Assert.Equal(
+            "{\"age\": {\"_eq\": 13}}",
+            api.ClientQuery?.Filter);
+        Assert.Equal("*", api.ClientQuery?.Fields);
+        Assert.Null(api.ClientQuery?.Sort);
+        Assert.Null(api.ClientQuery?.Offset);
+        Assert.Null(api.ClientQuery?.Limit);
+        // NOTE: Currently the Mockup API Client does not interpret Where clauses. Since we remove the Where clause
+        //       from the expression tree, the result will be still the total count of the mockup data.
+        //Assert.Equal(2, persons.Count);
+        Assert.Equal(5, persons.Count);
+    }
+
+    [Fact]
     public void WhereNestedEqualTest()
     {
         var api = new ApiClientMockup();
