@@ -21,7 +21,7 @@ public class MetadataTests
                 { "total", 4 }
             })
         }.ToImmutableResultList();
-        
+
         Assert.Equal(4, resultList.Meta.TotalCount);
 
 

@@ -80,7 +80,7 @@ internal static class TypeHelper
         typeof(uint), typeof(float),   typeof(BigInteger)
     };
 #endif
-    
+
     public static bool IsNumberType(Type type)
     {
 #if NET7_0_OR_GREATER

@@ -17,9 +17,9 @@ public static class FilterDeserializationHelpers
 
             return result;
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            throw new ArgumentException("JSON filter rule is invalid.");
+            throw new ArgumentException("JSON filter rule is invalid.", e);
         }
     }
 

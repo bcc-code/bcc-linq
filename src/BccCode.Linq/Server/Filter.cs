@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-/* Unmerged change from project 'BccCode.Linq (net6.0)'
+﻿/* Unmerged change from project 'BccCode.Linq (net6.0)'
 Before:
 using BccCode.Linq.Extensions;
 After:
@@ -11,6 +8,8 @@ using BccCode.Linq;
 using BccCode.Linq.Server;
 */
 using BccCode.Linq.Extensions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace BccCode.Linq.Server;
 

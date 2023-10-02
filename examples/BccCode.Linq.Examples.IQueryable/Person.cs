@@ -19,5 +19,5 @@ public class Person
 
 public class Relation
 {
-    public Person Target {  get; set;}
+    public Person Target { get; set; }
 }

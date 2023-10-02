@@ -11,7 +11,7 @@ namespace BccCode.Linq.Client;
 public static class QueryableExtensions
 {
     #region Include
-    
+
     internal static readonly MethodInfo IncludeMethodInfo
         = typeof(QueryableExtensions)
             .GetTypeInfo().GetDeclaredMethods(nameof(Include))
@@ -20,7 +20,7 @@ public static class QueryableExtensions
                     mi.GetGenericArguments().Length == 2
                     && mi.GetParameters().Any(
                         pi => pi.Name == "navigationPropertyPath" && pi.ParameterType != typeof(string)));
-    
+
     /// <summary>
     /// Specifies related entities to include in the query results. The navigation property to be included is specified starting with the
     /// type of entity being queried (<typeparamref name="TEntity" />). <!--If you wish to include additional types based on the navigation
@@ -156,7 +156,7 @@ public static class QueryableExtensions
         IEnumerator IEnumerable.GetEnumerator()
             => _queryable.GetEnumerator();
     }
-    
+
     #endregion
 
     #region Search
@@ -178,9 +178,9 @@ public static class QueryableExtensions
                     instance: null,
                     method: SearchMethodInfo.MakeGenericMethod(
                         typeof(TEntity)),
-                    arguments: new []{source.Expression, Expression.Constant(searchString)}));
+                    arguments: new[] { source.Expression, Expression.Constant(searchString) }));
         }
- 
+
         throw new NotSupportedException("Linq method Search was not replaced by the queryable provider. You can only use this method with a IQueryable<> object from an Bcc Code API. If you already use a IQueryable<> object from a Bcc Code API, try to call Search earlier in your Linq command chain.");
     }
 

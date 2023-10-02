@@ -48,7 +48,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         /// </summary>
         // ReSharper restore InvalidXmlDocComment
         Include,
-        
+
         // ReSharper disable InvalidXmlDocComment
         /// <summary>
         /// Expression is inside a <see cref="QueryableExtensions.ThenInclude" />
@@ -172,7 +172,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
             foreach (var apiCaller in _mapFromToApiCallers.Values)
             {
                 var fields = new StringBuilder(apiCaller.QueryParameters.Fields);
-                
+
                 if (_selectFields.TryGetValue(apiCaller, out var selectFieldList))
                 {
                     foreach (var selectField in selectFieldList
@@ -188,7 +188,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                 if (fields.Length == 0)
                     // the linq 'Select' option has not been used --> set * to get all fields
                     fields.Append("*");
-                
+
                 if (_includeChains.TryGetValue(apiCaller, out var includeChainList))
                 {
                     foreach (var includeChain in includeChainList)
@@ -197,7 +197,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         fields.Append(includeChain);
                     }
                 }
-                
+
                 if (fields.Length > 0)
                     apiCaller.QueryParameters.Fields = fields.ToString();
             }
@@ -213,7 +213,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
             return translatedExpression;
         }
     }
-    
+
     public object Execute(Expression expression)
     {
         var translatedExpression = TranslateExpression(expression, QueryableTypeMode.Enumerable);
@@ -288,7 +288,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     "The Linq method call chain uses an unsupported extension method base class.");
             }
         }
-        
+
         Debug.Assert(node.NodeType == ExpressionType.Constant);
         if (_mapFromToApiCallers.TryGetValue(node, out apiCaller))
         {
@@ -300,7 +300,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
     #region Visitors
 
-    
+
     /// <summary>
     /// Visits a where clause which is to be processed throw the API.
     ///
@@ -318,9 +318,9 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         _visitMode = VisitLinqLambdaMode.Where;
         _activeParameters.Add(node.Parameters[0], apiCaller);
         _where = new StringBuilder();
-        
+
         Visit(node.Body);
-        
+
         _visitMode = VisitLinqLambdaMode.Undefined;
         _activeParameters.Remove(node.Parameters[0]);
         apiCaller.QueryParameters.Filter = string.IsNullOrEmpty(apiCaller.QueryParameters.Filter)
@@ -328,7 +328,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
             : $"{{ \"_and\" : [ {apiCaller.QueryParameters.Filter} , {_where} ] }}";
         _where = null;
     }
-    
+
     protected override Expression VisitConstant(ConstantExpression node)
     {
         if (_visitMode == VisitLinqLambdaMode.Where)
@@ -475,13 +475,13 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             return Expression.Empty();
                         }
                     case VisitLinqLambdaMode.ThenInclude:
-                    {
-                        Debug.Assert(_includeChain != null);
-                        Debug.Assert(_includeChain.Length > 0); // a 'ThenInclude' chain must have already the root member from 'Include'
-                        _includeChain.Append(".");
-                        _includeChain.Append(ApiMemberPath());
-                        return Expression.Empty();
-                    }
+                        {
+                            Debug.Assert(_includeChain != null);
+                            Debug.Assert(_includeChain.Length > 0); // a 'ThenInclude' chain must have already the root member from 'Include'
+                            _includeChain.Append(".");
+                            _includeChain.Append(ApiMemberPath());
+                            return Expression.Empty();
+                        }
                     case VisitLinqLambdaMode.Convert:
                         {
                             //We assume conversion is implicitly handled on the server side
@@ -567,17 +567,10 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                 var left = Visit(node.Left);
                 Debug.Assert(left != null);
                 Debug.Assert(left.NodeType == ExpressionType.Default);
-                int depth = _memberDepth;
                 _where.Append(", ");
                 var right = Visit(node.Right);
                 Debug.Assert(right != null);
                 Debug.Assert(right.NodeType == ExpressionType.Default);
-                if (depth > 1)
-                {
-                    // close nested members
-                    for (int n = 1; n < depth; n++)
-                        _where.Append("}");
-                }
                 _where.Append("]}");
             }
             else
@@ -690,7 +683,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         Debug.Assert(obj.NodeType == ExpressionType.Default);
         return Expression.Empty();
     }
-    
+
     protected override Expression VisitMethodCall(MethodCallExpression node)
     {
         if (_visitMode == VisitLinqLambdaMode.Where)
@@ -794,20 +787,20 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                                 "string.IsNullOrEmpty is currently only supported in a Where clause with a member expression");
                         }
                     case nameof(string.ToString):
-                    {
-                        if (node.Arguments.Count != 0)
                         {
-                            throw new NotSupportedException(
-                                "string.ToString method call is currently only supported in a Where clause without arguments");
-                        }
+                            if (node.Arguments.Count != 0)
+                            {
+                                throw new NotSupportedException(
+                                    "string.ToString method call is currently only supported in a Where clause without arguments");
+                            }
 
-                        // Useless call of ToString():
-                        // Optimize query by removing the ToString() call from the expression tree.
-                        var obj = Visit(node.Object);
-                        Debug.Assert(obj != null);
-                        Debug.Assert(obj.NodeType == ExpressionType.Default);
-                        return Expression.Empty();
-                    }
+                            // Useless call of ToString():
+                            // Optimize query by removing the ToString() call from the expression tree.
+                            var obj = Visit(node.Object);
+                            Debug.Assert(obj != null);
+                            Debug.Assert(obj.NodeType == ExpressionType.Default);
+                            return Expression.Empty();
+                        }
                     default:
                         throw new NotSupportedException($"Not supported method call: {node.Method.DeclaringType?.FullName}.{node.Method.Name}");
                 }
@@ -916,172 +909,172 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
             switch (node.Method.Name)
             {
                 case nameof(Queryable.Any):
-                {
-                    //Arg 0: source
-                    var source = Visit(node.Arguments[0]);
-                    Debug.Assert(source != null);
-                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
-                        // ... the source was not a ApiQueryable and is not
-                        // part of the API. So we just do nothing and pass it
-                    }
-                    else
-                    {
-                        apiCaller.QueryParameters.Limit = 1;
-                        
-                        if (node.Arguments.Count == 1)
+                        //Arg 0: source
+                        var source = Visit(node.Arguments[0]);
+                        Debug.Assert(source != null);
+                        if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                         {
+                            // ... the source was not a ApiQueryable and is not
+                            // part of the API. So we just do nothing and pass it
+                        }
+                        else
+                        {
+                            apiCaller.QueryParameters.Limit = 1;
+
+                            if (node.Arguments.Count == 1)
+                            {
+                                // We remove here the Take method call from the expression tree,
+                                // because the Take is done by the API.
+                                return Expression.Call(
+                                    instance: null,
+                                    method: System.Linq.Internal.Enumerable.AnyMethodInfo.MakeGenericMethod(
+                                        node.Method.GetGenericArguments()[0]),
+                                    arguments: new[] { source });
+                            }
+                            else if (node.Arguments.Count == 2 &&
+                                     node.Arguments[1] is UnaryExpression u &&
+                                     u.Operand is LambdaExpression l)
+                            {
+                                Debug.Assert(l.Parameters.Count == 1);
+
+                                VisitWhereClause(l, apiCaller);
+
+                                // We remove here the predicate from the expression tree, because
+                                // the where logic is processed by the API.
+                                // NOTE: In case some where expressions cannot be passed over to the API,
+                                //       this would be the place where you can still decide to keep a
+                                //       modified Where expression in the tree for the parts which the API
+                                //       cannot handle.
+                                return Expression.Call(
+                                    instance: null,
+                                    method: System.Linq.Internal.Enumerable.AnyMethodInfo.MakeGenericMethod(
+                                        node.Method.GetGenericArguments()[0]),
+                                    arguments: new[] { source });
+                            }
+                            else
+                            {
+                                throw new NotSupportedException(
+                                    $"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
+                            }
+                        }
+                    }
+                    break;
+                case nameof(Queryable.ElementAt):
+                    {
+                        var source = Visit(node.Arguments[0]);
+                        Debug.Assert(source != null);
+                        if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                        {
+                            // ... the source was not a ApiQueryable and is not
+                            // part of the API. So we just do nothing and pass it
+                        }
+                        else if (node.Arguments[1] is ConstantExpression c)
+                        {
+                            if (c.Type != typeof(int))
+                                throw new NotSupportedException(
+                                    "The parameter for Queryable.ElementAt/ElementAtOrDefault must be a constant integer expression");
+                            apiCaller.QueryParameters.Offset = (int)c.Value;
+                            apiCaller.QueryParameters.Limit = 1;
+
                             // We remove here the Take method call from the expression tree,
                             // because the Take is done by the API.
                             return Expression.Call(
                                 instance: null,
-                                method: System.Linq.Internal.Enumerable.AnyMethodInfo.MakeGenericMethod(
-                                    node.Method.GetGenericArguments()[0]),
-                                arguments: new[] { source });
-                        }
-                        else if (node.Arguments.Count == 2 &&
-                                 node.Arguments[1] is UnaryExpression u &&
-                                 u.Operand is LambdaExpression l)
-                        {
-                            Debug.Assert(l.Parameters.Count == 1);
-
-                            VisitWhereClause(l, apiCaller);
-
-                            // We remove here the predicate from the expression tree, because
-                            // the where logic is processed by the API.
-                            // NOTE: In case some where expressions cannot be passed over to the API,
-                            //       this would be the place where you can still decide to keep a
-                            //       modified Where expression in the tree for the parts which the API
-                            //       cannot handle.
-                            return Expression.Call(
-                                instance: null,
-                                method: System.Linq.Internal.Enumerable.AnyMethodInfo.MakeGenericMethod(
+                                method: System.Linq.Internal.Enumerable.FirstMethodInfo.MakeGenericMethod(
                                     node.Method.GetGenericArguments()[0]),
                                 arguments: new[] { source });
                         }
                         else
                         {
-                            throw new NotSupportedException(
-                                $"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
+                            throw new Exception("Format for ElementAt/ElementAtOrDefault expression not supported.");
                         }
                     }
-                }
-                    break;
-                case nameof(Queryable.ElementAt):
-                {
-                    var source = Visit(node.Arguments[0]);
-                    Debug.Assert(source != null);
-                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
-                    {
-                        // ... the source was not a ApiQueryable and is not
-                        // part of the API. So we just do nothing and pass it
-                    }
-                    else if (node.Arguments[1] is ConstantExpression c)
-                    {
-                        if (c.Type != typeof(int))
-                            throw new NotSupportedException(
-                                "The parameter for Queryable.ElementAt/ElementAtOrDefault must be a constant integer expression");
-                        apiCaller.QueryParameters.Offset = (int)c.Value;
-                        apiCaller.QueryParameters.Limit = 1;
-
-                        // We remove here the Take method call from the expression tree,
-                        // because the Take is done by the API.
-                        return Expression.Call(
-                            instance: null,
-                            method: System.Linq.Internal.Enumerable.FirstMethodInfo.MakeGenericMethod(
-                                node.Method.GetGenericArguments()[0]),
-                            arguments: new[] { source });
-                    }
-                    else
-                    {
-                        throw new Exception("Format for ElementAt/ElementAtOrDefault expression not supported.");
-                    }
-                }
                     break;
                 case nameof(Queryable.ElementAtOrDefault):
-                {
-                    var source = Visit(node.Arguments[0]);
-                    Debug.Assert(source != null);
-                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
-                        // ... the source was not a ApiQueryable and is not
-                        // part of the API. So we just do nothing and pass it
-                    }
-                    else if (node.Arguments[1] is ConstantExpression c)
-                    {
-                        if (c.Type != typeof(int))
-                            throw new NotSupportedException(
-                                "The parameter for Queryable.ElementAt/ElementAtOrDefault must be a constant integer expression");
-                        apiCaller.QueryParameters.Offset = (int)c.Value > 0 ? (int)c.Value : null;
-                        apiCaller.QueryParameters.Limit = 1;
+                        var source = Visit(node.Arguments[0]);
+                        Debug.Assert(source != null);
+                        if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                        {
+                            // ... the source was not a ApiQueryable and is not
+                            // part of the API. So we just do nothing and pass it
+                        }
+                        else if (node.Arguments[1] is ConstantExpression c)
+                        {
+                            if (c.Type != typeof(int))
+                                throw new NotSupportedException(
+                                    "The parameter for Queryable.ElementAt/ElementAtOrDefault must be a constant integer expression");
+                            apiCaller.QueryParameters.Offset = (int)c.Value > 0 ? (int)c.Value : null;
+                            apiCaller.QueryParameters.Limit = 1;
 
-                        // We remove here the Take method call from the expression tree,
-                        // because the Take is done by the API.
-                        return Expression.Call(
-                            instance: null,
-                            method: System.Linq.Internal.Enumerable.FirstOrDefaultMethodInfo.MakeGenericMethod(
-                                node.Method.GetGenericArguments()[0]),
-                            arguments: new[] { source });
+                            // We remove here the Take method call from the expression tree,
+                            // because the Take is done by the API.
+                            return Expression.Call(
+                                instance: null,
+                                method: System.Linq.Internal.Enumerable.FirstOrDefaultMethodInfo.MakeGenericMethod(
+                                    node.Method.GetGenericArguments()[0]),
+                                arguments: new[] { source });
+                        }
+                        else
+                        {
+                            throw new Exception("Format for ElementAt/ElementAtOrDefault expression not supported.");
+                        }
                     }
-                    else
-                    {
-                        throw new Exception("Format for ElementAt/ElementAtOrDefault expression not supported.");
-                    }
-                }
                     break;
                 case nameof(Queryable.First):
-                {
-                    var source = Visit(node.Arguments[0]);
-                    Debug.Assert(source != null);
-                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
-                        // ... the source was not a ApiQueryable and is not
-                        // part of the API. So we just do nothing and pass it
-                    }
-                    else if (node.Arguments.Count == 1)
-                    {
-                        apiCaller.QueryParameters.Limit = 1;
+                        var source = Visit(node.Arguments[0]);
+                        Debug.Assert(source != null);
+                        if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                        {
+                            // ... the source was not a ApiQueryable and is not
+                            // part of the API. So we just do nothing and pass it
+                        }
+                        else if (node.Arguments.Count == 1)
+                        {
+                            apiCaller.QueryParameters.Limit = 1;
 
-                        // We remove here the Take method call from the expression tree,
-                        // because the Take is done by the API.
-                        return Expression.Call(
-                            instance: null,
-                            method: System.Linq.Internal.Enumerable.FirstMethodInfo.MakeGenericMethod(
-                                node.Method.GetGenericArguments()[0]),
-                            arguments: new[] { source });
+                            // We remove here the Take method call from the expression tree,
+                            // because the Take is done by the API.
+                            return Expression.Call(
+                                instance: null,
+                                method: System.Linq.Internal.Enumerable.FirstMethodInfo.MakeGenericMethod(
+                                    node.Method.GetGenericArguments()[0]),
+                                arguments: new[] { source });
+                        }
+                        else
+                        {
+                            throw new NotSupportedException($"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
+                        }
                     }
-                    else
-                    {
-                        throw new NotSupportedException($"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
-                    }
-                }
                     break;
                 case nameof(Queryable.FirstOrDefault):
-                {
-                    var source = Visit(node.Arguments[0]);
-                    Debug.Assert(source != null);
-                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
-                        // ... the source was not a ApiQueryable and is not
-                        // part of the API. So we just do nothing and pass it
-                    }
-                    else if (node.Arguments.Count == 1)
-                    {
-                        apiCaller.QueryParameters.Limit = 1;
+                        var source = Visit(node.Arguments[0]);
+                        Debug.Assert(source != null);
+                        if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                        {
+                            // ... the source was not a ApiQueryable and is not
+                            // part of the API. So we just do nothing and pass it
+                        }
+                        else if (node.Arguments.Count == 1)
+                        {
+                            apiCaller.QueryParameters.Limit = 1;
 
-                        // We remove here the Take method call from the expression tree,
-                        // because the Take is done by the API.
-                        return Expression.Call(
-                            instance: null,
-                            method: System.Linq.Internal.Enumerable.FirstOrDefaultMethodInfo.MakeGenericMethod(
-                                node.Method.GetGenericArguments()[0]),
-                            arguments: new[] { source });
+                            // We remove here the Take method call from the expression tree,
+                            // because the Take is done by the API.
+                            return Expression.Call(
+                                instance: null,
+                                method: System.Linq.Internal.Enumerable.FirstOrDefaultMethodInfo.MakeGenericMethod(
+                                    node.Method.GetGenericArguments()[0]),
+                                arguments: new[] { source });
+                        }
+                        else
+                        {
+                            throw new NotSupportedException($"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
+                        }
                     }
-                    else
-                    {
-                        throw new NotSupportedException($"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
-                    }
-                }
                     break;
                 case nameof(Queryable.Where):
                     {
@@ -1133,7 +1126,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                                 {
                                     if (!_selectFields.TryGetValue(apiCaller, out var selectFieldsList))
                                         selectFieldsList = new List<string>();
-                                    
+
                                     selectFieldsList.Add("*");
                                 }
                                 else
@@ -1142,7 +1135,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                                     _activeParameters.Add(l.Parameters[0], apiCaller);
 
                                     Visit(l.Body);
-                                    
+
                                     _visitMode = VisitLinqLambdaMode.Undefined;
                                     _activeParameters.Remove(l.Parameters[0]);
                                 }
@@ -1174,13 +1167,13 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                                 default:
                                     throw new ArgumentOutOfRangeException();
                             }
-                            
+
                             Debug.Assert(genericMethod != null);
                             var method = genericMethod.MakeGenericMethod(
                                 u.Type.GenericTypeArguments[0].GenericTypeArguments[0],
                                 u.Type.GenericTypeArguments[0].GenericTypeArguments[1]
                             );
-                            
+
                             // Replace the exception with the new source.
                             return Expression.Call(
                                 instance: null,
@@ -1194,58 +1187,58 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         throw new Exception("Syntax of Select expression not supported.");
                     }
                 case nameof(Queryable.Single):
-                {
-                    var source = Visit(node.Arguments[0]);
-                    Debug.Assert(source != null);
-                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
-                        // ... the source was not a ApiQueryable and is not
-                        // part of the API. So we just do nothing and pass it
-                    }
-                    else if (node.Arguments.Count == 1)
-                    {
-                        apiCaller.QueryParameters.Limit = 2;
+                        var source = Visit(node.Arguments[0]);
+                        Debug.Assert(source != null);
+                        if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                        {
+                            // ... the source was not a ApiQueryable and is not
+                            // part of the API. So we just do nothing and pass it
+                        }
+                        else if (node.Arguments.Count == 1)
+                        {
+                            apiCaller.QueryParameters.Limit = 2;
 
-                        // We remove here the Take method call from the expression tree,
-                        // because the Take is done by the API.
-                        return Expression.Call(
-                            instance: null,
-                            method: System.Linq.Internal.Enumerable.SingleMethodInfo.MakeGenericMethod(
-                                node.Method.GetGenericArguments()[0]),
-                            arguments: new[] { source });
+                            // We remove here the Take method call from the expression tree,
+                            // because the Take is done by the API.
+                            return Expression.Call(
+                                instance: null,
+                                method: System.Linq.Internal.Enumerable.SingleMethodInfo.MakeGenericMethod(
+                                    node.Method.GetGenericArguments()[0]),
+                                arguments: new[] { source });
+                        }
+                        else
+                        {
+                            throw new NotSupportedException($"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
+                        }
                     }
-                    else
-                    {
-                        throw new NotSupportedException($"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
-                    }
-                }
                     break;
                 case nameof(Queryable.SingleOrDefault):
-                {
-                    var source = Visit(node.Arguments[0]);
-                    Debug.Assert(source != null);
-                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
-                        // ... the source was not a ApiQueryable and is not
-                        // part of the API. So we just do nothing and pass it
-                    }
-                    else if (node.Arguments.Count == 1)
-                    {
-                        apiCaller.QueryParameters.Limit = 2;
+                        var source = Visit(node.Arguments[0]);
+                        Debug.Assert(source != null);
+                        if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                        {
+                            // ... the source was not a ApiQueryable and is not
+                            // part of the API. So we just do nothing and pass it
+                        }
+                        else if (node.Arguments.Count == 1)
+                        {
+                            apiCaller.QueryParameters.Limit = 2;
 
-                        // We remove here the Take method call from the expression tree,
-                        // because the Take is done by the API.
-                        return Expression.Call(
-                            instance: null,
-                            method: System.Linq.Internal.Enumerable.SingleOrDefaultMethodInfo.MakeGenericMethod(
-                                node.Method.GetGenericArguments()[0]),
-                            arguments: new[] { source });
+                            // We remove here the Take method call from the expression tree,
+                            // because the Take is done by the API.
+                            return Expression.Call(
+                                instance: null,
+                                method: System.Linq.Internal.Enumerable.SingleOrDefaultMethodInfo.MakeGenericMethod(
+                                    node.Method.GetGenericArguments()[0]),
+                                arguments: new[] { source });
+                        }
+                        else
+                        {
+                            throw new NotSupportedException($"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
+                        }
                     }
-                    else
-                    {
-                        throw new NotSupportedException($"Unsupported {node.Method.DeclaringType?.FullName}.{node.Method.Name} signature. The method can only be used without parameters.");
-                    }
-                }
                     break;
                 case nameof(Queryable.OrderBy):
                 case nameof(Queryable.ThenBy):
@@ -1400,122 +1393,122 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
             switch (node.Method.Name)
             {
                 case nameof(QueryableExtensions.Include):
-                {
-                    //Arg 0: source
-                    var source = Visit(node.Arguments[0]);
-                    Debug.Assert(source != null);
-                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
-                        // ... the source was not a ApiQueryable and is not
-                        // part of the API. So we just do nothing and pass it
-                    }
-                    else if (node.Arguments.Count == 2)
-                    {
-                        if (node.Arguments[1] is UnaryExpression u && u.Operand is LambdaExpression l)
+                        //Arg 0: source
+                        var source = Visit(node.Arguments[0]);
+                        Debug.Assert(source != null);
+                        if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                         {
-                            _visitMode = VisitLinqLambdaMode.Include;
-                            _activeParameters.Add(l.Parameters[0], apiCaller);
-
-                            // Starts a new include chain, frees up the old include chain when multiple include chains are used
-
-                            _includeChain = new StringBuilder();
-
-                            Visit(l.Body);
-                            
-                            var newIncludeChain = new StringBuilder(_includeChain.ToString());
-                            _includeChain.Append(".*");
-                            if (!_includeChains.TryGetValue(apiCaller, out _includeChainList))
+                            // ... the source was not a ApiQueryable and is not
+                            // part of the API. So we just do nothing and pass it
+                        }
+                        else if (node.Arguments.Count == 2)
+                        {
+                            if (node.Arguments[1] is UnaryExpression u && u.Operand is LambdaExpression l)
                             {
-                                _includeChainList = new List<string>();
-                                _includeChains.Add(apiCaller, _includeChainList);
+                                _visitMode = VisitLinqLambdaMode.Include;
+                                _activeParameters.Add(l.Parameters[0], apiCaller);
+
+                                // Starts a new include chain, frees up the old include chain when multiple include chains are used
+
+                                _includeChain = new StringBuilder();
+
+                                Visit(l.Body);
+
+                                var newIncludeChain = new StringBuilder(_includeChain.ToString());
+                                _includeChain.Append(".*");
+                                if (!_includeChains.TryGetValue(apiCaller, out _includeChainList))
+                                {
+                                    _includeChainList = new List<string>();
+                                    _includeChains.Add(apiCaller, _includeChainList);
+                                }
+                                _includeChainList.Add(_includeChain.ToString());
+                                _includeChain = newIncludeChain;
+
+                                _visitMode = VisitLinqLambdaMode.Undefined;
+                                _activeParameters.Remove(l.Parameters[0]);
+
+                                // We remove here the Include method call from the expression tree,
+                                // because the Include is done by the API.
+                                return source;
                             }
-                            _includeChainList.Add(_includeChain.ToString());
-                            _includeChain = newIncludeChain;
-
-                            _visitMode = VisitLinqLambdaMode.Undefined;
-                            _activeParameters.Remove(l.Parameters[0]);
-
-                            // We remove here the Include method call from the expression tree,
-                            // because the Include is done by the API.
-                            return source;
+                        }
+                        else
+                        {
+                            throw new NotSupportedException(
+                                $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} signature.");
                         }
                     }
-                    else
-                    {
-                        throw new NotSupportedException(
-                            $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} signature.");
-                    }
-                }
                     break;
                 case nameof(QueryableExtensions.ThenInclude):
-                {
-                    //Arg 0: source
-                    var source = Visit(node.Arguments[0]);
-                    Debug.Assert(source != null);
-                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
-                        // ... the source was not a ApiQueryable and is not
-                        // part of the API. So we just do nothing and pass it
-                    }
-                    else if (node.Arguments.Count == 2)
-                    {
-                        if (node.Arguments[1] is UnaryExpression u && u.Operand is LambdaExpression l)
+                        //Arg 0: source
+                        var source = Visit(node.Arguments[0]);
+                        Debug.Assert(source != null);
+                        if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                         {
-                            _visitMode = VisitLinqLambdaMode.ThenInclude;
-                            _activeParameters.Add(l.Parameters[0], apiCaller);
-                            Debug.Assert(_includeChainList != null);
-                            Debug.Assert(_includeChain != null);
-                            Debug.Assert(_includeChain.Length > 0);
+                            // ... the source was not a ApiQueryable and is not
+                            // part of the API. So we just do nothing and pass it
+                        }
+                        else if (node.Arguments.Count == 2)
+                        {
+                            if (node.Arguments[1] is UnaryExpression u && u.Operand is LambdaExpression l)
+                            {
+                                _visitMode = VisitLinqLambdaMode.ThenInclude;
+                                _activeParameters.Add(l.Parameters[0], apiCaller);
+                                Debug.Assert(_includeChainList != null);
+                                Debug.Assert(_includeChain != null);
+                                Debug.Assert(_includeChain.Length > 0);
 
-                            Visit(l.Body);
-                            
-                            var newIncludeChain = new StringBuilder(_includeChain.ToString());
-                            _includeChain.Append(".*");
-                            _includeChainList.Add(_includeChain.ToString());
-                            _includeChain = newIncludeChain;
+                                Visit(l.Body);
 
-                            _visitMode = VisitLinqLambdaMode.Undefined;
-                            _activeParameters.Remove(l.Parameters[0]);
+                                var newIncludeChain = new StringBuilder(_includeChain.ToString());
+                                _includeChain.Append(".*");
+                                _includeChainList.Add(_includeChain.ToString());
+                                _includeChain = newIncludeChain;
 
-                            // We remove here the Include method call from the expression tree,
-                            // because the Include is done by the API.
-                            return source;
+                                _visitMode = VisitLinqLambdaMode.Undefined;
+                                _activeParameters.Remove(l.Parameters[0]);
+
+                                // We remove here the Include method call from the expression tree,
+                                // because the Include is done by the API.
+                                return source;
+                            }
+                        }
+                        else
+                        {
+                            throw new NotSupportedException(
+                                $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} signature.");
                         }
                     }
-                    else
-                    {
-                        throw new NotSupportedException(
-                            $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} signature.");
-                    }
-                }
                     break;
                 case nameof(QueryableExtensions.Search):
-                {
-                    //Arg 0: source
-                    var source = Visit(node.Arguments[0]);
-                    Debug.Assert(source != null);
-                    if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
                     {
-                        // ... the source was not a ApiQueryable and is not
-                        // part of the API. So we just do nothing and pass it
-                    }
-                    else if (node.Arguments.Count == 2 && node.Arguments[1] is ConstantExpression c)
-                    {
-                        if (c.Type != typeof(string))
-                            throw new NotSupportedException(
-                                "The parameter for QueryableExtensions.Search must be a constant string expression");
-                        apiCaller.QueryParameters.Search = (string?)c.Value;
+                        //Arg 0: source
+                        var source = Visit(node.Arguments[0]);
+                        Debug.Assert(source != null);
+                        if (!TryGetApiCaller(node.Arguments[0], out var apiCaller))
+                        {
+                            // ... the source was not a ApiQueryable and is not
+                            // part of the API. So we just do nothing and pass it
+                        }
+                        else if (node.Arguments.Count == 2 && node.Arguments[1] is ConstantExpression c)
+                        {
+                            if (c.Type != typeof(string))
+                                throw new NotSupportedException(
+                                    "The parameter for QueryableExtensions.Search must be a constant string expression");
+                            apiCaller.QueryParameters.Search = (string?)c.Value;
 
-                        // We remove here the Search method call from the expression tree,
-                        // because the Take is done by the API.
-                        return source;
+                            // We remove here the Search method call from the expression tree,
+                            // because the Take is done by the API.
+                            return source;
+                        }
+                        else
+                        {
+                            throw new NotSupportedException(
+                                $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} signature.");
+                        }
                     }
-                    else
-                    {
-                        throw new NotSupportedException(
-                            $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} signature.");
-                    }
-                }
                     break;
                 default:
                     return base.VisitMethodCall(node);
@@ -1639,13 +1632,13 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
             var isNumberType = TypeHelper.IsNumberType(type);
             if (!isNumberType)
                 stringBuilder.Append('"');
-            
+
             if (value is IFormattable formattable)
             {
                 // avoid having culture-specific strings in JSON object
                 stringBuilder.Append(formattable.ToString(null, CultureInfo.InvariantCulture));
             }
-            
+
             if (!isNumberType)
                 stringBuilder.Append('"');
         }

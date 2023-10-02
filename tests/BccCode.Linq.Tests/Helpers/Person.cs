@@ -15,7 +15,7 @@ public class Person
     public Car Car { get; set; } = new("Opel", "Astra", 2003);
     public DateTime AnyDate { get; set; }
 
-    public PersonType Type {  get; set; }
+    public PersonType Type { get; set; }
 
     public Person(string name, int age, string country, DateTime anyDate)
     {
@@ -47,7 +47,7 @@ public class Car
         Model = model;
         YearOfProduction = yearOfProduction;
     }
-    
+
     public ManufacturerInfo ManufacturerInfo { get; set; }
 }
 

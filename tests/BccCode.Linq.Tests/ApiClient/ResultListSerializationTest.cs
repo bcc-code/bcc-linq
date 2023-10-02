@@ -34,7 +34,7 @@ public class ResultListSerializationTest
 
         Assert.Equal(@"{""data"":[{""Name"":""Chuck Norris"",""Age"":0,""Country"":""US"",""CarHistory"":null,""Car"":{""Manufacturer"":""Opel"",""Model"":""Astra"",""YearOfProduction"":2003,""ManufacturerInfo"":null},""AnyDate"":""1940-03-10T00:00:00"",""Type"":0}],""meta"":{""total"":1}}", jsonString);
     }
-    
+
     [Fact]
     public void SerializeSingleNoMetadataText()
     {
@@ -59,7 +59,7 @@ public class ResultListSerializationTest
 
         Assert.Equal(@"{""data"":[{""Name"":""Chuck Norris"",""Age"":0,""Country"":""US"",""CarHistory"":null,""Car"":{""Manufacturer"":""Opel"",""Model"":""Astra"",""YearOfProduction"":2003,""ManufacturerInfo"":null},""AnyDate"":""1940-03-10T00:00:00"",""Type"":0}]}", jsonString);
     }
-    
+
     [Fact]
     public void SerializeEmptyWithMetadataText()
     {
@@ -73,10 +73,10 @@ public class ResultListSerializationTest
         };
 
         var jsonString = JsonConvert.SerializeObject(resultList);
-        
+
         Assert.Equal(@"{""data"":[],""meta"":{""total"":0}}", jsonString);
     }
-    
+
     [Fact]
     public void SerializeEmptyNoMetadataText()
     {
@@ -86,10 +86,10 @@ public class ResultListSerializationTest
         };
 
         var jsonString = JsonConvert.SerializeObject(resultList);
-        
+
         Assert.Equal(@"{""data"":[]}", jsonString);
     }
-    
+
     [Fact]
     public void DeserializeEmptyResultWithMetadataTest()
     {
@@ -110,7 +110,7 @@ public class ResultListSerializationTest
         Assert.Equal(0, resultList?.Meta?.Total);
         Assert.Equal(0, resultList?.Meta?.FilterCount);
     }
-    
+
     [Fact]
     public void DeserializeEmptyResultNoMetadataTest()
     {
@@ -123,7 +123,7 @@ public class ResultListSerializationTest
         Assert.Empty(resultList.Data);
         Assert.Null(resultList.Meta);
     }
-    
+
     [Fact]
     public void DeserializeOnePersonResultNoMetadataTest()
     {

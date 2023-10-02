@@ -17,6 +17,19 @@ jobs:
         uses: xt0rted/dotnet-tool-restore@v1.0.1
 
       - name: Run dotnet format
-        uses: xt0rted/dotnet-format@v1.2.0
-        with:
-          only-changed-files: "true"
+        run: dotnet format
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code || echo "changes=True" >> $GITHUB_ENV
+        continue-on-error: true
+
+      - name: Commit and push changes
+        if: env.changes == 'True'
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m "Apply dotnet format changes"
+          git push

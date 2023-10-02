@@ -8,9 +8,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using System.Text;
-using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
 namespace BccCode.Linq;
@@ -93,7 +93,7 @@ public partial class Result<T> : Result, IResult<T>, IEquatable<Result<T>>, IVal
             return false;
 
         return
-            
+
                 Data == null && input.Data == null ||
                 Data != null &&
                 Data.Equals(input.Data)
