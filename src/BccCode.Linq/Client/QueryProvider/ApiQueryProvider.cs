@@ -575,8 +575,8 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                 if (depth > 1)
                 {
                     // close nested members
-                    for (int n = 1; n < depth; n++)
-                        _where.Append("}");
+                    // for (int n = 1; n < depth; n++)
+                    //     _where.Append("}");
                 }
                 _where.Append("]}");
             }

@@ -1604,6 +1604,18 @@ public class LinqQueryProviderTests
     }
 
     [Fact]
+    public void WhereBetweenTest()
+    {
+        var api = new ApiClientMockup();
+        var query = api.Empty.Where(x => x.Nested.Number >= 1 && x.Nested.Number <= 10).ToList();
+
+        Assert.Equal(
+            "{\"_and\": [{\"nested\": {\"number\": {\"_gte\": 1}}}, {\"nested\": {\"number\": {\"_lte\": 10}}}]}",
+            api.ClientQuery?.Filter);
+    }
+    
+    
+    [Fact]
     public async void WhereSelectAndAsyncTest()
     {
         var api = new ApiClientMockup();

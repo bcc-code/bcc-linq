@@ -26,4 +26,5 @@ public class NestedClass
 {
 
     public string NestedStrProp { get; set; }
+    public int Number { get; set; }
 }
