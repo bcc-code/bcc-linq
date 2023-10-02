@@ -567,17 +567,10 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                 var left = Visit(node.Left);
                 Debug.Assert(left != null);
                 Debug.Assert(left.NodeType == ExpressionType.Default);
-                int depth = _memberDepth;
                 _where.Append(", ");
                 var right = Visit(node.Right);
                 Debug.Assert(right != null);
                 Debug.Assert(right.NodeType == ExpressionType.Default);
-                if (depth > 1)
-                {
-                    // close nested members
-                    // for (int n = 1; n < depth; n++)
-                    //     _where.Append("}");
-                }
                 _where.Append("]}");
             }
             else
