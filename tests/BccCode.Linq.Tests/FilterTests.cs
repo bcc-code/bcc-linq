@@ -28,7 +28,7 @@ public class FilterTests
                      ]";
 
         var ex = Assert.Throws<ArgumentException>(() => new Filter<TestClass>(json));
-        
+
         Assert.NotNull(ex);
     }
 
@@ -185,11 +185,11 @@ public class FilterTests
 
         var value = ((Filter<string>)((Filter<NestedClass>)filter.Properties["nested"]).Properties["nestedStrProp"])
             .Properties["_eq"];
-        
+
         Assert.NotNull(value);
         Assert.Equal("test_value", value);
     }
-    
+
     [Fact]
     public void should_filter_on_nested_class_for_merge_expression()
     {
@@ -202,15 +202,15 @@ public class FilterTests
         var value = ((Filter)((Filter<NestedClass>)((Filter)filter.Properties["_and"]).Properties["nested"])
             .Properties["number"]);
         var properties = value.Properties;
-        
+
         Assert.NotNull(filter);
         Assert.Equal(2, value.Properties.Count);
         // Assert.IsType<Filter<int>>(value.GetType());
-        
+
         Assert.Equal("_gte", properties.First().Key);
         Assert.IsType<int>(properties.First().Value);
         Assert.Equal(1, (int)properties.First().Value);
-        
+
         Assert.Equal("_lte", properties.Last().Key);
         Assert.IsType<int>(properties.Last().Value);
         Assert.Equal(10, (int)properties.Last().Value);

@@ -22,7 +22,7 @@ public class LinqQueryProviderTests
         Assert.Equal(1, api.ClientQuery?.Limit);
         Assert.True(anyResult);
     }
-    
+
     [Fact]
     public void AnyPredicateTest()
     {
@@ -37,7 +37,7 @@ public class LinqQueryProviderTests
         Assert.Equal(1, api.ClientQuery?.Limit);
         Assert.True(anyResult);
     }
-    
+
     [Fact]
     public async void AnyAsyncTest()
     {
@@ -52,7 +52,7 @@ public class LinqQueryProviderTests
         Assert.Equal(1, api.ClientQuery?.Limit);
         Assert.True(anyResult);
     }
-    
+
     [Fact]
     public async void AnyPredicateAsyncTest()
     {
@@ -69,7 +69,7 @@ public class LinqQueryProviderTests
     }
 
     #endregion
-    
+
     #region ElementAt
 
     [Fact]
@@ -88,7 +88,7 @@ public class LinqQueryProviderTests
         //Assert.Equal("Chelsey Logan", persons.Name);
         Assert.Equal("Archibald Mcbride", persons.Name);
     }
-    
+
     [Fact]
     public async void ElementAtAsyncTest()
     {
@@ -105,11 +105,11 @@ public class LinqQueryProviderTests
         //Assert.Equal("Chelsey Logan", persons.Name);
         Assert.Equal("Archibald Mcbride", persons.Name);
     }
-    
+
     #endregion
 
     #region ElementAtOrDefault
-    
+
     [Fact]
     public void ElementAtOrDefaultTest()
     {
@@ -126,7 +126,7 @@ public class LinqQueryProviderTests
         //Assert.Equal("Chelsey Logan", persons.Name);
         Assert.Equal("Archibald Mcbride", persons?.Name);
     }
-    
+
     [Fact]
     public async void ElementAtOrDefaultAsyncTest()
     {
@@ -143,7 +143,7 @@ public class LinqQueryProviderTests
         //Assert.Equal("Chelsey Logan", persons.Name);
         Assert.Equal("Archibald Mcbride", persons?.Name);
     }
-    
+
     [Fact]
     public void ElementAtOrDefaultNotFoundTest()
     {
@@ -160,7 +160,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(null, persons.Name);
         Assert.Equal("Archibald Mcbride", persons?.Name);
     }
-    
+
     [Fact]
     public void ElementAtOrDefaultEmptyTest()
     {
@@ -174,7 +174,7 @@ public class LinqQueryProviderTests
         Assert.Equal(1, api.ClientQuery?.Limit);
         Assert.Null(testClass);
     }
-    
+
     [Fact]
     public async void ElementAtOrDefaultNotFoundAsyncTest()
     {
@@ -209,7 +209,7 @@ public class LinqQueryProviderTests
         Assert.Equal(1, api.ClientQuery?.Limit);
         Assert.Equal("Archibald Mcbride", persons.Name);
     }
-    
+
     [Fact]
     public async void FirstAsyncTest()
     {
@@ -225,7 +225,7 @@ public class LinqQueryProviderTests
     }
 
     #endregion
-    
+
     #region FirstOrDefault
 
     [Fact]
@@ -241,7 +241,7 @@ public class LinqQueryProviderTests
         Assert.Equal(1, api.ClientQuery?.Limit);
         Assert.Equal("Archibald Mcbride", persons?.Name);
     }
-    
+
     [Fact]
     public void FirstOrDefaultEmptyTest()
     {
@@ -255,7 +255,7 @@ public class LinqQueryProviderTests
         Assert.Equal(1, api.ClientQuery?.Limit);
         Assert.Null(testClass);
     }
-    
+
     [Fact]
     public async void FirstOrDefaultAsyncTest()
     {
@@ -269,7 +269,7 @@ public class LinqQueryProviderTests
         Assert.Equal(1, api.ClientQuery?.Limit);
         Assert.Equal("Archibald Mcbride", persons?.Name);
     }
-    
+
     [Fact]
     public async void FirstOrDefaultEmptyAsyncTest()
     {
@@ -304,7 +304,7 @@ public class LinqQueryProviderTests
         Assert.Equal("Chuck Norris", api.ClientQuery?.Search);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public void SearchStringBuilderTest()
     {
@@ -328,7 +328,7 @@ public class LinqQueryProviderTests
     }
 
     #endregion
-    
+
     #region Select
 
     [Fact]
@@ -513,7 +513,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Offset);
         Assert.Equal(2, api.ClientQuery?.Limit);
     }
-    
+
     [Fact]
     public void SingleAsyncTest()
     {
@@ -535,7 +535,8 @@ public class LinqQueryProviderTests
 
     #region SingleOrDefault
 
-    [Fact] public void SingleOrDefaultTest()
+    [Fact]
+    public void SingleOrDefaultTest()
     {
         var api = new ApiClientMockup();
 
@@ -550,7 +551,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Offset);
         Assert.Equal(2, api.ClientQuery?.Limit);
     }
-    
+
     [Fact]
     public void SingleOrDefaultEmptyTest()
     {
@@ -564,7 +565,7 @@ public class LinqQueryProviderTests
         Assert.Equal(2, api.ClientQuery?.Limit);
         Assert.Null(testClass);
     }
-    
+
     [Fact]
     public void SingleOrDefaultAsyncTest()
     {
@@ -581,7 +582,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Offset);
         Assert.Equal(2, api.ClientQuery?.Limit);
     }
-    
+
     [Fact]
     public async void SingleOrDefaultEmptyAsyncTest()
     {
@@ -653,7 +654,7 @@ public class LinqQueryProviderTests
 
         var query =
             from m in api.Manufacturers
-            // here the constructor for 'Guid' is called during expression tree validation (client side invocation)
+                // here the constructor for 'Guid' is called during expression tree validation (client side invocation)
             where m.Uid == new Guid("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d")
             select m;
 
@@ -670,7 +671,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(new Guid("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"), manufacturer?.Uid);
         Assert.Equal(new Guid("4477e983-be5c-43d5-b3d0-5f26971bf2f3"), manufacturer?.Uid);
     }
-    
+
     [Fact]
     public void WhereGuidEqualStaticMethodCallTest()
     {
@@ -678,7 +679,7 @@ public class LinqQueryProviderTests
 
         var query =
             from m in api.Manufacturers
-            // here the method 'Guid.Parse' is called during expression tree validation (client side invocation)
+                // here the method 'Guid.Parse' is called during expression tree validation (client side invocation)
             where m.Uid == Guid.Parse("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d")
             select m;
 
@@ -695,17 +696,17 @@ public class LinqQueryProviderTests
         //Assert.Equal(new Guid("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"), manufacturer?.Uid);
         Assert.Equal(new Guid("4477e983-be5c-43d5-b3d0-5f26971bf2f3"), manufacturer?.Uid);
     }
-    
+
     [Fact]
     public void WhereGuidEqualLocalVariableTest()
     {
         var api = new ApiClientMockup();
 
         var uid = Guid.Parse("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d");
-        
+
         var query =
             from m in api.Manufacturers
-            // here we use a local variable which will be evaluated on client side
+                // here we use a local variable which will be evaluated on client side
             where m.Uid == uid
             select m;
 
@@ -722,7 +723,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(new Guid("16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"), manufacturer?.Uid);
         Assert.Equal(new Guid("4477e983-be5c-43d5-b3d0-5f26971bf2f3"), manufacturer?.Uid);
     }
-    
+
     [Fact]
     public void WhereGuidEqualRemoteToStringTest()
     {
@@ -731,7 +732,7 @@ public class LinqQueryProviderTests
         var query =
             from m in api.Manufacturers
 
-            // It is invalid to call a method on a server-side property. This will not work.
+                // It is invalid to call a method on a server-side property. This will not work.
             where m.Uid.ToString() == "16b41e40-ee3c-4837-b9a9-57b76c7d1d9d"
             select m;
 
@@ -749,6 +750,7 @@ public class LinqQueryProviderTests
         Assert.Equal(new Guid("4477e983-be5c-43d5-b3d0-5f26971bf2f3"), manufacturer?.Uid);
     }
 
+    [Fact]
     public void WhereStringEqualToNullTest()
     {
         var api = new ApiClientMockup();
@@ -767,7 +769,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereStringEqualToEmptyStringTest()
     {
@@ -787,7 +789,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereIntegerEqualToNumberTest()
     {
@@ -807,7 +809,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereIntegerNullableEqualToNullTest()
     {
@@ -827,7 +829,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereIntegerNullableEqualToNumberTest()
     {
@@ -847,7 +849,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereDoubleEqualToNumberTest()
     {
@@ -855,7 +857,7 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
             where p.NumberDoubleProp == -5.13
             select p;
 
@@ -868,7 +870,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereLongEqualToNumberTest()
     {
@@ -888,7 +890,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereBoolEqualToTrueTest()
     {
@@ -908,7 +910,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereDecimalEqualToNumberTest()
     {
@@ -928,7 +930,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereDecimalNullableEqualToNullTest()
     {
@@ -948,7 +950,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereDecimalNullableEqualToNumberTest()
     {
@@ -968,7 +970,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereDateTimeEqualToDateTimeTest()
     {
@@ -988,7 +990,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereDateTimeNullableEqualToNullTest()
     {
@@ -1008,7 +1010,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereDateTimeNullableEqualToDateTimeTest()
     {
@@ -1028,7 +1030,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
 #if NET6_0_OR_GREATER
     [Fact]
     public void WhereDateOnlyNullableEqualToDateTimeTest()
@@ -1050,7 +1052,7 @@ public class LinqQueryProviderTests
         Assert.Empty(persons);
     }
 #endif
-    
+
     [Fact]
     public void WhereGuidEqualToGuidTest()
     {
@@ -1070,7 +1072,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereGuidNullableEqualToNullTest()
     {
@@ -1090,7 +1092,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereGuidNullableEqualToGuidTest()
     {
@@ -1134,7 +1136,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereStringToStringEqualToEmptyStringTest()
     {
@@ -1154,7 +1156,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereIntegerToStringEqualToNumberTest()
     {
@@ -1170,7 +1172,7 @@ public class LinqQueryProviderTests
             var persons = query.ToList();
         });
     }
-    
+
     [Fact]
     public void WhereIntegerNullableToStringEqualToNullTest()
     {
@@ -1186,7 +1188,7 @@ public class LinqQueryProviderTests
             var persons = query.ToList();
         });
     }
-    
+
     [Fact]
     public void WhereIntegerNullableToStringEqualToNumberTest()
     {
@@ -1202,7 +1204,7 @@ public class LinqQueryProviderTests
             var persons = query.ToList();
         });
     }
-    
+
     [Fact]
     public void WhereDoubleToStringEqualToNumberTest()
     {
@@ -1210,7 +1212,7 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            // ReSharper disable once SpecifyACultureInStringConversionExplicitly
+                // ReSharper disable once SpecifyACultureInStringConversionExplicitly
             where p.NumberDoubleProp.ToString() == "-5.13"
             select p;
 
@@ -1219,7 +1221,7 @@ public class LinqQueryProviderTests
             var persons = query.ToList();
         });
     }
-    
+
     [Fact]
     public void WhereLongToStringEqualToNumberTest()
     {
@@ -1235,7 +1237,7 @@ public class LinqQueryProviderTests
             var persons = query.ToList();
         });
     }
-    
+
     [Fact]
     public void WhereBoolToStringEqualToTrueTest()
     {
@@ -1251,7 +1253,7 @@ public class LinqQueryProviderTests
             var persons = query.ToList();
         });
     }
-    
+
     [Fact]
     public void WhereDecimalToStringEqualToNumberTest()
     {
@@ -1259,7 +1261,7 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            // ReSharper disable once SpecifyACultureInStringConversionExplicitly
+                // ReSharper disable once SpecifyACultureInStringConversionExplicitly
             where p.Amount.ToString() == "312312.5434353"
             select p;
 
@@ -1268,7 +1270,7 @@ public class LinqQueryProviderTests
             var persons = query.ToList();
         });
     }
-    
+
     [Fact]
     public void WhereDecimalNullableToStringEqualToNullTest()
     {
@@ -1284,7 +1286,7 @@ public class LinqQueryProviderTests
             var persons = query.ToList();
         });
     }
-    
+
     [Fact]
     public void WhereDecimalNullableToStringEqualToNumberTest()
     {
@@ -1300,7 +1302,7 @@ public class LinqQueryProviderTests
             var persons = query.ToList();
         });
     }
-    
+
     [Fact]
     public void WhereDateTimeToStringEqualToDateTimeTest()
     {
@@ -1308,7 +1310,7 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            // ReSharper disable once SpecifyACultureInStringConversionExplicitly
+                // ReSharper disable once SpecifyACultureInStringConversionExplicitly
             where p.AnyDate.ToString() == "2023-12-04T04:02:05Z"
             select p;
 
@@ -1321,7 +1323,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereDateTimeNullableToStringEqualToNullTest()
     {
@@ -1341,7 +1343,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereDateTimeNullableToStringEqualToDateTimeTest()
     {
@@ -1361,7 +1363,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
 #if NET6_0_OR_GREATER
     [Fact]
     public void WhereDateOnlyToStringEqualToDateTimeTest()
@@ -1383,7 +1385,7 @@ public class LinqQueryProviderTests
         Assert.Empty(persons);
     }
 #endif
-    
+
     [Fact]
     public void WhereGuidToStringEqualToGuidTest()
     {
@@ -1423,7 +1425,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereGuidNullableToStringEqualToGuidTest()
     {
@@ -1453,7 +1455,7 @@ public class LinqQueryProviderTests
 
         var query =
             from p in api.Empty
-            where new []{Guid.Empty}.Contains(p.Uuid)
+            where new[] { Guid.Empty }.Contains(p.Uuid)
             select p;
 
         var persons = query.ToList();
@@ -1613,8 +1615,8 @@ public class LinqQueryProviderTests
             "{\"_and\": [{\"nested\": {\"number\": {\"_gte\": 1}}}, {\"nested\": {\"number\": {\"_lte\": 10}}}]}",
             api.ClientQuery?.Filter);
     }
-    
-    
+
+
     [Fact]
     public async void WhereSelectAndAsyncTest()
     {
@@ -2128,7 +2130,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(3, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public void SkipTakeTest()
     {
@@ -2191,7 +2193,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(3, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public void IncludeSecondNestedTest()
     {
@@ -2212,7 +2214,7 @@ public class LinqQueryProviderTests
         //Assert.Equal(3, persons.Count);
         Assert.Equal(5, persons.Count);
     }
-    
+
     [Fact]
     public void IncludeThenIncludeTest()
     {

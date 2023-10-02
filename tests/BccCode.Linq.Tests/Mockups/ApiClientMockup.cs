@@ -1,5 +1,5 @@
-﻿using BccCode.Linq.Tests.Helpers;
-using BccCode.Linq.Client;
+﻿using BccCode.Linq.Client;
+using BccCode.Linq.Tests.Helpers;
 
 namespace BccCode.Linq.Tests;
 

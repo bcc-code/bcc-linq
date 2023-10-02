@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using BccCode.Linq.Examples.IQueryable;
+﻿using BccCode.Linq.Examples.IQueryable;
 using BccCode.Linq.Server;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

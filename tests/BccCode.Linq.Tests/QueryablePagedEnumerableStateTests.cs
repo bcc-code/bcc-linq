@@ -166,7 +166,7 @@ public class QueryablePagedEnumerableStateTests
         Assert.False(state.Unlimited);
         Assert.True(state.NextPage(BATCH_SIZE));
         Assert.True(state.NextPage(BATCH_SIZE));
-        Assert.False(state.NextPage(BATCH_SIZE-1));
+        Assert.False(state.NextPage(BATCH_SIZE - 1));
 
     }
 

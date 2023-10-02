@@ -27,7 +27,7 @@ internal static class Enumerable
             .Single(
                 mi => mi.GetGenericArguments().Length == 1
                       && mi.GetParameters().Length == 1);
-    
+
     internal static readonly MethodInfo SelectMethodInfo
         = typeof(System.Linq.Enumerable)
             .GetTypeInfo().GetDeclaredMethods(nameof(System.Linq.Enumerable.Select))
