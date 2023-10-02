@@ -32,24 +32,6 @@ foreach(var person in persons)
 }
 ```
 
-### DirectusFilterBuilder usage
-
-DirectusFilterBuilder is a C# implementation for building a json string in a Directus Filter format.
-
-```csharp
-  var json = DirectusFilterBuilder<Project>.Create()
-            .Where(x => x.Status == true)
-            .Serialize();
-```
-```csharp
-  var json = DirectusFilterBuilder<Project>.Create()
-            .Where(x => x.Start >= new DateTime(2023, 5, 1) && x.Start <= new DateTime(2023, 5, 31));
-            .Serialize();
-```
-Results in `{"Status":{"_eq":"True"}}` and `{"Start":{"_gte":"2023-05-01T00:00:00.0000000","_lte":"2023-05-31T00:00:00.0000000"}}` respectively.
-
-`Project` is POCO object and could be any object like an entity.
-
 ## Usage on Server side
 
 ### Filter usage
