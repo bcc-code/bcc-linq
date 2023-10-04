@@ -5,6 +5,19 @@ namespace BccCode.Linq.Server;
 
 public static class CollectionsExtensions
 {
+    [Obsolete($"Please use IQueryable<T>.{nameof(ApplyApiRequest)} instead")]
+    public static IEnumerable<T> ApplyRuleFilter<T>(this IEnumerable<T> source, Filter<T> filter) where T : class
+    {
+        var exp = FilterToLambdaParser.Parse(filter);
+        return source.Where(exp.Compile());
+    }
+
+    [Obsolete($"Please use {nameof(ApplyApiRequest)} instead")]
+    public static IQueryable<T> ApplyRuleFilter<T>(this IQueryable<T> source, Filter<T> filter) where T : class
+    {
+        var exp = FilterToLambdaParser.Parse(filter);
+        return source.Where(exp);
+    }
     public static IQueryable<T> ApplyApiRequest<T>(this IQueryable<T> source, IQueryableParameters query,
         string? defaultSort = null)
         where T : class
