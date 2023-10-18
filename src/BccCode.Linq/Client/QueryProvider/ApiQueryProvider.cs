@@ -1558,6 +1558,19 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         object? value = node.Value;
         Type type = node.Type;
 
+        if (value != null)
+        {
+            var valueType = value.GetType();
+            
+            if (valueType.IsValueType && type != valueType)
+            {
+                // A value type is converted in the constant expression. For identifying the
+                // type, we force to use the actual constant type here. This is necessary
+                // when e.g. a value type is passed to a object parameter of a function.
+                type = valueType;
+            }
+        }
+
         if (value == null)
         {
             stringBuilder.Append("null");
