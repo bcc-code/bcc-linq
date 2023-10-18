@@ -19,9 +19,7 @@ public static class CollectionsExtensions
         var exp = FilterToLambdaParser.Parse(filter);
         return source.Where(exp);
     }
-
     public static IQueryable<T> ApplyApiRequest<T>(this IQueryable<T> source, IQueryableParameters query,
-        int? defaultLimit = 100,
         string? defaultSort = null)
         where T : class
     {
@@ -155,7 +153,7 @@ public static class CollectionsExtensions
             source = source.Skip(query.Offset.Value);
         }
 
-        var limit = query.Limit ?? defaultLimit;
+        var limit = query.Limit;
 
         if (query.Page != null)
         {
