@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Immutable;
 using System.Runtime.Serialization;
-
+using BccCode.Platform.Apis;
 
 namespace BccCode.Linq.Client;
 

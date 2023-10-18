@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using BccCode.Platform.Apis;
 
 namespace BccCode.Linq.Client;
 

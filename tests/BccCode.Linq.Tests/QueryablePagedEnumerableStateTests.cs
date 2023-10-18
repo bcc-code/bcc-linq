@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BccCode.Linq;
 using BccCode.Linq.Client;
+using BccCode.Platform.Apis;
 
 namespace RuleToLinqParser.Tests;
 

@@ -1,4 +1,6 @@
 ﻿
+using BccCode.Platform.Apis;
+
 namespace BccCode.Linq.Client;
 public static class IQueryableApiClientExtension
 {
