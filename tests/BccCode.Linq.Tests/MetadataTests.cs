@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BccCode.Linq.Client;
 using BccCode.Linq.Tests.Helpers;
+using BccCode.Platform.Apis;
 
 namespace BccCode.Linq.Tests;
 
