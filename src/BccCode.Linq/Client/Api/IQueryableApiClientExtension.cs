@@ -1,5 +1,5 @@
 ﻿
-using BccCode.Platform.Apis;
+using BccCode.Platform;
 
 namespace BccCode.Linq.Client;
 public static class IQueryableApiClientExtension
@@ -22,4 +22,5 @@ public static class IQueryableApiClientExtension
         var provider = new ApiQueryProvider(apiClient, path, parameters);
         return new ApiQueryable<T>(provider);
     }
+
 }

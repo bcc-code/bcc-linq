@@ -1,4 +1,4 @@
-﻿using BccCode.Platform.Apis;
+﻿using BccCode.Platform;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BccCode.Linq.Tests;

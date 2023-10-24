@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Threading;
-using BccCode.Platform.Apis;
+using BccCode.Platform;
 
 namespace BccCode.Linq.Client;
 
