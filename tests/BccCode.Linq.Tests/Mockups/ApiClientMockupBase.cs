@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Diagnostics;
 using BccCode.Linq.Client;
-using BccCode.Platform.Apis;
+using BccCode.Platform;
 
 namespace BccCode.Linq.Tests;
 
