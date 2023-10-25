@@ -11,7 +11,7 @@ namespace BccCode.Linq.Tests;
 ///
 /// This class is build for testing the QueryProvider 
 /// </summary>
-public class ApiClientMockupBase : IQueryableApiClient
+public class ApiClientMockupBase : IHttpApiQueryableClient
 {
     private readonly Dictionary<Type, IList> _inMemoryData = new();
 
@@ -37,7 +37,7 @@ public class ApiClientMockupBase : IQueryableApiClient
 
     #region IApiClient
 
-    public TResult? FetchPage<TResult>(string endpoint, IQueryableParameters query)
+    public TResult? GetResult<TResult>(string endpoint, IQueryableParameters query)
         where TResult : class
     {
         PageEndpoint = PageEndpoint ?? endpoint;
@@ -64,18 +64,18 @@ public class ApiClientMockupBase : IQueryableApiClient
         throw new Exception("Invalid call of method No In-Memory data registered in ApiClientMockup");
     }
 
-    public Task<TResult?> FetchPageAsync<TResult>(string endpoint, IQueryableParameters request, CancellationToken cancellationToken = default)
+    public Task<TResult?> GetResultAsync<TResult>(string endpoint, IQueryableParameters request, CancellationToken cancellationToken = default)
         where TResult : class
     {
         PageEndpoint = endpoint;
         PageQuery = request;
 
         return Task.FromResult(
-            FetchPage<TResult>(endpoint, request)
+            GetResult<TResult>(endpoint, request)
         );
     }
 
-    IQueryableParameters IQueryableApiClient.CreateQueryableParameters(string path)
+    IQueryableParameters IHttpApiQueryableClient.CreateQueryableParameters(string path)
     {
         // NOTE: The Mockup API does just use a single ApiRequest class.
         //       A real API client might use different request model classes for different endpoints.

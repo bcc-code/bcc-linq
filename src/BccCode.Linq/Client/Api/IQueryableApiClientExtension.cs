@@ -17,7 +17,7 @@ public static class IQueryableApiClientExtension
     /// </param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static IQueryable<T> GetQueryable<T>(this IQueryableApiClient apiClient, string path, Action<IQueryableParameters>? parameters = null)
+    public static IQueryable<T> GetQueryable<T>(this IHttpApiQueryableClient apiClient, string path, Action<IQueryableParameters>? parameters = null)
     {
         var provider = new ApiQueryProvider(apiClient, path, parameters);
         return new ApiQueryable<T>(provider);

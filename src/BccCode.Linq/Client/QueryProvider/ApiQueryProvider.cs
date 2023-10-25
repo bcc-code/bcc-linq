@@ -89,7 +89,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     /// This lock object is used to make sure this does not happen.
     /// </summary>
     private readonly object _queryBuilderLock = new();
-    private readonly IQueryableApiClient _apiClient;
+    private readonly IHttpApiQueryableClient _apiClient;
 
     /// <summary>
     /// The URL path to the endpoint passed to the API client.
@@ -124,7 +124,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     /// The URL path passed to the API client on request.
     /// </param>
     /// <exception cref="ArgumentNullException"></exception>
-    public ApiQueryProvider(IQueryableApiClient apiClient, string path = "", Action<IQueryableParameters>? parametersCallback = default(Action<IQueryableParameters>))
+    public ApiQueryProvider(IHttpApiQueryableClient apiClient, string path = "", Action<IQueryableParameters>? parametersCallback = default(Action<IQueryableParameters>))
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _path = path;
