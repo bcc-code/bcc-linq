@@ -63,12 +63,12 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
 
     private ResultList<T>? RequestPage(IQueryableParameters parameters)
     {
-        return _apiClient.GetResult<ResultList<T>>(_path, parameters);
+        return _apiClient.Get<ResultList<T>>(_path, parameters);
     }
 
     private Task<ResultList<T>?> RequestPageAsync(IQueryableParameters parameters, CancellationToken cancellationToken = default)
     {
-        return _apiClient.GetResultAsync<ResultList<T>>(_path, parameters, cancellationToken);
+        return _apiClient.GetAsync<ResultList<T>>(_path, parameters, cancellationToken);
     }
 
 

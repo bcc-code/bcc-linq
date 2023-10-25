@@ -37,7 +37,7 @@ public class ApiClientMockupBase : IHttpApiQueryableClient
 
     #region IApiClient
 
-    public TResult? GetResult<TResult>(string endpoint, IQueryableParameters query)
+    public TResult? Get<TResult>(string endpoint, IQueryableParameters query)
         where TResult : class
     {
         PageEndpoint = PageEndpoint ?? endpoint;
@@ -64,14 +64,14 @@ public class ApiClientMockupBase : IHttpApiQueryableClient
         throw new Exception("Invalid call of method No In-Memory data registered in ApiClientMockup");
     }
 
-    public Task<TResult?> GetResultAsync<TResult>(string endpoint, IQueryableParameters request, CancellationToken cancellationToken = default)
+    public Task<TResult?> GetAsync<TResult>(string endpoint, IQueryableParameters request, CancellationToken cancellationToken = default)
         where TResult : class
     {
         PageEndpoint = endpoint;
         PageQuery = request;
 
         return Task.FromResult(
-            GetResult<TResult>(endpoint, request)
+            Get<TResult>(endpoint, request)
         );
     }
 
