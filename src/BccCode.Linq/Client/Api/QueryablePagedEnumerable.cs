@@ -25,7 +25,7 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
     // ReSharper disable once MemberCanBePrivate.Global
     public const int MaxRowsPerPage = 1000;
 
-    private readonly IQueryableApiClient _apiClient;
+    private readonly IHttpApiQueryableClient _apiClient;
     private readonly string _path;
     private readonly Action<IQueryableParameters>? _parametersCallback;
     private int _queryBatchSize = 100;
@@ -51,7 +51,7 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
     /// </summary>
     public IQueryableParameters QueryParameters { get; }
 
-    public QueryablePagedEnumerable(IQueryableApiClient apiClient, string path, Action<IQueryableParameters>? parametersCallback)
+    public QueryablePagedEnumerable(IHttpApiQueryableClient apiClient, string path, Action<IQueryableParameters>? parametersCallback)
     {
         _apiClient = apiClient;
         _path = path;
@@ -63,12 +63,12 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
 
     private ResultList<T>? RequestPage(IQueryableParameters parameters)
     {
-        return _apiClient.FetchPage<ResultList<T>>(_path, parameters);
+        return _apiClient.GetResult<ResultList<T>>(_path, parameters);
     }
 
     private Task<ResultList<T>?> RequestPageAsync(IQueryableParameters parameters, CancellationToken cancellationToken = default)
     {
-        return _apiClient.FetchPageAsync<ResultList<T>>(_path, parameters, cancellationToken);
+        return _apiClient.GetResultAsync<ResultList<T>>(_path, parameters, cancellationToken);
     }
 
 
