@@ -514,13 +514,22 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 
             string op;
             bool logicalOperator = false;
+            bool isNullCheck = false;
             switch (node.NodeType)
             {
                 case ExpressionType.Equal:
+                {
+                    if (node.Right is ConstantExpression constantExpression &&
+                        constantExpression.Value == null)
                     {
-                        op = _inverseOperator ? "_neq" : "_eq";
+                        isNullCheck = true;
+                        op = _inverseOperator ? "_nnull" : "_null";
                         break;
                     }
+
+                    op = _inverseOperator ? "_neq" : "_eq";
+                    break;
+                }
                 case ExpressionType.AndAlso:
                     {
                         op = _inverseOperator ? "_or" : "_and";
@@ -555,6 +564,14 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     }
                 case ExpressionType.NotEqual:
                     {
+                        if (node.Right is ConstantExpression constantExpression &&
+                            constantExpression.Value == null)
+                        {
+                            isNullCheck = true;
+                            op = _inverseOperator ? "_null" : "_nnull";
+                            break;
+                        }
+                        
                         op = _inverseOperator ? "_eq" : "_neq";
                         break;
                     }
@@ -584,9 +601,16 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                 _where.Append("\": {\"");
                 _where.Append(op);
                 _where.Append("\": ");
-                var right = Visit(node.Right);
-                Debug.Assert(right != null);
-                Debug.Assert(right.NodeType == ExpressionType.Default);
+                if (isNullCheck)
+                {
+                    _where.Append("true");
+                }
+                else
+                {
+                    var right = Visit(node.Right);
+                    Debug.Assert(right != null);
+                    Debug.Assert(right.NodeType == ExpressionType.Default);
+                }
                 if (depth > 1)
                 {
                     // close nested members
