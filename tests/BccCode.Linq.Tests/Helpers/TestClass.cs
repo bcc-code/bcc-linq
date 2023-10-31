@@ -1,4 +1,8 @@
-﻿namespace BccCode.Linq.Tests.Helpers;
+﻿using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+
+namespace BccCode.Linq.Tests.Helpers;
 
 public class TestClass
 {
@@ -20,6 +24,15 @@ public class TestClass
 #if NET6_0_OR_GREATER
     public DateOnly DateOnly { get; set; }
 #endif
+    
+    [DataMember(Name = "custom_name")]
+    public NestedClass CustomNameByDataMemberAttribute { get; set; }
+    
+    [JsonPropertyName("custom_name")]
+    public NestedClass CustomNameByJsonPropertyNameAttribute { get; set; }
+    
+    [JsonProperty("custom_name")]
+    public NestedClass CustomNameByNewtonsoftJsonPropertyAttribute { get; set; }
 }
 
 public class NestedClass

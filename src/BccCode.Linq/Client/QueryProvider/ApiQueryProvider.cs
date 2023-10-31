@@ -3,8 +3,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using BccCode.Platform;
+using Newtonsoft.Json;
 
 namespace BccCode.Linq.Client;
 
@@ -385,7 +387,32 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         {
             if (_activeParameters.TryGetValue(parameterNode, out var apiCaller))
             {
-                string ApiMemberName() => node.Member.Name.ToCamelCase();
+                string ApiMemberToJsonString(MemberInfo member)
+                {
+                    var dataMemberAttribute = member.GetCustomAttribute<DataMemberAttribute>();
+                    if (dataMemberAttribute != null)
+                    {
+                        return dataMemberAttribute.Name;
+                    }
+                    
+#if NET6_0_OR_GREATER
+                    var jsonPropertyNameAttribute = member.GetCustomAttribute<System.Text.Json.Serialization.JsonPropertyNameAttribute>();
+                    if (jsonPropertyNameAttribute != null)
+                    {
+                        return jsonPropertyNameAttribute.Name;
+                    }
+#endif
+
+                    var jsonPropertyAttribute = member.GetCustomAttribute<JsonPropertyAttribute>();
+                    if (jsonPropertyAttribute != null)
+                    {
+                        return jsonPropertyAttribute.PropertyName ?? member.Name.ToCamelCase();
+                    }
+
+                    return member.Name.ToCamelCase();
+                }
+
+                string ApiMemberName() => ApiMemberToJsonString(node.Member);
 
                 string ApiMemberPath(string splitter = ".")
                 {
@@ -394,7 +421,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     foreach (var nestedMemberExpression in nestedMemberExpressions)
                     {
                         memberPath.Append(
-                            nestedMemberExpression.Member.Name.ToCamelCase()
+                            ApiMemberToJsonString(nestedMemberExpression.Member)
                         );
                         memberPath.Append(splitter);
                     }
@@ -486,6 +513,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     case VisitLinqLambdaMode.Convert:
                         {
                             //We assume conversion is implicitly handled on the server side
+                            Debug.Assert(_where != null);
                             _where.Append(ApiMemberPath(splitter: "\": {\""));
                             return Expression.Empty();
                         }
