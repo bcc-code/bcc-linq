@@ -762,7 +762,7 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.PageEndpoint);
-        Assert.Equal("{\"strProp\": {\"_eq\": null}}", api.ClientQuery?.Filter);
+        Assert.Equal("{\"strProp\": {\"_null\": true}}", api.ClientQuery?.Filter);
         Assert.Equal("*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
         Assert.Null(api.ClientQuery?.Offset);
@@ -822,7 +822,7 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.PageEndpoint);
-        Assert.Equal("{\"intNullable\": {\"_eq\": null}}", api.ClientQuery?.Filter);
+        Assert.Equal("{\"intNullable\": {\"_null\": true}}", api.ClientQuery?.Filter);
         Assert.Equal("*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
         Assert.Null(api.ClientQuery?.Offset);
@@ -943,7 +943,7 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.PageEndpoint);
-        Assert.Equal("{\"amountNullable\": {\"_eq\": null}}", api.ClientQuery?.Filter);
+        Assert.Equal("{\"amountNullable\": {\"_null\": true}}", api.ClientQuery?.Filter);
         Assert.Equal("*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
         Assert.Null(api.ClientQuery?.Offset);
@@ -1003,7 +1003,7 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.PageEndpoint);
-        Assert.Equal("{\"dateNullable\": {\"_eq\": null}}", api.ClientQuery?.Filter);
+        Assert.Equal("{\"dateNullable\": {\"_null\": true}}", api.ClientQuery?.Filter);
         Assert.Equal("*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
         Assert.Null(api.ClientQuery?.Offset);
@@ -1085,7 +1085,7 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.PageEndpoint);
-        Assert.Equal("{\"uuidNullable\": {\"_eq\": null}}", api.ClientQuery?.Filter);
+        Assert.Equal("{\"uuidNullable\": {\"_null\": true}}", api.ClientQuery?.Filter);
         Assert.Equal("*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
         Assert.Null(api.ClientQuery?.Offset);
@@ -1129,7 +1129,7 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.PageEndpoint);
-        Assert.Equal("{\"strProp\": {\"_eq\": null}}", api.ClientQuery?.Filter);
+        Assert.Equal("{\"strProp\": {\"_null\": true}}", api.ClientQuery?.Filter);
         Assert.Equal("*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
         Assert.Null(api.ClientQuery?.Offset);
@@ -1336,7 +1336,7 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.PageEndpoint);
-        Assert.Equal("{\"dateNullable\": {\"_eq\": null}}", api.ClientQuery?.Filter);
+        Assert.Equal("{\"dateNullable\": {\"_null\": true}}", api.ClientQuery?.Filter);
         Assert.Equal("*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
         Assert.Null(api.ClientQuery?.Offset);
@@ -1418,7 +1418,7 @@ public class LinqQueryProviderTests
 
         var persons = query.ToList();
         Assert.Equal("empty", api.PageEndpoint);
-        Assert.Equal("{\"uuidNullable\": {\"_eq\": null}}", api.ClientQuery?.Filter);
+        Assert.Equal("{\"uuidNullable\": {\"_null\": true}}", api.ClientQuery?.Filter);
         Assert.Equal("*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
         Assert.Null(api.ClientQuery?.Offset);
@@ -1935,7 +1935,7 @@ public class LinqQueryProviderTests
         var persons = query.ToList();
         Assert.Equal("persons", api.PageEndpoint);
         Assert.Equal(
-            "{\"_and\": [{\"car\": {\"_neq\": null}}, {\"car\": {\"model\": {\"_eq\": \"Opel\"}}}]}",
+            "{\"_and\": [{\"car\": {\"_nnull\": true}}, {\"car\": {\"model\": {\"_eq\": \"Opel\"}}}]}",
             api.ClientQuery?.Filter);
         Assert.Equal("*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
@@ -1960,7 +1960,7 @@ public class LinqQueryProviderTests
         var persons = await query.ToListAsync();
         Assert.Equal("persons", api.PageEndpoint);
         Assert.Equal(
-            "{\"_and\": [{\"car\": {\"_neq\": null}}, {\"car\": {\"model\": {\"_eq\": \"Opel\"}}}]}",
+            "{\"_and\": [{\"car\": {\"_nnull\": true}}, {\"car\": {\"model\": {\"_eq\": \"Opel\"}}}]}",
             api.ClientQuery?.Filter);
         Assert.Equal("*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
