@@ -2285,6 +2285,60 @@ public class LinqQueryProviderTests
         Assert.Equal(5, persons.Count);
     }
 
+    [Fact]
+    public void IncludeCustomNameByDataMemberAttributeTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Empty
+            .Include(p => p.CustomNameByDataMemberAttribute);
+
+        var emptyList = query.ToList();
+        Assert.Equal("empty", api.PageEndpoint);
+        Assert.Null(api.ClientQuery?.Filter);
+        Assert.Equal("*,custom_name.*", api.ClientQuery?.Fields);
+        Assert.Null(api.ClientQuery?.Sort);
+        Assert.Null(api.ClientQuery?.Offset);
+        Assert.Null(api.ClientQuery?.Limit);
+        Assert.Empty(emptyList);
+    }
+    
+    [Fact]
+    public void IncludeCustomNameByJsonPropertyNameAttributeTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Empty
+            .Include(p => p.CustomNameByJsonPropertyNameAttribute);
+
+        var emptyList = query.ToList();
+        Assert.Equal("empty", api.PageEndpoint);
+        Assert.Null(api.ClientQuery?.Filter);
+        Assert.Equal("*,custom_name.*", api.ClientQuery?.Fields);
+        Assert.Null(api.ClientQuery?.Sort);
+        Assert.Null(api.ClientQuery?.Offset);
+        Assert.Null(api.ClientQuery?.Limit);
+        Assert.Empty(emptyList);
+    }
+    
+    [Fact]
+    public void IncludeCustomNameByNewtonsoftJsonPropertyAttributeTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query = api.Empty
+            .Include(p => p.CustomNameByNewtonsoftJsonPropertyAttribute);
+
+        var emptyList = query.ToList();
+        Assert.Equal("empty", api.PageEndpoint);
+        Assert.Null(api.ClientQuery?.Filter);
+        Assert.Equal("*,custom_name.*", api.ClientQuery?.Fields);
+        Assert.Null(api.ClientQuery?.Sort);
+        Assert.Null(api.ClientQuery?.Offset);
+        Assert.Null(api.ClientQuery?.Limit);
+        Assert.Empty(emptyList);
+    }
+
     #endregion
 
 
