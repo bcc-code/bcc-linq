@@ -515,11 +515,11 @@ public class LinqQueryProviderTests
     }
 
     [Fact]
-    public void SingleAsyncTest()
+    public async void SingleAsyncTest()
     {
         var api = new ApiClientMockup();
 
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             // ReSharper disable once UnusedVariable
             var persons = await api.Persons.SingleAsync();
@@ -567,11 +567,11 @@ public class LinqQueryProviderTests
     }
 
     [Fact]
-    public void SingleOrDefaultAsyncTest()
+    public async void SingleOrDefaultAsyncTest()
     {
         var api = new ApiClientMockup();
 
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             // ReSharper disable once UnusedVariable
             var persons = await api.Persons.SingleOrDefaultAsync();
@@ -1357,6 +1357,26 @@ public class LinqQueryProviderTests
         var persons = query.ToList();
         Assert.Equal("empty", api.PageEndpoint);
         Assert.Equal("{\"dateNullable\": {\"_eq\": \"2023-12-04T04:02:05Z\"}}", api.ClientQuery?.Filter);
+        Assert.Equal("*", api.ClientQuery?.Fields);
+        Assert.Null(api.ClientQuery?.Sort);
+        Assert.Null(api.ClientQuery?.Offset);
+        Assert.Null(api.ClientQuery?.Limit);
+        Assert.Empty(persons);
+    }
+    
+    [Fact]
+    public void WhereDateTimeNullableToStringGreaterThanToDateTimeTest()
+    {
+        var api = new ApiClientMockup();
+
+        var query =
+            from p in api.Empty
+            where p.DateNullable >= DateTime.Parse("2023-12-04T04:02:05Z").ToUniversalTime()
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.PageEndpoint);
+        Assert.Equal("{\"dateNullable\": {\"_gte\": \"2023-12-04T04:02:05.0000000Z\"}}", api.ClientQuery?.Filter);
         Assert.Equal("*", api.ClientQuery?.Fields);
         Assert.Null(api.ClientQuery?.Sort);
         Assert.Null(api.ClientQuery?.Offset);

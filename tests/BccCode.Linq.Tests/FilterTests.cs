@@ -171,6 +171,17 @@ public class FilterTests
             var value = ((Filter<DateTime>)filter.Properties["AnyDate"]).Properties["_eq"];
         });
     }
+    
+    [Fact]
+    public void should_cast_value_to_nullable_date()
+    {
+        var json = @"{ ""NullableDate"": { ""_eq"": ""2009-06-15T13:45:30"" } }";
+        var filter = new Filter<TestClass>(json);
+
+        var value = ((Filter<DateTime?>)filter.Properties["NullableDate"]).Properties["_eq"];
+
+        Assert.IsType<DateTime>(value);
+    }
 
     [Fact]
     public void should_filter_on_nested_class()
