@@ -125,12 +125,15 @@ public static class OperandToExpressionResolver
                 Type when type == typeof(int) && value is string strVal => (int)double.Parse(strVal, CultureInfo.InvariantCulture),
                 Type when type == typeof(decimal) && value is string strVal => decimal.Parse(strVal, CultureInfo.InvariantCulture),
                 Type when type == typeof(DateTime) && value is string strVal && DateTime.TryParse(strVal, out var dateTime) => dateTime,
+                Type when type == typeof(DateTime?) && value is string strVal && DateTime.TryParse(strVal, out var dateTime) => (DateTime?)dateTime,
                 Type when type == typeof(int) && value is ValueTuple<string, string> tuple => new ValueTuple<int, int>(
                     (int)ConvertValue(type, tuple.Item1), (int)ConvertValue(type, tuple.Item2)),
                 Type when type == typeof(double) && value is ValueTuple<string, string> tuple => new ValueTuple<double, double>(
                     (double)ConvertValue(type, tuple.Item1), (double)ConvertValue(type, tuple.Item2)),
                 Type when type == typeof(DateTime) && value is ValueTuple<string, string> tuple => new ValueTuple<DateTime, DateTime>(
                     (DateTime)ConvertValue(type, tuple.Item1), (DateTime)ConvertValue(type, tuple.Item2)),
+                Type when type == typeof(DateTime?) && value is ValueTuple<string, string> tuple => new ValueTuple<DateTime?, DateTime?>(
+                    (DateTime?)ConvertValue(type, tuple.Item1), (DateTime?)ConvertValue(type, tuple.Item2)),
                 Type when type == typeof(int) && value is not int => int.Parse(value.ToString()),
                 _ => value
             };
