@@ -23,6 +23,7 @@ public class TestClass
     public Guid? UuidNullable { get; set; }
 #if NET6_0_OR_GREATER
     public DateOnly DateOnly { get; set; }
+    public TimeOnly TimeOnly { get; set; }
 #endif
     
     [DataMember(Name = "custom_name")]

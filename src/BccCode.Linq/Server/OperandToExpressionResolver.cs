@@ -20,6 +20,42 @@ public static class OperandToExpressionResolver
         if (valueType == type)
             return value;
 
+        Type? nullableType = Nullable.GetUnderlyingType(type);
+        if (nullableType != null)
+        {
+            if (value is string strValue && strValue == "null")
+                return null;
+
+            var newValue = ConvertValue(nullableType, value);
+
+            return nullableType switch
+            {
+                Type when nullableType == typeof(bool) => (bool?)newValue,
+                Type when nullableType == typeof(sbyte) => (sbyte?)newValue,
+                Type when nullableType == typeof(byte) => (byte?)newValue,
+                Type when nullableType == typeof(char) => (char?)newValue,
+                Type when nullableType == typeof(short) => (short?)newValue,
+                Type when nullableType == typeof(ushort) => (ushort?)newValue,
+                Type when nullableType == typeof(int) => (int?)newValue,
+                Type when nullableType == typeof(uint) => (uint?)newValue,
+                Type when nullableType == typeof(long) => (long?)newValue,
+                Type when nullableType == typeof(ulong) => (ulong?)newValue,
+                Type when nullableType == typeof(nint) => (nint?)newValue,
+                Type when nullableType == typeof(nuint) => (nuint?)newValue,
+                Type when nullableType == typeof(float) => (float?)newValue,
+                Type when nullableType == typeof(double) => (double?)newValue,
+                Type when nullableType == typeof(decimal) => (decimal?)newValue,
+                Type when nullableType == typeof(Guid) => (Guid?)newValue,
+                Type when nullableType == typeof(DateTime) => (DateTime?)newValue,
+                Type when nullableType == typeof(TimeSpan) => (TimeSpan?)newValue,
+#if NET6_0_OR_GREATER
+                Type when nullableType == typeof(DateOnly) => (DateOnly?)newValue,
+                Type when nullableType == typeof(TimeOnly) => (TimeOnly?)newValue,
+#endif
+                _ => newValue,
+            };
+        }
+
         // converts value to an array
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IList<>))
         {
@@ -123,21 +159,25 @@ public static class OperandToExpressionResolver
             {
                 Type when type == typeof(bool) && value is string strVal => strVal == "1",
                 Type when type == typeof(int) && value is string strVal => (int)double.Parse(strVal, CultureInfo.InvariantCulture),
+                Type when type == typeof(float) && value is string strVal => float.Parse(strVal, CultureInfo.InvariantCulture),
+                Type when type == typeof(double) && value is string strVal => double.Parse(strVal, CultureInfo.InvariantCulture),
                 Type when type == typeof(decimal) && value is string strVal => decimal.Parse(strVal, CultureInfo.InvariantCulture),
+                Type when type == typeof(Guid) && value is string strVal && Guid.TryParse(strVal, out var uuid) => uuid,
                 Type when type == typeof(DateTime) && value is string strVal && DateTime.TryParse(strVal, out var dateTime) => dateTime,
-                Type when type == typeof(DateTime?) && value is string strVal && DateTime.TryParse(strVal, out var dateTime) => (DateTime?)dateTime,
+                Type when type == typeof(TimeSpan) && value is string strVal && TimeSpan.TryParse(strVal, out var dateTime) => dateTime,
+#if NET6_0_OR_GREATER
+                Type when type == typeof(DateOnly) && value is string strVal && DateOnly.TryParse(strVal, out var dateTime) => dateTime,
+                Type when type == typeof(TimeOnly) && value is string strVal && TimeOnly.TryParse(strVal, out var dateTime) => dateTime,
+#endif
                 Type when type == typeof(int) && value is ValueTuple<string, string> tuple => new ValueTuple<int, int>(
                     (int)ConvertValue(type, tuple.Item1), (int)ConvertValue(type, tuple.Item2)),
                 Type when type == typeof(double) && value is ValueTuple<string, string> tuple => new ValueTuple<double, double>(
                     (double)ConvertValue(type, tuple.Item1), (double)ConvertValue(type, tuple.Item2)),
                 Type when type == typeof(DateTime) && value is ValueTuple<string, string> tuple => new ValueTuple<DateTime, DateTime>(
                     (DateTime)ConvertValue(type, tuple.Item1), (DateTime)ConvertValue(type, tuple.Item2)),
-                Type when type == typeof(DateTime?) && value is ValueTuple<string, string> tuple => new ValueTuple<DateTime?, DateTime?>(
-                    (DateTime?)ConvertValue(type, tuple.Item1), (DateTime?)ConvertValue(type, tuple.Item2)),
                 Type when type == typeof(int) && value is not int => int.Parse(value.ToString()),
                 _ => value
             };
-
 
             value = Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
         }
