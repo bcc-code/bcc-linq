@@ -175,13 +175,37 @@ public class FilterTests
     [Fact]
     public void should_cast_value_to_nullable_date()
     {
-        var json = @"{ ""NullableDate"": { ""_eq"": ""2009-06-15T13:45:30"" } }";
+        var json = @"{ ""DateNullable"": { ""_eq"": ""2009-06-15T13:45:30"" } }";
         var filter = new Filter<TestClass>(json);
 
-        var value = ((Filter<DateTime?>)filter.Properties["NullableDate"]).Properties["_eq"];
+        var value = ((Filter<DateTime?>)filter.Properties["DateNullable"]).Properties["_eq"];
 
         Assert.IsType<DateTime>(value);
     }
+
+#if NET6_0_OR_GREATER
+    [Fact]
+    public void should_cast_value_to_date_only()
+    {
+        var json = @"{ ""DateOnly"": { ""_eq"": ""2009-06-15"" } }";
+        var filter = new Filter<TestClass>(json);
+
+        var value = ((Filter<DateOnly>)filter.Properties["DateOnly"]).Properties["_eq"];
+
+        Assert.IsType<DateOnly>(value);
+    }
+
+    [Fact]
+    public void should_cast_value_to_time_only()
+    {
+        var json = @"{ ""TimeOnly"": { ""_eq"": ""13:45:30"" } }";
+        var filter = new Filter<TestClass>(json);
+
+        var value = ((Filter<TimeOnly>)filter.Properties["TimeOnly"]).Properties["_eq"];
+
+        Assert.IsType<TimeOnly>(value);
+    }
+#endif
 
     [Fact]
     public void should_filter_on_nested_class()
