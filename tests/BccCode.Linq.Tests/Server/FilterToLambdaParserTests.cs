@@ -1,7 +1,7 @@
 ﻿using BccCode.Linq.Server;
 using BccCode.Linq.Tests.Helpers;
 
-namespace BccCode.Linq.Tests;
+namespace BccCode.Linq.Tests.Server;
 
 public class FilterToLambdaParserTests
 {
