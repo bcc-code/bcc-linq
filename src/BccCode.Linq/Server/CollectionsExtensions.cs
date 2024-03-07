@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.ComponentModel;
+using System.Linq.Expressions;
 using System.Reflection;
 using BccCode.Platform;
 
@@ -19,6 +20,88 @@ public static class CollectionsExtensions
         var exp = FilterToLambdaParser.Parse(filter);
         return source.Where(exp);
     }
+
+    /// <summary>
+    /// Transforms the 'sort' HTML parameter into a structured data.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The entity type to be sorted. Note that nested sorting is not supported.
+    /// </typeparam>
+    /// <param name="sort"></param>
+    /// <returns>
+    /// A enumerable returning a tuple per sorting. The tuple holds the property info
+    /// of the property to sort and the sort direction.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// Is thrown, when you try to sort nested properties.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Is thrown, when a sort property is not found in the type <typeparamref name="T"/>.
+    /// </exception>
+    internal static IEnumerable<(PropertyInfo, ListSortDirection)> GetSorting<T>(string sort)
+        where T : class
+    {
+        foreach (var sortByField in sort.Split(','))
+        {
+            if (sortByField.Contains('.'))
+                throw new NotSupportedException("Sorting on nested properties is not allowed");
+
+            var propertyName = sortByField.Trim();
+
+            if (string.IsNullOrEmpty(propertyName))
+                // sort property not given, wrong call but optimistic handling, ignore it ...
+                continue;
+
+            ListSortDirection sortDirection;
+            if (propertyName[0] == '-')
+            {
+                propertyName = propertyName[1..].Trim();
+
+                if (string.IsNullOrEmpty(propertyName))
+                    // sort property not given, wrong call but optimistic handling, ignore it ...
+                    continue;
+
+                // descending sorting
+                sortDirection = ListSortDirection.Descending;
+            }
+            else
+            {
+                // ascending sorting
+                sortDirection = ListSortDirection.Ascending;
+            }
+
+            // try find property by camel case
+            var propertyInfo = typeof(T).GetProperty(propertyName,
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
+
+            if (propertyInfo == null)
+            {
+                // transform camel to pascal case
+                if (propertyName.Length == 1)
+                {
+                    // ReSharper disable once RedundantAssignment
+                    propertyName = propertyName[1].ToString().ToUpper();
+                }
+                else
+                {
+                    // ReSharper disable once RedundantAssignment
+                    propertyName = propertyName[1].ToString().ToUpper() +
+                                   propertyName[2..];
+                }
+
+                propertyInfo = typeof(T).GetProperty(propertyName,
+                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
+            }
+
+            if (propertyInfo == null)
+            {
+                throw new InvalidOperationException($"Could not find property for sort field {sortByField}");
+            }
+
+            yield return (propertyInfo, sortDirection);
+        }
+    }
+
     public static IQueryable<T> ApplyApiRequest<T>(this IQueryable<T> source, IQueryableParameters query,
         string? defaultSort = null)
         where T : class
@@ -33,67 +116,10 @@ public static class CollectionsExtensions
         var sort = query.Sort ?? defaultSort;
         if (sort != null)
         {
-            var sortByFields = sort.Split(',');
-
             IOrderedQueryable<T>? orderedSource = null;
 
-            foreach (var sortByField in sortByFields)
+            foreach (var (propertyInfo, sortDirection) in GetSorting<T>(sort))
             {
-                if (sortByField.Contains('.'))
-                    throw new NotSupportedException("Sorting on nested properties is not allowed");
-
-                var propertyName = sortByField.Trim();
-
-                if (string.IsNullOrEmpty(propertyName))
-                    // sort property not given, wrong call but optimistic handling, ignore it ...
-                    continue;
-
-                bool descending;
-                if (propertyName[0] == '-')
-                {
-                    propertyName = propertyName[1..].Trim();
-
-                    if (string.IsNullOrEmpty(propertyName))
-                        // sort property not given, wrong call but optimistic handling, ignore it ...
-                        continue;
-
-                    // descending sorting
-                    descending = true;
-                }
-                else
-                {
-                    // ascending sorting
-                    descending = false;
-                }
-
-                // try find property by camel case
-                var propertyInfo = type.GetProperty(nameof(propertyName),
-                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
-
-                if (propertyInfo == null)
-                {
-                    // transform camel to pascal case
-                    if (propertyName.Length == 1)
-                    {
-                        // ReSharper disable once RedundantAssignment
-                        propertyName = propertyName[1].ToString().ToUpper();
-                    }
-                    else
-                    {
-                        // ReSharper disable once RedundantAssignment
-                        propertyName = propertyName[1].ToString().ToUpper() +
-                                       propertyName[2..];
-                    }
-
-                    propertyInfo = type.GetProperty(nameof(propertyName),
-                        BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
-                }
-
-                if (propertyInfo == null)
-                {
-                    throw new InvalidOperationException($"Could not find property for sort field {sortByField}");
-                }
-
                 // build key selector
                 var param = Expression.Parameter(type);
                 var keySelector = Expression.Lambda(
@@ -103,7 +129,7 @@ public static class CollectionsExtensions
                 if (orderedSource == null)
                 {
                     var orderByMethodInfo =
-                        descending
+                        sortDirection == ListSortDirection.Descending
                             ? System.Linq.Internal.Queryable.OrderByDescendingMethodInfo
                             : System.Linq.Internal.Queryable.OrderByMethodInfo;
 
@@ -119,7 +145,7 @@ public static class CollectionsExtensions
                 else
                 {
                     var thenByMethodInfo =
-                        descending
+                        sortDirection == ListSortDirection.Descending
                             ? System.Linq.Internal.Queryable.ThenByDescendingMethodInfo
                             : System.Linq.Internal.Queryable.ThenByMethodInfo;
 
