@@ -101,7 +101,33 @@ public static class CollectionsExtensions
             yield return (propertyInfo, sortDirection);
         }
     }
-
+    
+    /// <summary>
+    /// Applies query parameters to a <seealso cref="IQueryable"/> object.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The entity type.
+    /// </typeparam>
+    /// <param name="source">
+    /// The <seealso cref="IQueryable"/> object the query parameters shall be applied to.
+    /// </param>
+    /// <param name="query">
+    /// The query parameters which shall be applied.
+    /// </param>
+    /// <param name="defaultSort">
+    /// Optional. A default sorting which is applied when no sorting is applied via the query parameters (<paramref name="query"/>).
+    /// </param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Is thrown when:
+    /// - <see cref="IQueryableParameters.Offset"/> is below zero.
+    /// - <see cref="IQueryableParameters.Page"/> is below 1.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// Is thrown when:
+    /// - <see cref="IQueryableParameters.Offset"/> and <see cref="IQueryableParameters.Page"/> is used at the same time.
+    /// - <see cref="IQueryableParameters.Page"/> is used and <see cref="IQueryableParameters.Limit"/> is not given.
+    /// </exception>
     public static IQueryable<T> ApplyApiRequest<T>(this IQueryable<T> source, IQueryableParameters query,
         string? defaultSort = null)
         where T : class
@@ -137,8 +163,9 @@ public static class CollectionsExtensions
 
                     orderedSource = (IOrderedQueryable<T>)source.Provider.CreateQuery(
                         Expression.Call(
-                            source.Expression,
+                            null,
                             method,
+                            source.Expression,
                             keySelector
                         ));
                 }
@@ -153,8 +180,9 @@ public static class CollectionsExtensions
 
                     orderedSource = (IOrderedQueryable<T>)orderedSource.Provider.CreateQuery(
                         Expression.Call(
-                            orderedSource.Expression,
+                            null,
                             method,
+                            orderedSource.Expression,
                             keySelector
                         ));
                 }
