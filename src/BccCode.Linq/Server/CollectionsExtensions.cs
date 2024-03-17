@@ -41,6 +41,9 @@ public static class CollectionsExtensions
     internal static IEnumerable<(PropertyInfo, ListSortDirection)> GetSorting<T>(string sort)
         where T : class
     {
+        var propertyMetadata = typeof(T)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
+
         foreach (var sortByField in sort.Split(','))
         {
             if (sortByField.Contains('.'))
@@ -71,8 +74,10 @@ public static class CollectionsExtensions
             }
 
             // try find property by camel case
-            var propertyInfo = typeof(T).GetProperty(propertyName,
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
+            //var propertyInfo = typeof(T).GetProperty(propertyName,
+            //    BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
+            // try find case insensitive property by name
+            var propertyInfo = propertyMetadata.FirstOrDefault(x => string.Equals(x.Name, propertyName, StringComparison.CurrentCultureIgnoreCase));
 
             if (propertyInfo == null)
             {
@@ -101,7 +106,7 @@ public static class CollectionsExtensions
             yield return (propertyInfo, sortDirection);
         }
     }
-    
+
     /// <summary>
     /// Applies query parameters to a <seealso cref="IQueryable"/> object.
     /// </summary>
