@@ -88,12 +88,10 @@ public class Filter<T> : Filter
     {
         var deserializedJson = FilterDeserializationHelpers.DeserializeJsonRule(json);
 
-        var propertyMetadata = typeof(T)
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
-
         foreach (var (key, value) in deserializedJson)
         {
-            var propertyInfo = propertyMetadata.FirstOrDefault(x => string.Equals(x.Name, key, StringComparison.CurrentCultureIgnoreCase));
+            var propertyInfo = typeof(T).GetProperty(key,
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.IgnoreCase);
 
             if (new[] { "_and", "_or" }.Contains(key))
             {
