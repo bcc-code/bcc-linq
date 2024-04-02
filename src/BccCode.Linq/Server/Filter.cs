@@ -7,6 +7,7 @@ using BccCode;
 using BccCode.Linq;
 using BccCode.Linq.Server;
 */
+using System.Reflection;
 using BccCode.Linq.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -87,11 +88,10 @@ public class Filter<T> : Filter
     {
         var deserializedJson = FilterDeserializationHelpers.DeserializeJsonRule(json);
 
-        var propertyMetadata = typeof(T).GetProperties();
-
         foreach (var (key, value) in deserializedJson)
         {
-            var propertyInfo = propertyMetadata.FirstOrDefault(x => x.Name.ToLower() == key.ToLower());
+            var propertyInfo = typeof(T).GetProperty(key,
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.IgnoreCase);
 
             if (new[] { "_and", "_or" }.Contains(key))
             {

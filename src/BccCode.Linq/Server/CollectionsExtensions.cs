@@ -70,9 +70,9 @@ public static class CollectionsExtensions
                 sortDirection = ListSortDirection.Ascending;
             }
 
-            // try find property by camel case
+            // try find property
             var propertyInfo = typeof(T).GetProperty(propertyName,
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.IgnoreCase);
 
             if (propertyInfo == null)
             {
@@ -101,7 +101,7 @@ public static class CollectionsExtensions
             yield return (propertyInfo, sortDirection);
         }
     }
-    
+
     /// <summary>
     /// Applies query parameters to a <seealso cref="IQueryable"/> object.
     /// </summary>
