@@ -1363,7 +1363,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(persons);
     }
-    
+
     [Fact]
     public void WhereDateTimeNullableToStringGreaterThanToDateTimeTest()
     {
@@ -1494,6 +1494,28 @@ public class LinqQueryProviderTests
         var api = new ApiClientMockup();
 
         var uuids = new[] { Guid.Empty };
+
+        var query =
+            from p in api.Empty
+            where uuids.Contains(p.Uuid)
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("empty", api.PageEndpoint);
+        Assert.Equal("{\"uuid\": {\"_in\": [\"00000000-0000-0000-0000-000000000000\"]}}", api.ClientQuery?.Filter);
+        Assert.Equal("*", api.ClientQuery?.Fields);
+        Assert.Null(api.ClientQuery?.Sort);
+        Assert.Null(api.ClientQuery?.Offset);
+        Assert.Null(api.ClientQuery?.Limit);
+        Assert.Empty(persons);
+    }
+
+    [Fact]
+    public void WhereContainsVariableGuidListTest()
+    {
+        var api = new ApiClientMockup();
+
+        var uuids = new List<Guid> { Guid.Empty };
 
         var query =
             from p in api.Empty
@@ -2322,7 +2344,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(emptyList);
     }
-    
+
     [Fact]
     public void IncludeCustomNameByJsonPropertyNameAttributeTest()
     {
@@ -2340,7 +2362,7 @@ public class LinqQueryProviderTests
         Assert.Null(api.ClientQuery?.Limit);
         Assert.Empty(emptyList);
     }
-    
+
     [Fact]
     public void IncludeCustomNameByNewtonsoftJsonPropertyAttributeTest()
     {

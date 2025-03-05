@@ -394,7 +394,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                     {
                         return dataMemberAttribute.Name;
                     }
-                    
+
 #if NET6_0_OR_GREATER
                     var jsonPropertyNameAttribute = member.GetCustomAttribute<System.Text.Json.Serialization.JsonPropertyNameAttribute>();
                     if (jsonPropertyNameAttribute != null)
@@ -546,18 +546,18 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
             switch (node.NodeType)
             {
                 case ExpressionType.Equal:
-                {
-                    if (node.Right is ConstantExpression constantExpression &&
-                        constantExpression.Value == null)
                     {
-                        isNullCheck = true;
-                        op = _inverseOperator ? "_nnull" : "_null";
+                        if (node.Right is ConstantExpression constantExpression &&
+                            constantExpression.Value == null)
+                        {
+                            isNullCheck = true;
+                            op = _inverseOperator ? "_nnull" : "_null";
+                            break;
+                        }
+
+                        op = _inverseOperator ? "_neq" : "_eq";
                         break;
                     }
-
-                    op = _inverseOperator ? "_neq" : "_eq";
-                    break;
-                }
                 case ExpressionType.AndAlso:
                     {
                         op = _inverseOperator ? "_or" : "_and";
@@ -599,7 +599,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             op = _inverseOperator ? "_null" : "_nnull";
                             break;
                         }
-                        
+
                         op = _inverseOperator ? "_eq" : "_neq";
                         break;
                     }
@@ -858,7 +858,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         throw new NotSupportedException($"Not supported method call: {node.Method.DeclaringType?.FullName}.{node.Method.Name}");
                 }
             }
-            else if (node.Method.DeclaringType == typeof(Enumerable))
+            else if (node.Method.DeclaringType == typeof(Enumerable)) // Array
             {
                 switch (node.Method.Name)
                 {
@@ -908,6 +908,56 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             }
 
                             throw new NotSupportedException("Not supported source for Enumerable.");
+                        }
+                    default:
+                        throw new NotSupportedException($"Not supported method call: {node.Method.DeclaringType?.FullName}.{node.Method.Name}");
+                }
+            }
+            else if (node.Method.DeclaringType != typeof(string) && node.Method.DeclaringType?.GetInterface(nameof(IEnumerable)) != null) // List<> etc
+            {
+                switch (node.Method.Name)
+                {
+                    case nameof(Enumerable.Contains):
+                        {
+                            // .Where(p => titles.Contains(p.Title))
+
+                            if (node.Object is ConstantExpression c)
+                            {
+                                Debug.Assert(_where != null);
+                                _where.Append("{\"");
+                                var arg1 = Visit(node.Arguments[0]);
+                                Debug.Assert(arg1 != null);
+                                Debug.Assert(arg1.NodeType == ExpressionType.Default);
+                                _where.Append("\": {\"");
+                                _where.Append(_inverseOperator ? "_nin" : "_in");
+                                _where.Append("\": [");
+
+                                // NOTE: here we execute a Expression (and enumeration) during visiting (!)
+                                var values = ((IEnumerable)c.Value)?.Cast<object>().Where(o => o != null).ToArray();
+
+                                if (values != null)
+                                {
+                                    bool first = true;
+                                    foreach (var value in values)
+                                    {
+                                        if (first)
+                                        {
+                                            first = false;
+                                        }
+                                        else
+                                        {
+                                            _where.Append(",");
+                                        }
+                                        TransformConstant(_where, Expression.Constant(value));
+                                    }
+                                }
+
+                                _where.Append("]}}");
+
+                                return Expression.Empty();
+                            }
+
+                            throw new NotSupportedException("Not supported for IEnumerable source.");
                         }
                     default:
                         throw new NotSupportedException($"Not supported method call: {node.Method.DeclaringType?.FullName}.{node.Method.Name}");
@@ -1613,7 +1663,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         if (value != null)
         {
             var valueType = value.GetType();
-            
+
             if (valueType.IsValueType && type != valueType)
             {
                 // A value type is converted in the constant expression. For identifying the
