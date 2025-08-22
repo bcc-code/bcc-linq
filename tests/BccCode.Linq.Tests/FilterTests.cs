@@ -77,11 +77,12 @@ public class FilterTests
     }
 
     [Fact]
-    public void should_throw_exception_on_empty_list()
+    public void should_allow_empty_list_in_in_operator()
     {
         var json = @"{ ""StringArrayProp"": { ""_in"": [] } }";
 
-        Assert.Throws<ArgumentException>(() => new Filter<TestClass>(json));
+        var ex = Record.Exception(() => new Filter<TestClass>(json));
+        Assert.Null(ex);
     }
 
     [Fact]

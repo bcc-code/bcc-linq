@@ -111,4 +111,41 @@ public class FilterToLambdaParserTests
 
         Assert.Equal(expected.Count, result.Count);
     }
+
+    [Fact]
+    public void should_match_using_in_operator()
+    {
+        var jsonRule = "{\n  \"country\": { \n    \"_in\": [\"Poland\", \"Greece\"]\n  }\n}";
+
+        var expected = PeopleList.Where(person => new[] { "Poland", "Greece" }.Contains(person.Country)).ToList();
+        var f = new Filter<Person>(jsonRule);
+        var exp = FilterToLambdaParser.Parse(f);
+        var result = PeopleList.Where(exp.Compile()).ToList();
+
+        Assert.Equal(expected.Count, result.Count);
+    }
+
+    [Fact]
+    public void empty_in_array_should_match_no_items()
+    {
+        var jsonRule = "{\n  \"country\": { \n    \"_in\": []\n  }\n}";
+
+        var f = new Filter<Person>(jsonRule);
+        var exp = FilterToLambdaParser.Parse(f);
+        var result = PeopleList.Where(exp.Compile()).ToList();
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void empty_nin_array_should_match_all_items()
+    {
+        var jsonRule = "{\n  \"country\": { \n    \"_nin\": []\n  }\n}";
+
+        var f = new Filter<Person>(jsonRule);
+        var exp = FilterToLambdaParser.Parse(f);
+        var result = PeopleList.Where(exp.Compile()).ToList();
+
+        Assert.Equal(PeopleList.Count, result.Count);
+    }
 }

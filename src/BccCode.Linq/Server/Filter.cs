@@ -112,10 +112,12 @@ public class Filter<T> : Filter
             else if (new[] { "_in", "_nin" }.Contains(key))
             {
                 var array = JsonConvert.DeserializeObject<T[]>(value.ToString() ?? string.Empty);
-                if (array is null || array.Length == 0)
+                // Treat empty arrays as a valid value (resulting in a predicate that's always false for _in
+                // and always true for _nin). Only null is considered invalid.
+                if (array is null)
                 {
                     throw new ArgumentException(
-                        $"JSON filter rule is invalid. Array under {key} is null or empty.");
+                        $"JSON filter rule is invalid. Array under {key} is null.");
                 }
 
                 deserializedJson[key] = array;
@@ -135,12 +137,19 @@ public class Filter<T> : Filter
                     ? typeof(ValueTuple<,>).MakeGenericType(propertyType, propertyType)
                     : typeof(Tuple<,>).MakeGenericType(propertyType, propertyType);
 
-                deserializedJson[key] = Activator.CreateInstance(tupleType,
+                var tupleInstance = Activator.CreateInstance(tupleType,
                     OperandToExpressionResolver.ConvertValue(propertyInfo?.PropertyType ?? GetFilterType(),
                         array[0].ToString()),
                     OperandToExpressionResolver.ConvertValue(propertyInfo?.PropertyType ?? GetFilterType(),
                         array[1].ToString())
                 );
+                
+                if (tupleInstance == null)
+                {
+                    throw new InvalidOperationException($"Failed to create tuple instance for key {key}");
+                }
+                
+                deserializedJson[key] = tupleInstance;
             }
             else if (key.StartsWith("_"))
             {
