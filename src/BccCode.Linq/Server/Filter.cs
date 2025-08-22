@@ -137,19 +137,12 @@ public class Filter<T> : Filter
                     ? typeof(ValueTuple<,>).MakeGenericType(propertyType, propertyType)
                     : typeof(Tuple<,>).MakeGenericType(propertyType, propertyType);
 
-                var tupleInstance = Activator.CreateInstance(tupleType,
+                deserializedJson[key] = Activator.CreateInstance(tupleType,
                     OperandToExpressionResolver.ConvertValue(propertyInfo?.PropertyType ?? GetFilterType(),
                         array[0].ToString()),
                     OperandToExpressionResolver.ConvertValue(propertyInfo?.PropertyType ?? GetFilterType(),
                         array[1].ToString())
                 );
-                
-                if (tupleInstance == null)
-                {
-                    throw new InvalidOperationException($"Failed to create tuple instance for key {key}");
-                }
-                
-                deserializedJson[key] = tupleInstance;
             }
             else if (key.StartsWith("_"))
             {
