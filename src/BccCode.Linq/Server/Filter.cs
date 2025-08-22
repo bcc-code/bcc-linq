@@ -112,8 +112,6 @@ public class Filter<T> : Filter
             else if (new[] { "_in", "_nin" }.Contains(key))
             {
                 var array = JsonConvert.DeserializeObject<T[]>(value.ToString() ?? string.Empty);
-                // Treat empty arrays as a valid value (resulting in a predicate that's always false for _in
-                // and always true for _nin). Only null is considered invalid.
                 if (array is null)
                 {
                     throw new ArgumentException(
