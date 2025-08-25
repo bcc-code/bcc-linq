@@ -112,10 +112,10 @@ public class Filter<T> : Filter
             else if (new[] { "_in", "_nin" }.Contains(key))
             {
                 var array = JsonConvert.DeserializeObject<T[]>(value.ToString() ?? string.Empty);
-                if (array is null || array.Length == 0)
+                if (array is null)
                 {
                     throw new ArgumentException(
-                        $"JSON filter rule is invalid. Array under {key} is null or empty.");
+                        $"JSON filter rule is invalid. Array under {key} is null.");
                 }
 
                 deserializedJson[key] = array;

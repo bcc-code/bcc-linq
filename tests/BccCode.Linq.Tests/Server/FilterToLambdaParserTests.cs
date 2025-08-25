@@ -44,45 +44,16 @@ public class FilterToLambdaParserTests
     [Fact]
     public void should_get_correct_result_when_filter_has_two_logical_filter()
     {
-        var jsonRule = "{\r\n" +
-                       "  \"_or\": [\r\n" +
-                       "    {\r\n" +
-                       "      \"age\": {\r\n" +
-                       "        \"_gte\": 20" +
-                       "\r\n" +
-                       "      }\r\n" +
-                       "    },\r\n" +
-                       "    {\r\n" +
-                       "      \"country\": {" +
-                       "\r\n" +
-                       "        \"_eq\": \"P" +
-                       "oland\",\r\n" +
-                       "        \"_in\": [\r" +
-                       "\n" +
-                       "          \"Greece\"" +
-                       ",\r\n" +
-                       "          \"Norway\"" +
-                       "\r\n" +
-                       "        ]\r\n" +
-                       "      }\r\n" +
-                       "    }\r\n" +
-                       "  ],\r\n" +
-                       "    \"_and\": [\r\n" +
-                       "    {\r\n" +
-                       "      \"age\": {\r\n" +
-                       "        \"_between\"" +
-                       ": [20, 30]\r\n" +
-                       "      }\r\n" +
-                       "    },\r\n" +
-                       "    {\r\n" +
-                       "      \"name\": {\r" +
-                       "\n" +
-                       "        \"_starts_wi" +
-                       "th\": \"test\"\r\n" +
-                       "      }\r\n" +
-                       "    }\r\n" +
-                       "  ]\r\n" +
-                       "}";
+        var jsonRule = @"{
+            ""_or"": [
+                { ""age"": { ""_gte"": 20 } },
+                { ""country"": { ""_eq"": ""Poland"", ""_in"": [ ""Greece"", ""Norway"" ] } }
+            ],
+            ""_and"": [
+                { ""age"": { ""_between"": [20, 30] } },
+                { ""name"": { ""_starts_with"": ""test"" } }
+            ]
+        }";
 
         var expected = PeopleList.Where(person =>
             // or
@@ -110,5 +81,42 @@ public class FilterToLambdaParserTests
         var result = PeopleList.Where(exp.Compile()).ToList();
 
         Assert.Equal(expected.Count, result.Count);
+    }
+
+    [Fact]
+    public void should_match_using_in_operator()
+    {
+        var jsonRule = "{ \"country\": { \"_in\": [\"Poland\", \"Greece\"] } }";
+
+        var expected = PeopleList.Where(person => new[] { "Poland", "Greece" }.Contains(person.Country)).ToList();
+        var f = new Filter<Person>(jsonRule);
+        var exp = FilterToLambdaParser.Parse(f);
+        var result = PeopleList.Where(exp.Compile()).ToList();
+
+        Assert.Equal(expected.Count, result.Count);
+    }
+
+    [Fact]
+    public void empty_in_array_should_match_no_items()
+    {
+        var jsonRule = "{ \"country\": { \"_in\": [] } }";
+
+        var f = new Filter<Person>(jsonRule);
+        var exp = FilterToLambdaParser.Parse(f);
+        var result = PeopleList.Where(exp.Compile()).ToList();
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void empty_nin_array_should_match_all_items()
+    {
+        var jsonRule = "{ \"country\": { \"_nin\": [] } }";
+
+        var f = new Filter<Person>(jsonRule);
+        var exp = FilterToLambdaParser.Parse(f);
+        var result = PeopleList.Where(exp.Compile()).ToList();
+
+        Assert.Equal(PeopleList.Count, result.Count);
     }
 }
