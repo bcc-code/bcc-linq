@@ -13,10 +13,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="BccCode.Platform.Contracts" Version="1.0.0.106" />
-      <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <PackageReference Include="BccCode.Platform.Contracts" Version="1.0.0.114" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.9" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.9" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+      <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
     </ItemGroup>
 
 
