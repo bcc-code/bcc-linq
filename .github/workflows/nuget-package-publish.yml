@@ -15,7 +15,6 @@ on:
   workflow_dispatch:
 
 env:
-  API_KEY: ${{ secrets.NUGET_PACKAGES_GITHUB_API_KEY }}
   CSPROJ_PATH: src/BccCode.Linq/BccCode.Linq.csproj
 
 jobs:
