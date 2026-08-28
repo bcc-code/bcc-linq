@@ -4,7 +4,7 @@
         <TargetFrameworks>netstandard2.1;net6.0;net8.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-
+        <IsAotCompatible Condition="'$(TargetFramework)' == 'net8.0'">true</IsAotCompatible>
         <PackageId>BccCode.Linq</PackageId>
         <Description>Implementation for Linq for Api requests on client and server side</Description>
         <LangVersion>latest</LangVersion>
