@@ -12,7 +12,7 @@ Den AOT-kompatible appen publiseres med PublishAot=true og net8.0; biblioteket b
 Så svaret er: ja, teknisk refererbart og analyserbart med AOT nå; nei, ikke alle bibliotekets funksjoner er trygge i en NativeAOT-app.
 
 
-![alt text](image.png)
+![alt text](image-1.png)
 
 ## Funker ikke
 
@@ -75,3 +75,28 @@ Replace this with a non-generic filter syntax tree
         }
 
 6. Avoid runtime expression compilation where possible
+
+# Solution
+
+Rewriting all that code would not be possible and would make all the core feautures of linq useless.
+
+Solution: publish as ready to run
+
+
+This parameter has to be added to the publish configuration (in api.yml) of each individual Application-
+            -p:PublishReadyToRun=true
+
+Example in BCC-Privacy:
+        
+        - name: Publish container archive with dotnet
+        shell: bash
+        run: |-
+          dotnet publish ./api/BccCode.Privacy.Api/BccCode.Privacy.Api.csproj \
+            --no-restore \
+            -c Release \
+            /t:PublishContainer \
+            -p:ContainerRepository=privacy-api \
+            -p:ContainerImageTags='"${{ github.sha }};latest"' \
+            -p:ContainerArchiveOutputPath=${{ runner.temp }}/privacy-api.tar
+            -p:PublishReadyToRun=true
+
