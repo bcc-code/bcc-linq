@@ -1,4 +1,5 @@
 ﻿
+using System.Diagnostics.CodeAnalysis;
 using BccCode.Platform;
 
 namespace BccCode.Linq.Client;
@@ -17,6 +18,10 @@ public static class IQueryableApiClientExtension
     /// </param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode("LINQ queries are translated at runtime and can need generic instantiations over the element and result types of the query. Value-type instantiations may not be available in Native AOT.")]
+    [RequiresUnreferencedCode("LINQ queries are translated at runtime. Executing them can rebind IQueryable methods to IEnumerable methods, which can be trimmed.")]
+#endif
     public static IQueryable<T> GetQueryable<T>(this IHttpApiQueryableClient apiClient, string path, Action<IQueryableParameters>? parameters = null)
     {
         var provider = new ApiQueryProvider(apiClient, path, parameters);

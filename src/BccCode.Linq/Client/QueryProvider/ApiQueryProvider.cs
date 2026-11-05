@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
@@ -133,8 +134,16 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         _parametersCallback = parametersCallback;
     }
 
+#if NET8_0_OR_GREATER
+    // Under Native AOT, precompiles generic LINQ methods for common value types. See AotGenericRoots.
+    static ApiQueryProvider() => AotGenericRoots.EnsureRooted();
+#endif
+
     #region IQueryProvider
 
+#if NET7_0_OR_GREATER
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Dynamic by design, like EnumerableQuery in System.Linq: the element type is only known from the expression at runtime. Only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode.")]
+#endif
     public IQueryable CreateQuery(Expression expression)
     {
         Type? elementType = TypeHelper.GetElementType(expression.Type);
@@ -737,6 +746,10 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         return Expression.Empty();
     }
 
+#if NET7_0_OR_GREATER
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode and RequiresUnreferencedCode. The generic instantiations depend on the query's element and result types, which are only known at runtime.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2060", Justification = "The generic methods instantiated here (System.Linq.Internal.Enumerable and AsyncEnumerable helpers) have no DynamicallyAccessedMembers requirements on their type parameters.")]
+#endif
     protected override Expression VisitMethodCall(MethodCallExpression node)
     {
         if (_visitMode == VisitLinqLambdaMode.Where)
@@ -913,7 +926,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         throw new NotSupportedException($"Not supported method call: {node.Method.DeclaringType?.FullName}.{node.Method.Name}");
                 }
             }
-            else if (node.Method.DeclaringType != typeof(string) && node.Method.DeclaringType?.GetInterface(nameof(IEnumerable)) != null) // List<> etc
+            else if (node.Method.DeclaringType != typeof(string) && node.Method.DeclaringType != null && typeof(IEnumerable).IsAssignableFrom(node.Method.DeclaringType)) // List<> etc
             {
                 switch (node.Method.Name)
                 {
@@ -1633,13 +1646,12 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
     /// <returns></returns>
     private ConstantExpression TransformApiQueryableExpression(ConstantExpression node)
     {
-        // data model type
-        var type = node.Type.GenericTypeArguments[0];
-
         if (!_mapFromToApiCallers.TryGetValue(node, out var apiCaller))
         {
-            var apiPagedEnumerableType = typeof(QueryablePagedEnumerable<>).MakeGenericType(type);
-            apiCaller = (IApiCaller)Activator.CreateInstance(apiPagedEnumerableType, _apiClient, _path, _parametersCallback);
+            if (node.Value is not IApiQueryable apiQueryable)
+                throw new NotSupportedException($"The constant of type {node.Type.FullName} is not an API queryable.");
+
+            apiCaller = apiQueryable.CreateApiCaller(_apiClient, _path, _parametersCallback);
 
             _mapFromToApiCallers.Add(node, apiCaller);
         }
@@ -1682,12 +1694,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         if (type.IsGenericType &&
             type.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            // ReSharper disable once PossibleNullReferenceException
-#pragma warning disable CS8602
-            value = type.GetProperty(nameof(Nullable<int>.Value)).GetMethod.Invoke(
-                value, Array.Empty<object>());
-#pragma warning restore CS8602
-            Debug.Assert(value != null);
+            // A boxed Nullable<T> with a value is boxed as T, so 'value' already is the underlying value.
             type = Nullable.GetUnderlyingType(type) ?? throw new NotSupportedException("Could not get type of Nullable<> during visiting constant expression");
         }
 

@@ -71,11 +71,27 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  aot-smoke-test:
+    name: Native AOT smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.*
+
+      - name: Publish with Native AOT
+        run: dotnet publish tests/BccCode.Linq.AotSmokeTest -c Release -r linux-x64 -o aot-out
+
+      - name: Run
+        run: ./aot-out/BccCode.Linq.AotSmokeTest
+
   publish:
     name: Publish to NuGet
     # A push to main, or a run started by hand (a beta on any other branch). Never a pull request.
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
-    needs: pack
+    needs: [pack, aot-smoke-test]
     runs-on: ubuntu-latest
     # Same condition as the release version in `pack`: anything else is a beta and needs `nuget-beta`'s approval.
     environment: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'nuget' || 'nuget-beta' }}
