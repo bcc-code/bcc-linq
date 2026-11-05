@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
 
         <PackageId>BccCode.Linq</PackageId>
-        <Description>Implementation for Linq for Api requests on client and server side</Description>
+        <Description>LINQ query provider for BCC API clients. The server side (filter parsing) is in the BccCode.Linq.Server package.</Description>
         <LangVersion>latest</LangVersion>
         <Authors />
         <RootNamespace>BccCode.Linq</RootNamespace>
@@ -14,10 +14,11 @@
 
     <ItemGroup>
       <PackageReference Include="BccCode.Platform.Contracts" Version="1.0.0.114" />
-      <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.9" />
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.9" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-      <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+      <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
     </ItemGroup>
 
 

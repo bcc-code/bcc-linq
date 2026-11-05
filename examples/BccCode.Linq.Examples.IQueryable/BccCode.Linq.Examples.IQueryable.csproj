@@ -21,5 +21,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\BccCode.Linq\BccCode.Linq.csproj" />
+      <ProjectReference Include="..\..\src\BccCode.Linq.Server\BccCode.Linq.Server.csproj" />
     </ItemGroup>
 </Project>

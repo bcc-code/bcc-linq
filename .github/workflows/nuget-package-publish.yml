@@ -1,33 +1,45 @@
 name: Publish to nuget
+
+# Publishes BccCode.Linq (client) and BccCode.Linq.Server.
+# A pull request only builds, tests and packs; it never publishes. Publishing runs in a separate job from a
+# GitHub environment, which the NuGet.org trusted-publishing policy can name:
+# - a push to main publishes the release <base>.<run> from the `nuget` environment (limit it to main);
+# - a beta (<base>.<run>-beta) is published only by running this workflow by hand on a branch, from the
+#   `nuget-beta` environment (give it required reviewers so each run is approved).
+
 on:
   push:
     branches: [main]
     paths:
       - "src/**"
       - ".github/workflows/nuget-package-publish.yml"
+      - ".github/variables/version.env"
 
   pull_request:
     branches: [main]
     paths:
       - "src/**"
+      - "tests/**"
       - ".github/workflows/nuget-package-publish.yml"
+      - ".github/variables/version.env"
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
-  CSPROJ_PATH: src/BccCode.Linq/BccCode.Linq.csproj
+  CLIENT_CSPROJ_PATH: src/BccCode.Linq/BccCode.Linq.csproj
+  SERVER_CSPROJ_PATH: src/BccCode.Linq.Server/BccCode.Linq.Server.csproj
 
 jobs:
-  publish:
+  pack:
+    name: Test and pack
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.*
 
@@ -48,16 +60,48 @@ jobs:
         run: dotnet test
 
       - name: Package
-        run: dotnet pack -p:PackageVersion=${{ env.VERSION }} -c Release -o . ${{ env.CSPROJ_PATH }}
+        run: |
+          dotnet pack -p:PackageVersion=${{ env.VERSION }} -c Release -o package ${{ env.CLIENT_CSPROJ_PATH }}
+          dotnet pack -p:PackageVersion=${{ env.VERSION }} -c Release -o package ${{ env.SERVER_CSPROJ_PATH }}
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: package/*.nupkg
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish to NuGet
+    # A push to main, or a run started by hand (a beta on any other branch). Never a pull request.
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    needs: pack
+    runs-on: ubuntu-latest
+    # Same condition as the release version in `pack`: anything else is a beta and needs `nuget-beta`'s approval.
+    environment: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'nuget' || 'nuget-beta' }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: nuget-packages
+          path: package
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.*
+
+      # Trusted publishing: the NuGet.org account in NUGET_USER needs a policy for this repository and workflow.
       - uses: NuGet/login@v1
         id: login
         with:
-          user: ${{vars.NUGET_USER}}
+          user: ${{ vars.NUGET_USER }}
 
       - name: Publish
         run: |
-          dotnet nuget push *.nupkg \
+          dotnet nuget push package/*.nupkg \
           --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
           --source https://api.nuget.org/v3/index.json \
           --skip-duplicate

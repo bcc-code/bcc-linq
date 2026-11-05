@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;net6.0;net8.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <PackageId>BccCode.Linq.Server</PackageId>
+        <Description>Server side of BccCode.Linq: parses Directus-style filters, sorting and paging from API requests into LINQ expressions on IQueryable.</Description>
+        <LangVersion>latest</LangVersion>
+        <Authors />
+        <RootNamespace>BccCode.Linq.Server</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="BccCode.Platform.Contracts" Version="1.0.0.114" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <InternalsVisibleTo Include="BccCode.Linq.Tests" />
+    </ItemGroup>
+
+</Project>

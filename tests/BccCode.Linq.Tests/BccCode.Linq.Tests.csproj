@@ -28,6 +28,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <!-- Mockups/ApiRequest.cs uses [FromQuery]; the libraries themselves do not depend on ASP.NET Core. -->
+      <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\..\src\BccCode.Linq\BccCode.Linq.csproj" />
+      <ProjectReference Include="..\..\src\BccCode.Linq.Server\BccCode.Linq.Server.csproj" />
     </ItemGroup>
 </Project>
