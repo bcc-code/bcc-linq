@@ -746,6 +746,45 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         return Expression.Empty();
     }
 
+    /// <summary>
+    /// Writes an <c>_in</c> (or <c>_nin</c>) filter for <c>values.Contains(member)</c> in a Where clause.
+    /// </summary>
+    private Expression VisitWhereIn(ConstantExpression values, Expression member)
+    {
+        Debug.Assert(_where != null);
+        _where.Append("{\"");
+        var visitedMember = Visit(member);
+        Debug.Assert(visitedMember != null);
+        Debug.Assert(visitedMember.NodeType == ExpressionType.Default);
+        _where.Append("\": {\"");
+        _where.Append(_inverseOperator ? "_nin" : "_in");
+        _where.Append("\": [");
+
+        // NOTE: here we execute a Expression (and enumeration) during visiting (!)
+        var items = ((IEnumerable?)values.Value)?.Cast<object>().Where(o => o != null).ToArray();
+
+        if (items != null)
+        {
+            bool first = true;
+            foreach (var item in items)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    _where.Append(",");
+                }
+                TransformConstant(_where, Expression.Constant(item));
+            }
+        }
+
+        _where.Append("]}}");
+
+        return Expression.Empty();
+    }
+
 #if NET7_0_OR_GREATER
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode and RequiresUnreferencedCode. The generic instantiations depend on the query's element and result types, which are only known at runtime.")]
     [UnconditionalSuppressMessage("Trimming", "IL2060", Justification = "The generic methods instantiated here (System.Linq.Internal.Enumerable and AsyncEnumerable helpers) have no DynamicallyAccessedMembers requirements on their type parameters.")]
@@ -885,46 +924,28 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             }
 
                             if (node.Arguments[0] is ConstantExpression c)
-                            {
-                                Debug.Assert(_where != null);
-                                _where.Append("{\"");
-                                var arg1 = Visit(node.Arguments[1]);
-                                Debug.Assert(arg1 != null);
-                                Debug.Assert(arg1.NodeType == ExpressionType.Default);
-                                _where.Append("\": {\"");
-                                _where.Append(_inverseOperator ? "_nin" : "_in");
-                                _where.Append("\": [");
-
-                                // NOTE: here we execute a Expression (and enumeration) during visiting (!)
-                                var values = ((IEnumerable)c.Value)?.Cast<object>().Where(o => o != null).ToArray();
-
-                                if (values != null)
-                                {
-                                    bool first = true;
-                                    foreach (var value in values)
-                                    {
-                                        if (first)
-                                        {
-                                            first = false;
-                                        }
-                                        else
-                                        {
-                                            _where.Append(",");
-                                        }
-                                        TransformConstant(_where, Expression.Constant(value));
-                                    }
-                                }
-
-                                _where.Append("]}}");
-
-                                return Expression.Empty();
-                            }
+                                return VisitWhereIn(c, node.Arguments[1]);
 
                             throw new NotSupportedException("Not supported source for Enumerable.");
                         }
                     default:
                         throw new NotSupportedException($"Not supported method call: {node.Method.DeclaringType?.FullName}.{node.Method.Name}");
                 }
+            }
+            else if (node.Method.DeclaringType == typeof(MemoryExtensions) &&
+                     node.Method.Name == nameof(MemoryExtensions.Contains))
+            {
+                // C# 14 binds 'array.Contains(p.Title)' to MemoryExtensions.Contains(ReadOnlySpan<T>, T), with the
+                // array wrapped in an implicit conversion to a span: .Where(p => titles.Contains(p.Title))
+                if (node.Arguments.Count == 2 &&
+                    node.Arguments[0] is MethodCallExpression { Method.Name: "op_Implicit", Arguments.Count: 1 } toSpan &&
+                    toSpan.Arguments[0] is ConstantExpression c)
+                {
+                    return VisitWhereIn(c, node.Arguments[1]);
+                }
+
+                throw new NotSupportedException(
+                    $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} call. Only 'array.Contains(member)' without comparer is supported.");
             }
             else if (node.Method.DeclaringType != typeof(string) && node.Method.DeclaringType != null && typeof(IEnumerable).IsAssignableFrom(node.Method.DeclaringType)) // List<> etc
             {

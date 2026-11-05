@@ -76,6 +76,16 @@ Run("Where with captured variable",
     },
     r => r is string s && s.Contains("20") && s.Contains("_gt") ? null : "filter does not contain the captured value");
 
+var ids = new[] { 1, 3 };
+
+Run("Where array Contains",
+    () =>
+    {
+        var list = Items().Where(i => ids.Contains(i.Id)).ToList();
+        return $"{list.Count} rows, filter={client.LastParameters?.Filter}";
+    },
+    r => r is string s && s.Contains("_in") && s.Contains("1,3") ? null : "filter is not an _in filter with the array values");
+
 Run("OrderBy",
     () =>
     {

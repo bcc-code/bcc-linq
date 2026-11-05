@@ -1533,6 +1533,23 @@ public class LinqQueryProviderTests
     }
 
     [Fact]
+    public void WhereNotContainsVariableGuidArrayTest()
+    {
+        var api = new ApiClientMockup();
+
+        var uuids = new[] { Guid.Empty };
+
+        var query =
+            from p in api.Empty
+            where !uuids.Contains(p.Uuid)
+            select p;
+
+        var persons = query.ToList();
+        Assert.Equal("{\"uuid\": {\"_nin\": [\"00000000-0000-0000-0000-000000000000\"]}}", api.ClientQuery?.Filter);
+        Assert.Empty(persons);
+    }
+
+    [Fact]
     public void WhereIntGreaterThanTest()
     {
         var api = new ApiClientMockup();
