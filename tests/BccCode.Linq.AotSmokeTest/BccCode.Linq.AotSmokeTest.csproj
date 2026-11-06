@@ -11,6 +11,11 @@
 
         <PublishAot>true</PublishAot>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <!-- Lock files: this project's lock file lists the ILCompiler runtime packages for both RIDs it is published for
+             (CI: linux-x64, local: win-x64). The RID is set here rather than with `dotnet publish -r`: a command-line RID
+             is a global property that also reaches BccCode.Linq, whose RID-less lock file then fails a locked restore. -->
+        <RuntimeIdentifiers>linux-x64;win-x64</RuntimeIdentifiers>
+        <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
     </PropertyGroup>
 
     <ItemGroup>

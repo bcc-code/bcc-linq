@@ -1,0 +1,45 @@
+version: 2
+
+# Every ecosystem waits 7 days after a release (cooldown) before Dependabot proposes it (standard 17.3).
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Oslo
+    cooldown:
+      default-days: 7
+      # Our own packages (BccCode.Platform.Contracts) are not held back by the cooldown.
+      exclude: ['BccCode.*']
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # One EF Core version across the EF Core and Npgsql provider packages.
+      entity-framework:
+        patterns: ['Microsoft.EntityFrameworkCore*', 'Npgsql*']
+      tests:
+        patterns: ['xunit*', 'Microsoft.NET.Test.Sdk', 'coverlet*']
+      minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    # The composite setvars action holds pins too.
+    directories: [/, /.github/actions/*]
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Oslo
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      github-actions:
+        patterns: ['*']
