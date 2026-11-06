@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.1;net6.0;net8.0</TargetFrameworks>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
@@ -10,17 +10,11 @@
         <LangVersion>latest</LangVersion>
         <Authors />
         <RootNamespace>BccCode.Linq</RootNamespace>
-        <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+        <IsAotCompatible>true</IsAotCompatible>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="BccCode.Platform.Contracts" Version="1.0.0.114" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-      <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
-    </ItemGroup>
-
 
 </Project>

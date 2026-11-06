@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using BccCode.Platform;
-using Newtonsoft.Json;
 
 namespace BccCode.Linq.Client;
 
@@ -134,16 +133,12 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         _parametersCallback = parametersCallback;
     }
 
-#if NET8_0_OR_GREATER
     // Under Native AOT, precompiles generic LINQ methods for common value types. See AotGenericRoots.
     static ApiQueryProvider() => AotGenericRoots.EnsureRooted();
-#endif
 
     #region IQueryProvider
 
-#if NET7_0_OR_GREATER
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Dynamic by design, like EnumerableQuery in System.Linq: the element type is only known from the expression at runtime. Only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode.")]
-#endif
     public IQueryable CreateQuery(Expression expression)
     {
         Type? elementType = TypeHelper.GetElementType(expression.Type);
@@ -404,18 +399,32 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         return dataMemberAttribute.Name;
                     }
 
-#if NET6_0_OR_GREATER
                     var jsonPropertyNameAttribute = member.GetCustomAttribute<System.Text.Json.Serialization.JsonPropertyNameAttribute>();
                     if (jsonPropertyNameAttribute != null)
                     {
                         return jsonPropertyNameAttribute.Name;
                     }
-#endif
 
-                    var jsonPropertyAttribute = member.GetCustomAttribute<JsonPropertyAttribute>();
-                    if (jsonPropertyAttribute != null)
+                    var newtonsoftJsonPropertyData = member.GetCustomAttributesData()
+                        .FirstOrDefault(a => a.AttributeType.FullName == "Newtonsoft.Json.JsonPropertyAttribute");
+                    if (newtonsoftJsonPropertyData != null)
                     {
-                        return jsonPropertyAttribute.PropertyName ?? member.Name.ToCamelCase();
+                        string? propertyName = null;
+                        if (newtonsoftJsonPropertyData.ConstructorArguments.Count > 0 &&
+                            newtonsoftJsonPropertyData.ConstructorArguments[0].Value is string ctorName)
+                        {
+                            propertyName = ctorName;
+                        }
+
+                        foreach (var namedArgument in newtonsoftJsonPropertyData.NamedArguments)
+                        {
+                            if (namedArgument.MemberName == "PropertyName" && namedArgument.TypedValue.Value is string namedName)
+                            {
+                                propertyName = namedName;
+                            }
+                        }
+
+                        return propertyName ?? member.Name.ToCamelCase();
                     }
 
                     return member.Name.ToCamelCase();
@@ -726,9 +735,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         }
 
         if (objectType == typeof(string) || objectType == typeof(Guid) || objectType == typeof(DateTime)
-#if NET6_0_OR_GREATER
                                          || objectType == typeof(DateOnly)
-#endif
            )
         {
             // Officially supported types with ToString()
@@ -785,10 +792,8 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         return Expression.Empty();
     }
 
-#if NET7_0_OR_GREATER
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode and RequiresUnreferencedCode. The generic instantiations depend on the query's element and result types, which are only known at runtime.")]
     [UnconditionalSuppressMessage("Trimming", "IL2060", Justification = "The generic methods instantiated here (System.Linq.Internal.Enumerable and AsyncEnumerable helpers) have no DynamicallyAccessedMembers requirements on their type parameters.")]
-#endif
     protected override Expression VisitMethodCall(MethodCallExpression node)
     {
         if (_visitMode == VisitLinqLambdaMode.Where)
@@ -1755,7 +1760,6 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 #pragma warning restore CS8605
             stringBuilder.Append("\"");
         }
-#if NET6_0_OR_GREATER
         else if (type == typeof(DateOnly))
         {
             stringBuilder.Append("\"");
@@ -1764,7 +1768,6 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 #pragma warning restore CS8605
             stringBuilder.Append("\"");
         }
-#endif
         else if (type == typeof(bool))
         {
 #pragma warning disable CS8602

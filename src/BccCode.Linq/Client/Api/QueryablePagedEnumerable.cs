@@ -141,10 +141,8 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
         } while (state.NextPage(pageData.Data?.Count ?? 0));
     }
 
-#if NET7_0_OR_GREATER
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode and RequiresUnreferencedCode.")]
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode and RequiresUnreferencedCode.")]
-#endif
     public IQueryable AsQueryable() => Queryable.AsQueryable(this);
 
     #region IEnumerator

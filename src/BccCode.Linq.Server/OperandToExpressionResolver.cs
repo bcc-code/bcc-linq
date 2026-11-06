@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using BccCode.Linq.Server.Exceptions;
 
@@ -13,6 +14,11 @@ public static class OperandToExpressionResolver
 
     public static object? ConvertValue(Type type, object? value)
     {
+        if (value is JsonElement jsonElement)
+        {
+            value = FilterDeserializationHelpers.UnwrapJsonElement(jsonElement, type);
+        }
+
         if (value == null)
             return null;
 
@@ -48,10 +54,8 @@ public static class OperandToExpressionResolver
                 Type when nullableType == typeof(Guid) => (Guid?)newValue,
                 Type when nullableType == typeof(DateTime) => (DateTime?)newValue,
                 Type when nullableType == typeof(TimeSpan) => (TimeSpan?)newValue,
-#if NET6_0_OR_GREATER
                 Type when nullableType == typeof(DateOnly) => (DateOnly?)newValue,
                 Type when nullableType == typeof(TimeOnly) => (TimeOnly?)newValue,
-#endif
                 _ => newValue,
             };
         }
@@ -157,6 +161,8 @@ public static class OperandToExpressionResolver
         {
             value = type switch
             {
+                Type when type.IsEnum && value is string strVal => Enum.Parse(type, strVal, ignoreCase: true),
+                Type when type.IsEnum && value is long longVal => Enum.ToObject(type, longVal),
                 Type when type == typeof(bool) && value is string strVal => strVal == "1",
                 Type when type == typeof(int) && value is string strVal => (int)double.Parse(strVal, CultureInfo.InvariantCulture),
                 Type when type == typeof(float) && value is string strVal => float.Parse(strVal, CultureInfo.InvariantCulture),
@@ -165,10 +171,8 @@ public static class OperandToExpressionResolver
                 Type when type == typeof(Guid) && value is string strVal && Guid.TryParse(strVal, out var uuid) => uuid,
                 Type when type == typeof(DateTime) && value is string strVal && DateTime.TryParse(strVal, out var dateTime) => dateTime,
                 Type when type == typeof(TimeSpan) && value is string strVal && TimeSpan.TryParse(strVal, out var dateTime) => dateTime,
-#if NET6_0_OR_GREATER
                 Type when type == typeof(DateOnly) && value is string strVal && DateOnly.TryParse(strVal, out var dateTime) => dateTime,
                 Type when type == typeof(TimeOnly) && value is string strVal && TimeOnly.TryParse(strVal, out var dateTime) => dateTime,
-#endif
                 Type when type == typeof(int) && value is ValueTuple<string, string> tuple => new ValueTuple<int, int>(
                     (int)ConvertValue(type, tuple.Item1), (int)ConvertValue(type, tuple.Item2)),
                 Type when type == typeof(double) && value is ValueTuple<string, string> tuple => new ValueTuple<double, double>(

@@ -1,4 +1,3 @@
-#if NET8_0_OR_GREATER
 using System.Runtime.CompilerServices;
 
 namespace BccCode.Linq.Client;
@@ -54,4 +53,3 @@ internal static class AotGenericRoots
         yield break;
     }
 }
-#endif

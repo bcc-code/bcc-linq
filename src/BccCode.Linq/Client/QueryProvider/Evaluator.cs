@@ -71,9 +71,11 @@ internal class Evaluator
             if (e.NodeType == ExpressionType.Constant)
                 return e;
 
-            LambdaExpression lambda = Expression.Lambda(e);
-            Delegate fn = lambda.Compile();
-            return Expression.Constant(fn.DynamicInvoke(null), e.Type);
+            // Func<object?> instead of Expression.Lambda(e): the delegate type is known at compile time
+            // (no dynamic code under Native AOT) and it avoids DynamicInvoke.
+            var lambda = Expression.Lambda<Func<object?>>(Expression.Convert(e, typeof(object)));
+            Func<object?> fn = lambda.Compile();
+            return Expression.Constant(fn(), e.Type);
         }
     }
 

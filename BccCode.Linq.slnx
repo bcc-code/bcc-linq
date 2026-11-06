@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/BccCode.Linq.Examples.IQueryable/BccCode.Linq.Examples.IQueryable.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/BccCode.Linq.Server/BccCode.Linq.Server.csproj" />
+    <Project Path="src/BccCode.Linq/BccCode.Linq.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BccCode.Linq.Tests/BccCode.Linq.Tests.csproj" />
+  </Folder>
+</Solution>

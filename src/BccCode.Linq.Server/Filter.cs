@@ -9,8 +9,7 @@ using BccCode.Linq.Server;
 */
 using System.Reflection;
 using BccCode.Linq.Extensions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace BccCode.Linq.Server;
 
@@ -78,7 +77,7 @@ public class Filter<T> : Filter
 
     public Filter(string json) => _parse(json);
 
-    private Filter(object obj) : this(JsonConvert.SerializeObject(obj))
+    private Filter(object obj) : this(JsonSerializer.Serialize(obj, FilterDeserializationHelpers.JsonOptions))
     {
     }
 
@@ -95,12 +94,12 @@ public class Filter<T> : Filter
 
             if (new[] { "_and", "_or" }.Contains(key))
             {
-                if (value is not JArray jArray)
+                if (value is not JsonElement { ValueKind: JsonValueKind.Array } jArray)
                 {
                     continue;
                 }
 
-                var dictionaries = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(jArray.ToString());
+                var dictionaries = jArray.Deserialize<List<Dictionary<string, object>>>(FilterDeserializationHelpers.JsonOptions);
                 if (dictionaries is null)
                 {
                     throw new JsonException("Could not deserialize array of logical filter.");
@@ -111,7 +110,7 @@ public class Filter<T> : Filter
             }
             else if (new[] { "_in", "_nin" }.Contains(key))
             {
-                var array = JsonConvert.DeserializeObject<T[]>(value.ToString() ?? string.Empty);
+                var array = value is JsonElement element ? element.Deserialize<T[]>(FilterDeserializationHelpers.JsonOptions) : null;
                 if (array is null)
                 {
                     throw new ArgumentException(
@@ -123,7 +122,7 @@ public class Filter<T> : Filter
             }
             else if (new[] { "_between", "_nbetween" }.Contains(key))
             {
-                var array = JsonConvert.DeserializeObject<object[]>(value.ToString() ?? string.Empty);
+                var array = value is JsonElement element ? element.Deserialize<object[]>(FilterDeserializationHelpers.JsonOptions) : null;
                 if (array is null || array.Length != 2)
                 {
                     throw new ArgumentException(
@@ -131,15 +130,17 @@ public class Filter<T> : Filter
                 }
 
                 var propertyType = propertyInfo?.PropertyType ?? GetFilterType();
+                var betweenValue0 = FilterDeserializationHelpers.ToBetweenOperand(propertyType, array[0]);
+                var betweenValue1 = FilterDeserializationHelpers.ToBetweenOperand(propertyType, array[1]);
                 var tupleType = propertyType.IsValueType
                     ? typeof(ValueTuple<,>).MakeGenericType(propertyType, propertyType)
                     : typeof(Tuple<,>).MakeGenericType(propertyType, propertyType);
 
                 deserializedJson[key] = Activator.CreateInstance(tupleType,
                     OperandToExpressionResolver.ConvertValue(propertyInfo?.PropertyType ?? GetFilterType(),
-                        array[0].ToString()),
+                        betweenValue0),
                     OperandToExpressionResolver.ConvertValue(propertyInfo?.PropertyType ?? GetFilterType(),
-                        array[1].ToString())
+                        betweenValue1)
                 );
             }
             else if (key.StartsWith("_"))

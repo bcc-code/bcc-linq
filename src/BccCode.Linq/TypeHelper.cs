@@ -5,10 +5,8 @@ namespace BccCode.Linq;
 
 internal static class TypeHelper
 {
-#if NET7_0_OR_GREATER
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Only used by ApiQueryProvider.CreateQuery(Expression), which is dynamic by design and only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode. The types searched are the interfaces of the query's own types.")]
     [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Only used by ApiQueryProvider.CreateQuery(Expression), which is dynamic by design and only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode. The types searched are the interfaces of the query's own types.")]
-#endif
     public static Type? GetElementType(Type? seqType)
     {
         Type? ienum = FindIEnumerable(seqType);
@@ -16,10 +14,8 @@ internal static class TypeHelper
         return ienum.GetGenericArguments()[0];
     }
 
-#if NET7_0_OR_GREATER
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Only used by ApiQueryProvider.CreateQuery(Expression), which is dynamic by design and only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode. The types searched are the interfaces of the query's own types.")]
     [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Only used by ApiQueryProvider.CreateQuery(Expression), which is dynamic by design and only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode. The types searched are the interfaces of the query's own types.")]
-#endif
     private static Type? FindIEnumerable(Type? seqType)
     {
         if (seqType == null || seqType == typeof(string))
@@ -64,12 +60,8 @@ internal static class TypeHelper
         typeof(long), typeof(short),   typeof(sbyte),
         typeof(byte), typeof(ulong),   typeof(ushort),
         typeof(uint), typeof(float),   typeof(BigInteger),
-#if NET5_0_OR_GREATER
         typeof(Half), typeof(nint),    typeof(nuint),
-#endif
-#if NET7_0_OR_GREATER
         typeof(Int128), typeof(UInt128),
-#endif
     };
 
     public static bool IsNumberType(Type type)
