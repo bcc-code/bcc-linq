@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using BccCode.Platform;
-using Newtonsoft.Json;
 
 namespace BccCode.Linq.Client;
 
@@ -395,18 +394,32 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                         return dataMemberAttribute.Name;
                     }
 
-#if NET6_0_OR_GREATER
                     var jsonPropertyNameAttribute = member.GetCustomAttribute<System.Text.Json.Serialization.JsonPropertyNameAttribute>();
                     if (jsonPropertyNameAttribute != null)
                     {
                         return jsonPropertyNameAttribute.Name;
                     }
-#endif
 
-                    var jsonPropertyAttribute = member.GetCustomAttribute<JsonPropertyAttribute>();
-                    if (jsonPropertyAttribute != null)
+                    var newtonsoftJsonPropertyData = member.GetCustomAttributesData()
+                        .FirstOrDefault(a => a.AttributeType.FullName == "Newtonsoft.Json.JsonPropertyAttribute");
+                    if (newtonsoftJsonPropertyData != null)
                     {
-                        return jsonPropertyAttribute.PropertyName ?? member.Name.ToCamelCase();
+                        string? propertyName = null;
+                        if (newtonsoftJsonPropertyData.ConstructorArguments.Count > 0 &&
+                            newtonsoftJsonPropertyData.ConstructorArguments[0].Value is string ctorName)
+                        {
+                            propertyName = ctorName;
+                        }
+
+                        foreach (var namedArgument in newtonsoftJsonPropertyData.NamedArguments)
+                        {
+                            if (namedArgument.MemberName == "PropertyName" && namedArgument.TypedValue.Value is string namedName)
+                            {
+                                propertyName = namedName;
+                            }
+                        }
+
+                        return propertyName ?? member.Name.ToCamelCase();
                     }
 
                     return member.Name.ToCamelCase();
@@ -717,9 +730,7 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         }
 
         if (objectType == typeof(string) || objectType == typeof(Guid) || objectType == typeof(DateTime)
-#if NET6_0_OR_GREATER
                                          || objectType == typeof(DateOnly)
-#endif
            )
         {
             // Officially supported types with ToString()
@@ -734,6 +745,45 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
         var obj = Visit(node.Object);
         Debug.Assert(obj != null);
         Debug.Assert(obj.NodeType == ExpressionType.Default);
+        return Expression.Empty();
+    }
+
+    /// <summary>
+    /// Writes an <c>_in</c> (or <c>_nin</c>) filter for <c>values.Contains(member)</c> in a Where clause.
+    /// </summary>
+    private Expression VisitWhereIn(ConstantExpression values, Expression member)
+    {
+        Debug.Assert(_where != null);
+        _where.Append("{\"");
+        var visitedMember = Visit(member);
+        Debug.Assert(visitedMember != null);
+        Debug.Assert(visitedMember.NodeType == ExpressionType.Default);
+        _where.Append("\": {\"");
+        _where.Append(_inverseOperator ? "_nin" : "_in");
+        _where.Append("\": [");
+
+        // NOTE: here we execute a Expression (and enumeration) during visiting (!)
+        var items = ((IEnumerable?)values.Value)?.Cast<object>().Where(o => o != null).ToArray();
+
+        if (items != null)
+        {
+            bool first = true;
+            foreach (var item in items)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    _where.Append(",");
+                }
+                TransformConstant(_where, Expression.Constant(item));
+            }
+        }
+
+        _where.Append("]}}");
+
         return Expression.Empty();
     }
 
@@ -872,46 +922,28 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
                             }
 
                             if (node.Arguments[0] is ConstantExpression c)
-                            {
-                                Debug.Assert(_where != null);
-                                _where.Append("{\"");
-                                var arg1 = Visit(node.Arguments[1]);
-                                Debug.Assert(arg1 != null);
-                                Debug.Assert(arg1.NodeType == ExpressionType.Default);
-                                _where.Append("\": {\"");
-                                _where.Append(_inverseOperator ? "_nin" : "_in");
-                                _where.Append("\": [");
-
-                                // NOTE: here we execute a Expression (and enumeration) during visiting (!)
-                                var values = ((IEnumerable)c.Value)?.Cast<object>().Where(o => o != null).ToArray();
-
-                                if (values != null)
-                                {
-                                    bool first = true;
-                                    foreach (var value in values)
-                                    {
-                                        if (first)
-                                        {
-                                            first = false;
-                                        }
-                                        else
-                                        {
-                                            _where.Append(",");
-                                        }
-                                        TransformConstant(_where, Expression.Constant(value));
-                                    }
-                                }
-
-                                _where.Append("]}}");
-
-                                return Expression.Empty();
-                            }
+                                return VisitWhereIn(c, node.Arguments[1]);
 
                             throw new NotSupportedException("Not supported source for Enumerable.");
                         }
                     default:
                         throw new NotSupportedException($"Not supported method call: {node.Method.DeclaringType?.FullName}.{node.Method.Name}");
                 }
+            }
+            else if (node.Method.DeclaringType == typeof(MemoryExtensions) &&
+                     node.Method.Name == nameof(MemoryExtensions.Contains))
+            {
+                // C# 14 binds 'array.Contains(p.Title)' to MemoryExtensions.Contains(ReadOnlySpan<T>, T), with the
+                // array wrapped in an implicit conversion to a span: .Where(p => titles.Contains(p.Title))
+                if (node.Arguments.Count == 2 &&
+                    node.Arguments[0] is MethodCallExpression { Method.Name: "op_Implicit", Arguments.Count: 1 } toSpan &&
+                    toSpan.Arguments[0] is ConstantExpression c)
+                {
+                    return VisitWhereIn(c, node.Arguments[1]);
+                }
+
+                throw new NotSupportedException(
+                    $"Unsupported {node.Method.DeclaringType.FullName}.{node.Method.Name} call. Only 'array.Contains(member)' without comparer is supported.");
             }
             else if (node.Method.DeclaringType != typeof(string) && node.Method.DeclaringType?.GetInterface(nameof(IEnumerable)) != null) // List<> etc
             {
@@ -1727,7 +1759,6 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 #pragma warning restore CS8605
             stringBuilder.Append("\"");
         }
-#if NET6_0_OR_GREATER
         else if (type == typeof(DateOnly))
         {
             stringBuilder.Append("\"");
@@ -1736,7 +1767,6 @@ internal class ApiQueryProvider : ExpressionVisitor, IQueryProvider, IAsyncQuery
 #pragma warning restore CS8605
             stringBuilder.Append("\"");
         }
-#endif
         else if (type == typeof(bool))
         {
 #pragma warning disable CS8602

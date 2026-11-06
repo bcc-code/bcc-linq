@@ -1,35 +1,63 @@
 name: Publish to nuget
+
+# Publishes BccCode.Linq (client) and BccCode.Linq.Server.
+# Publishing runs in a separate job from a GitHub environment, which the NuGet.org trusted-publishing policy
+# should name, so a job without the environment (e.g. from an edited workflow) cannot publish:
+# - a push to main publishes the release <base>.<run> from the `nuget` environment (limit it to main);
+# - a pull request from a branch in this repository publishes <base>.<run>-pr<number>, and a run started by
+#   hand on a branch publishes <base>.<run>-beta, both from the `nuget-beta` environment. Give that
+#   environment required reviewers: the publish job then waits until someone approves it.
+# Pull requests from forks only build, test and pack.
+# - after a push to main has been published, the `release` job tags v<version> and creates a GitHub release with the
+#   packages and their CycloneDX SBOMs attached.
+
 on:
   push:
     branches: [main]
     paths:
       - "src/**"
       - ".github/workflows/nuget-package-publish.yml"
+      - ".github/variables/version.env"
+      - "Directory.Build.props"
+      - "Directory.Packages.props"
+      - ".config/dotnet-tools.json"
+      - "**/packages.lock.json"
 
   pull_request:
     branches: [main]
     paths:
       - "src/**"
+      - "tests/**"
       - ".github/workflows/nuget-package-publish.yml"
+      - ".github/variables/version.env"
+      - "Directory.Build.props"
+      - "Directory.Packages.props"
+      - ".config/dotnet-tools.json"
+      - "**/packages.lock.json"
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
-  CSPROJ_PATH: src/BccCode.Linq/BccCode.Linq.csproj
+  CLIENT_CSPROJ_PATH: src/BccCode.Linq/BccCode.Linq.csproj
+  SERVER_CSPROJ_PATH: src/BccCode.Linq.Server/BccCode.Linq.Server.csproj
 
 jobs:
-  publish:
+  pack:
+    name: Test and pack
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          dotnet-version: 8.0.*
+          persist-credentials: false
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
 
       - name: Set Environment Variables
         uses: ./.github/actions/setvars
@@ -37,27 +65,115 @@ jobs:
           varFilePath: ./.github/variables/version.env
 
       - name: Set package version
+        id: version
+        env:
+          VERSION_BASE: ${{ env.NUGET_PACKAGE_VERSION_BASE }}
+          RUN_NUMBER: ${{ github.run_number }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           if [[ $GITHUB_REF == 'refs/heads/main' && $GITHUB_EVENT_NAME == 'push' ]]; then
-             echo "VERSION=${{ env.NUGET_PACKAGE_VERSION_BASE }}.${{ github.run_number}}" >> "$GITHUB_ENV"
+             version="$VERSION_BASE.$RUN_NUMBER"
+          elif [[ $GITHUB_EVENT_NAME == 'pull_request' ]]; then
+             version="$VERSION_BASE.$RUN_NUMBER-pr$PR_NUMBER"
           else
-             echo "VERSION=${{ env.NUGET_PACKAGE_VERSION_BASE }}.${{ github.run_number}}-beta" >> "$GITHUB_ENV"
+             version="$VERSION_BASE.$RUN_NUMBER-beta"
           fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Run Tests
         run: dotnet test
 
       - name: Package
-        run: dotnet pack -p:PackageVersion=${{ env.VERSION }} -c Release -o . ${{ env.CSPROJ_PATH }}
+        run: |
+          dotnet pack -p:PackageVersion="$VERSION" -c Release -o package "$CLIENT_CSPROJ_PATH"
+          dotnet pack -p:PackageVersion="$VERSION" -c Release -o package "$SERVER_CSPROJ_PATH"
 
-      - uses: NuGet/login@v1
+      # One CycloneDX SBOM per package (standard 17.11), attached to the GitHub release.
+      - name: Generate SBOMs
+        run: |
+          dotnet tool restore
+          mkdir sbom
+          dotnet dotnet-cyclonedx "$CLIENT_CSPROJ_PATH" --output-format Json --output sbom --filename "BccCode.Linq.$VERSION.cdx.json"
+          dotnet dotnet-cyclonedx "$SERVER_CSPROJ_PATH" --output-format Json --output sbom --filename "BccCode.Linq.Server.$VERSION.cdx.json"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuget-packages
+          path: package/*.nupkg
+          if-no-files-found: error
+          retention-days: 7
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sbom
+          path: sbom/*.cdx.json
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish to NuGet
+    # A push to main, a run started by hand, or a pull request from a branch in this repository (never a fork).
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    needs: pack
+    runs-on: ubuntu-latest
+    # Same condition as the release version in `pack`: anything else is a beta and needs `nuget-beta`'s approval.
+    environment: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'nuget' || 'nuget-beta' }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nuget-packages
+          path: package
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      # Trusted publishing: the NuGet.org account in NUGET_USER needs a policy for this repository and workflow.
+      - uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
         id: login
         with:
-          user: ${{vars.NUGET_USER}}
+          user: ${{ vars.NUGET_USER }}
 
       - name: Publish
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
         run: |
-          dotnet nuget push *.nupkg \
-          --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
+          dotnet nuget push package/*.nupkg \
+          --api-key "$NUGET_API_KEY" \
           --source https://api.nuget.org/v3/index.json \
           --skip-duplicate
+
+  release:
+    name: GitHub release
+    # Only a release version from main; betas from pull requests and manual runs get no release.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [pack, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nuget-packages
+          path: package
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: sbom
+          path: sbom
+
+      # Creates the tag v<version> on the published commit and attaches the packages and SBOMs.
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.pack.outputs.version }}
+        run: gh release create "v$VERSION" --generate-notes --target "$GITHUB_SHA" package/*.nupkg sbom/*.cdx.json

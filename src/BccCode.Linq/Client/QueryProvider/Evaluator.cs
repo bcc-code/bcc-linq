@@ -56,7 +56,9 @@ internal class Evaluator
             if (exp == null)
                 return null;
 
-            if (this._candidates.Contains(exp))
+            // A span (e.g. the implicit array-to-ReadOnlySpan conversion C# 14 emits for 'array.Contains(x)')
+            // cannot be boxed into a constant, so evaluate its operands instead.
+            if (this._candidates.Contains(exp) && !exp.Type.IsByRefLike)
             {
                 return this.Evaluate(exp);
             }

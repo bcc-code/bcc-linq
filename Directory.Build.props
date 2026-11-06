@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CI)' == 'true' or '$(ContinuousIntegrationBuild)' == 'true'">
+    <!-- CI (GitHub Actions sets CI=true) restores exactly what packages.lock.json says. -->
+    <RestoreLockedMode>true</RestoreLockedMode>
+  </PropertyGroup>
+</Project>

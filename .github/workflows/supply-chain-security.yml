@@ -1,0 +1,34 @@
+name: Supply-chain security
+
+# BCC's reusable policy check for workflows, npm manifests and lockfiles (standard 17.12). A required status check would
+# stay pending on PRs this path filter skips, so do not make this workflow a required check.
+on:
+  pull_request:
+    paths: &supply-chain-paths
+      - '.github/workflows/**'
+      - '**/action.yml'
+      - '**/action.yaml'
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/pnpm-lock.yaml'
+      - '**/pnpm-workspace.yaml'
+      - '**/.npmrc'
+      - '**/Dockerfile'
+      - '**/Dockerfile.*'
+      - '**/*.Dockerfile'
+      - '**/.dockerignore'
+  push:
+    branches: [main]
+    paths: *supply-chain-paths
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  supply-chain:
+    permissions:
+      contents: read
+    uses: bcc-code/bcc-security-scan/.github/workflows/supply-chain-protections.yml@9d9fd26809455a4c554e572f7568f7856a5bec63 # v1.0.1
+    with:
+      # Warnings are shown but do not fail; errors still fail the job.
+      fail-on-warn: false
