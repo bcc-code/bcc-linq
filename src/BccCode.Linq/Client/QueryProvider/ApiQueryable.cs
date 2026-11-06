@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Linq.Expressions;
+using BccCode.Platform;
 
 namespace BccCode.Linq.Client;
 
@@ -7,8 +8,20 @@ namespace BccCode.Linq.Client;
 /// IQueryable implementation that utilizes the query provider to execute queries against the source
 /// </summary>
 /// <typeparam name="T"></typeparam>
-internal class ApiQueryable<T> : IOrderedQueryable<T>, IAsyncEnumerable<T>
+internal interface IApiQueryable
 {
+    /// <summary>
+    /// Creates the <see cref="IApiCaller"/> for the data type of the queryable without
+    /// having to know the generic data type.
+    /// </summary>
+    IApiCaller CreateApiCaller(IHttpApiQueryableClient apiClient, string path, Action<IQueryableParameters>? parametersCallback);
+}
+
+internal class ApiQueryable<T> : IOrderedQueryable<T>, IAsyncEnumerable<T>, IApiQueryable
+{
+    IApiCaller IApiQueryable.CreateApiCaller(IHttpApiQueryableClient apiClient, string path, Action<IQueryableParameters>? parametersCallback)
+        => new QueryablePagedEnumerable<T>(apiClient, path, parametersCallback);
+
     public ApiQueryable(IQueryProvider provider, Expression? expression = default)
     {
         Provider = provider ?? throw new ArgumentNullException(nameof(provider));

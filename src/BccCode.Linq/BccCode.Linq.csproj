@@ -10,6 +10,7 @@
         <LangVersion>latest</LangVersion>
         <Authors />
         <RootNamespace>BccCode.Linq</RootNamespace>
+        <IsAotCompatible>true</IsAotCompatible>
         <!-- Transitive pinning would pack every pinned transitive package (e.g. Newtonsoft.Json, pinned for the
              tests and pulled in by Contracts) as a direct dependency of the package. -->
         <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>

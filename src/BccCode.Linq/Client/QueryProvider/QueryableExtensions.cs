@@ -12,14 +12,6 @@ public static class QueryableExtensions
 {
     #region Include
 
-    internal static readonly MethodInfo IncludeMethodInfo
-        = typeof(QueryableExtensions)
-            .GetTypeInfo().GetDeclaredMethods(nameof(Include))
-            .Single(
-                mi =>
-                    mi.GetGenericArguments().Length == 2
-                    && mi.GetParameters().Any(
-                        pi => pi.Name == "navigationPropertyPath" && pi.ParameterType != typeof(string)));
 
     /// <summary>
     /// Specifies related entities to include in the query results. The navigation property to be included is specified starting with the
@@ -56,31 +48,14 @@ public static class QueryableExtensions
                     ? source.Provider.CreateQuery<TEntity>(
                         Expression.Call(
                             instance: null,
-                            method: IncludeMethodInfo.MakeGenericMethod(typeof(TEntity), typeof(TProperty)),
+                            method: new Func<IQueryable<TEntity>, Expression<Func<TEntity, TProperty>>, IIncludableQueryable<TEntity, TProperty>>(Include).Method,
                             arguments: new[] { source.Expression, Expression.Quote(navigationPropertyPath) }
                         ))
                     : source);
     }
 
 
-    internal static readonly MethodInfo ThenIncludeAfterEnumerableMethodInfo
-        = typeof(QueryableExtensions)
-            .GetTypeInfo().GetDeclaredMethods(nameof(ThenInclude))
-            .Where(mi => mi.GetGenericArguments().Length == 3)
-            .Single(
-                mi =>
-                {
-                    var typeInfo = mi.GetParameters()[0].ParameterType.GenericTypeArguments[1];
-                    return typeInfo.IsGenericType
-                        && typeInfo.GetGenericTypeDefinition() == typeof(IEnumerable<>);
-                });
 
-    internal static readonly MethodInfo ThenIncludeAfterReferenceMethodInfo
-        = typeof(QueryableExtensions)
-            .GetTypeInfo().GetDeclaredMethods(nameof(ThenInclude))
-            .Single(
-                mi => mi.GetGenericArguments().Length == 3
-                      && mi.GetParameters()[0].ParameterType.GenericTypeArguments[1].IsGenericParameter);
 
 
 
@@ -108,8 +83,7 @@ public static class QueryableExtensions
                 ? source.Provider.CreateQuery<TEntity>(
                     Expression.Call(
                         instance: null,
-                        method: ThenIncludeAfterReferenceMethodInfo.MakeGenericMethod(
-                            typeof(TEntity), typeof(TPreviousProperty), typeof(TProperty)),
+                        method: new Func<IIncludableQueryable<TEntity, TPreviousProperty>, Expression<Func<TPreviousProperty, TProperty>>, IIncludableQueryable<TEntity, TProperty>>(ThenInclude).Method,
                         arguments: new[] { source.Expression, Expression.Quote(navigationPropertyPath) }))
                 : source);
 
@@ -124,8 +98,7 @@ public static class QueryableExtensions
                 ? source.Provider.CreateQuery<TEntity>(
                     Expression.Call(
                         instance: null,
-                        method: ThenIncludeAfterEnumerableMethodInfo.MakeGenericMethod(
-                            typeof(TEntity), typeof(TPreviousProperty), typeof(TProperty)),
+                        method: new Func<IIncludableQueryable<TEntity, IEnumerable<TPreviousProperty>>, Expression<Func<TPreviousProperty, TProperty>>, IIncludableQueryable<TEntity, TProperty>>(ThenInclude).Method,
                         arguments: new[] { source.Expression, Expression.Quote(navigationPropertyPath) }))
                 : source);
 
@@ -161,10 +134,6 @@ public static class QueryableExtensions
 
     #region Search
 
-    internal static readonly MethodInfo SearchMethodInfo
-        = typeof(QueryableExtensions)
-            .GetTypeInfo().GetDeclaredMethods(nameof(Search))
-            .Single();
 
     public static IQueryable<TEntity> Search<TEntity>(this IQueryable<TEntity> source, string searchString)
     {
@@ -176,8 +145,7 @@ public static class QueryableExtensions
             return source.Provider.CreateQuery<TEntity>(
                 Expression.Call(
                     instance: null,
-                    method: SearchMethodInfo.MakeGenericMethod(
-                        typeof(TEntity)),
+                    method: new Func<IQueryable<TEntity>, string, IQueryable<TEntity>>(Search).Method,
                     arguments: new[] { source.Expression, Expression.Constant(searchString) }));
         }
 

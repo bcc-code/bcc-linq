@@ -1,8 +1,9 @@
 # Native AOT and trimming
 
-Status after the split into `BccCode.Linq` (client) and `BccCode.Linq.Server` (v2.0): **neither package is
-AOT- or trim-compatible**, and neither sets `IsAotCompatible`. Both can be referenced from a `PublishAot=true`
-app, but the core features will produce AOT/trim warnings in the app and may fail at runtime.
+Status: **`BccCode.Linq` (client)** builds with `IsAotCompatible=true` on net10.0 with 0 analyzer warnings
+(for the parts that are dynamic by design, see below). **`BccCode.Linq.Server`** is not AOT- or trim-compatible
+and does not set `IsAotCompatible`. It can be referenced from a `PublishAot=true` app, but the core features
+will produce AOT/trim warnings in the app and may fail at runtime.
 
 For the earlier analysis (in Norwegian) and the ReadyToRun recommendation, see [aotForLinq.md](aotForLinq.md).
 
@@ -15,16 +16,45 @@ dotnet build src/BccCode.Linq.Server/BccCode.Linq.Server.csproj -c Release --no-
 
 `IsAotCompatible=true` turns on the trim, AOT and single-file analyzers. Both packages target net10.0 only. The counts below are the IL warnings (IL2xxx, IL3xxx) reported by the .NET 10 SDK analyzers. They are higher than in the earlier measurement with the .NET 8 target, partly because the newer analyzers report more cases (for example IL2060 for `MakeGenericMethod`).
 
-## BccCode.Linq (client): 39 warnings
+## BccCode.Linq (client): 0 warnings
 
-| Warning | Count | Where | Cause |
-|---|---|---|---|
-| IL3050 | 19 | `ApiQueryProvider` (12), `QueryableExtensions` (4), `TypeHelper` (2), `Evaluator` (1) | `MakeGenericMethod` / `MakeGenericType` on `Enumerable.Any/First/Select/Single...`, `Include`, `IEnumerable<>`, `ApiQueryable<>` with types only known at runtime; `Expression.Lambda` in `Evaluator` |
-| IL2060 | 13 | `ApiQueryProvider` (9), `QueryableExtensions` (4) | `MakeGenericMethod` whose requirements cannot be analyzed statically |
-| IL2070 / IL2075 | 6 | `TypeHelper` (3), `ApiQueryProvider` (3) | `Type.GetInterfaces()`, `GetInterface(string)`, `GetProperty(string)` on unannotated types |
-| IL2026 | 1 | `ApiQueryProvider:1682` | non-generic `Queryable.AsQueryable(IEnumerable)` |
+Before this change the client had 39 analyzer warnings with the .NET 10 analyzers (24 with the earlier .NET 8
+target). The project now sets `IsAotCompatible` and the build reports none.
 
-Not flagged by the analyzer, but still a problem under AOT:
+Fixed:
+
+- `Include`, `ThenInclude` and `Search` in `QueryableExtensions` took their `MethodInfo` through
+  `MakeGenericMethod`. They now use the method of a statically typed delegate.
+- `ApiQueryProvider` created `QueryablePagedEnumerable<T>` with `MakeGenericType` and `Activator`. `ApiQueryable<T>`
+  now creates it itself (`IApiQueryable.CreateApiCaller`).
+- `IApiCaller.AsQueryable()` is implemented in `QueryablePagedEnumerable<T>` with the generic
+  `Queryable.AsQueryable<T>` instead of the non-generic overload.
+- The `GetInterface(nameof(IEnumerable))` check is now `typeof(IEnumerable).IsAssignableFrom(...)`.
+- The constant of a `Nullable<T>` is no longer read through reflection (a boxed `Nullable<T>` is already the
+  underlying value).
+- `TypeHelper`: the unused `IsAssignableToGenericType` is removed, and `IsNumberType` uses a static set of
+  types (the earlier list plus `Half`, `nint`, `nuint`, `Int128`, `UInt128`) instead of looking for `INumber<>`
+  through `GetInterfaces()`.
+- `Evaluator` evaluated captured values through `Expression.Lambda(e)`, whose delegate type is only known at
+  runtime, and `DynamicInvoke`. It now compiles a `Func<object?>`.
+
+Dynamic by design:
+
+- The provider translates the query's expression tree at runtime. The element and result types come from the
+  user's expression (for example the anonymous or `int` result of `Select`), so `ApiQueryProvider` calls
+  `MakeGenericMethod` on `Enumerable.Any/First/FirstOrDefault/Single/SingleOrDefault/Select` and on the async
+  `Select` with those types. The non-generic `IQueryProvider.CreateQuery(Expression)` uses `MakeGenericType`
+  the same way as `EnumerableQuery` in System.Linq. `Queryable.AsQueryable<T>` is annotated by the framework
+  (IL2026, IL3050).
+- The requirement is declared on the public entry point: `IQueryableApiClientExtension.GetQueryable<T>` has
+  `[RequiresDynamicCode]` and `[RequiresUnreferencedCode]` (net7.0 and later). A Native AOT or trimmed app that
+  calls it gets IL3050 and IL2026 at the call site.
+- Inside the package the warnings are suppressed with `[UnconditionalSuppressMessage]` at method level
+  (`ApiQueryProvider.VisitMethodCall`, `ApiQueryProvider.CreateQuery(Expression)`, `TypeHelper`,
+  `QueryablePagedEnumerable<T>.AsQueryable`). Every query reaches `ApiQueryProvider` only through an
+  `ApiQueryable<T>` created by `GetQueryable<T>`; both types are internal.
+
+Not flagged by the analyzer, but still relevant under AOT:
 
 - `Expression.Compile()` in `ApiQueryProvider.Execute*` and in `Evaluator` (partial evaluation of captured
   variables). Under Native AOT expression trees run in the interpreter: it works, but it is slower, and every
@@ -33,9 +63,51 @@ Not flagged by the analyzer, but still a problem under AOT:
   `GetCustomAttributesData()` (for Newtonsoft's `JsonPropertyAttribute`, matched by type name) on the
   DTO's members. The members are reached through the query expression, so they are normally kept, but the
   attributes must survive trimming.
-- The client does no JSON (de)serialisation itself; that is done by the consumer's `IApiClient`
+- The client does no JSON (de)serialisation itself; that is done by the consumer's `IHttpApiQueryableClient`
   implementation. Whether that path is AOT-safe depends on the consumer (for example System.Text.Json with a
   source-generated `JsonSerializerContext`).
+
+### Value-type results (`Select(p => p.Age)`)
+
+Native AOT can only run a generic method created with `MakeGenericMethod` if its code was compiled ahead of
+time. For reference-type results (entities, anonymous types) the code is shared and always available. For
+value-type results it is not: `Enumerable.Select<Person, int>` fails with
+`NotSupportedException: ... is missing native code`.
+
+`AotGenericRoots` makes the AOT compiler include `Select`, the async `Select`, `Any`, `First`,
+`FirstOrDefault`, `Single` and `SingleOrDefault` for these result types and their `Nullable<>` versions:
+`bool`, `byte`, `short`, `int`, `long`, `float`, `double`, `decimal`, `char`, `Guid`, `DateTime`,
+`DateTimeOffset`, `TimeSpan`, `DateOnly`, `TimeOnly`. It runs once, from the static constructor of
+`ApiQueryProvider`, and only when dynamic code is not supported (it is skipped under JIT).
+
+- Size: on .NET 10 the smoke test executable grows from 3.75 MB to 4.19 MB (win-x64). Without it, `Select` to
+  `int`, `int?` and `Guid` fails. (With the earlier .NET 8 target the same list added 5.5 MB.)
+- Not covered: enums and user-defined structs. An app that selects such a type can add the instantiation
+  itself, once, anywhere in code the AOT compiler sees, for example:
+  `_ = Enumerable.Select(Array.Empty<object>(), static _ => default(MyEnum)).ToList();`
+
+### Smoke test
+
+`tests/BccCode.Linq.AotSmokeTest` is a console app with `PublishAot=true`. It uses an in-memory fake
+`IHttpApiQueryableClient` and runs: `Where` with a captured variable, `OrderBy`, `Select` into an anonymous type,
+`Select` of `int`, `int?`, `Guid` and enum members, `Select` followed by `First`, `First`, `FirstOrDefault`,
+`Any`, `Include`, `ToListAsync` and `await foreach` over `AsAsyncEnumerable()`. The CI job `aot-smoke-test`
+publishes it with Native AOT on linux-x64 and runs it; any failing query fails the job. The test roots its enum
+with the line shown above, which also checks that this line is enough.
+
+Result of `dotnet publish -r win-x64` (Native AOT, .NET 10) and under JIT: all queries work.
+
+### Finding AOT problems in an app
+
+AOT warnings are warnings, not errors: an app with problems still publishes and fails at runtime. Warnings from
+NuGet packages are collapsed into one `IL2104: Assembly 'X' produced trim warnings` per assembly
+(`-p:TrimmerSingleWarn=false` shows them). In an AOT app, consider:
+
+```xml
+<WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2104;IL3050;IL3053</WarningsAsErrors>
+```
+
+and run the published binary in CI, as the smoke test does here.
 
 ## BccCode.Linq.Server: 57 warnings
 
@@ -54,21 +126,9 @@ hardest to make AOT-safe.
 
 ## What it would take
 
-Client (`BccCode.Linq`), moderate effort:
-
-1. Replace `MakeGenericMethod` on `Enumerable`/`Queryable` methods with calls through generic helper methods
-   (`static Expression Any<T>(...)`) dispatched once per element type, or annotate the public entry points
-   with `[RequiresDynamicCode]` / `[RequiresUnreferencedCode]` so the warning moves to the caller's code.
-2. Annotate `TypeHelper` and the `ApiQueryable<T>` type parameter with
-   `[DynamicallyAccessedMembers(Interfaces | PublicProperties)]`.
-3. Replace `Queryable.AsQueryable(IEnumerable)` with the generic overload.
-4. Accept interpreted expression trees, or avoid `Compile()` for the common case where the evaluated value is a
-   constant or a captured field.
-5. Then set `<IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>` and keep the
-   analyzer warnings at zero.
-
-With 1–4 done the client could be marked AOT-compatible. The query provider itself is
-`IQueryProvider`-based and does not need runtime code generation beyond what is listed above.
+Client (`BccCode.Linq`): the remaining limit is `Select` to enums and user-defined structs, which the app has to
+root itself (see above). Removing it completely would need the provider to build the `Select`/`First`/`Any`/...
+calls without `MakeGenericMethod` over the user's types.
 
 Server (`BccCode.Linq.Server`), large effort; see the redesign in [aotForLinq.md](aotForLinq.md):
 

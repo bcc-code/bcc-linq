@@ -1,9 +1,12 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 
 namespace BccCode.Linq;
 
 internal static class TypeHelper
 {
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Only used by ApiQueryProvider.CreateQuery(Expression), which is dynamic by design and only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode. The types searched are the interfaces of the query's own types.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Only used by ApiQueryProvider.CreateQuery(Expression), which is dynamic by design and only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode. The types searched are the interfaces of the query's own types.")]
     public static Type? GetElementType(Type? seqType)
     {
         Type? ienum = FindIEnumerable(seqType);
@@ -11,6 +14,8 @@ internal static class TypeHelper
         return ienum.GetGenericArguments()[0];
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Only used by ApiQueryProvider.CreateQuery(Expression), which is dynamic by design and only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode. The types searched are the interfaces of the query's own types.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Only used by ApiQueryProvider.CreateQuery(Expression), which is dynamic by design and only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode. The types searched are the interfaces of the query's own types.")]
     private static Type? FindIEnumerable(Type? seqType)
     {
         if (seqType == null || seqType == typeof(string))
@@ -49,31 +54,18 @@ internal static class TypeHelper
         return null;
     }
 
-    public static bool IsAssignableToGenericType(this Type givenType, Type genericType)
+    private static readonly HashSet<Type> NumericTypes = new()
     {
-        if (givenType == null) throw new ArgumentNullException(nameof(givenType));
-        if (genericType == null) throw new ArgumentNullException(nameof(genericType));
-
-        if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
-            return true;
-
-        var interfaceTypes = givenType.GetInterfaces();
-        if (interfaceTypes.Any(it => it.IsGenericType && it.GetGenericTypeDefinition() == genericType))
-        {
-            return true;
-        }
-
-        Type? baseType = givenType.BaseType;
-        if (baseType == null)
-            return false;
-
-        return IsAssignableToGenericType(baseType, genericType);
-    }
+        typeof(int),  typeof(double),  typeof(decimal),
+        typeof(long), typeof(short),   typeof(sbyte),
+        typeof(byte), typeof(ulong),   typeof(ushort),
+        typeof(uint), typeof(float),   typeof(BigInteger),
+        typeof(Half), typeof(nint),    typeof(nuint),
+        typeof(Int128), typeof(UInt128),
+    };
 
     public static bool IsNumberType(Type type)
     {
-        var numType = typeof(INumber<>);
-        var result = type.GetInterfaces().Any(i => i.IsGenericType && (i.GetGenericTypeDefinition() == numType));
-        return result;
+        return NumericTypes.Contains(type);
     }
 }

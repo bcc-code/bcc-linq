@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using BccCode.Platform;
 
@@ -11,6 +12,11 @@ namespace BccCode.Linq.Client;
 internal interface IApiCaller : IEnumerable
 {
     public IQueryableParameters QueryParameters { get; }
+
+    /// <summary>
+    /// Returns this instance as a <see cref="IQueryable{T}"/> (using the generic data type).
+    /// </summary>
+    public IQueryable AsQueryable();
 }
 
 /// <summary>
@@ -134,6 +140,10 @@ internal partial class QueryablePagedEnumerable<T> : IEnumerable<T>, IAsyncEnume
 
         } while (state.NextPage(pageData.Data?.Count ?? 0));
     }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode and RequiresUnreferencedCode.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Only reachable through GetQueryable<T>, which is annotated with RequiresDynamicCode and RequiresUnreferencedCode.")]
+    public IQueryable AsQueryable() => Queryable.AsQueryable(this);
 
     #region IEnumerator
 
