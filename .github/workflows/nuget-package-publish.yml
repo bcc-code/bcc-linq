@@ -1,11 +1,13 @@
 name: Publish to nuget
 
 # Publishes BccCode.Linq (client) and BccCode.Linq.Server.
-# A pull request only builds, tests and packs; it never publishes. Publishing runs in a separate job from a
-# GitHub environment, which the NuGet.org trusted-publishing policy can name:
+# Publishing runs in a separate job from a GitHub environment, which the NuGet.org trusted-publishing policy
+# should name, so a job without the environment (e.g. from an edited workflow) cannot publish:
 # - a push to main publishes the release <base>.<run> from the `nuget` environment (limit it to main);
-# - a beta (<base>.<run>-beta) is published only by running this workflow by hand on a branch, from the
-#   `nuget-beta` environment (give it required reviewers so each run is approved).
+# - a pull request from a branch in this repository publishes <base>.<run>-pr<number>, and a run started by
+#   hand on a branch publishes <base>.<run>-beta, both from the `nuget-beta` environment. Give that
+#   environment required reviewers: the publish job then waits until someone approves it.
+# Pull requests from forks only build, test and pack.
 
 on:
   push:
@@ -52,6 +54,8 @@ jobs:
         run: |
           if [[ $GITHUB_REF == 'refs/heads/main' && $GITHUB_EVENT_NAME == 'push' ]]; then
              echo "VERSION=${{ env.NUGET_PACKAGE_VERSION_BASE }}.${{ github.run_number}}" >> "$GITHUB_ENV"
+          elif [[ $GITHUB_EVENT_NAME == 'pull_request' ]]; then
+             echo "VERSION=${{ env.NUGET_PACKAGE_VERSION_BASE }}.${{ github.run_number}}-pr${{ github.event.pull_request.number }}" >> "$GITHUB_ENV"
           else
              echo "VERSION=${{ env.NUGET_PACKAGE_VERSION_BASE }}.${{ github.run_number}}-beta" >> "$GITHUB_ENV"
           fi
@@ -89,8 +93,11 @@ jobs:
 
   publish:
     name: Publish to NuGet
-    # A push to main, or a run started by hand (a beta on any other branch). Never a pull request.
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    # A push to main, a run started by hand, or a pull request from a branch in this repository (never a fork).
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     needs: [pack, aot-smoke-test]
     runs-on: ubuntu-latest
     # Same condition as the release version in `pack`: anything else is a beta and needs `nuget-beta`'s approval.
