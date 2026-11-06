@@ -67,6 +67,15 @@ Version 2.0 moved the server code out of `BccCode.Linq` into `BccCode.Linq.Serve
   because the types now live in `BccCode.Linq.Server.dll`.
 - Projects that got `Microsoft.AspNetCore.Mvc` types (for example `[FromQuery]`) only through
   `BccCode.Linq`: reference them directly, preferably with
-  `<FrameworkReference Include="Microsoft.AspNetCore.App" />` on .NET 6 or later.
+  `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
+- Both packages now target net10.0 only (1.x also targeted netstandard2.1, net6.0 and net8.0). Projects on
+  older .NET versions must upgrade to .NET 10.
+- The packages no longer depend on `Newtonsoft.Json` directly. The `BccCode.Platform.Contracts` dependency
+  still brings it in. The client still reads custom member names from both
+  `System.Text.Json.Serialization.JsonPropertyNameAttribute` and Newtonsoft's `JsonPropertyAttribute`.
+- The server code now parses filters with `System.Text.Json`. The values in the dictionaries of `Filter` and
+  of `FilterDeserializationHelpers.DeserializeJsonRule` are `System.Text.Json.JsonElement` instead of
+  Newtonsoft tokens (`JToken`, `JArray`, `JObject`). Code that reads `Filter.Properties` or the result of
+  `DeserializeJsonRule` and casts values to Newtonsoft types must be changed.
 
 See [docs/aot.md](docs/aot.md) for Native AOT and trimming support.
