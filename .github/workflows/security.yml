@@ -1,0 +1,42 @@
+name: Security
+
+# Secret scanning (standard 17.9) and SAST (standard 17.10). No path filter: a secret can be committed in any file.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # The CLI in a container: gitleaks-action needs a paid licence for organisation repositories. Only the PR's commits
+      # are scanned, with redacted output. Images are pinned by digest; Dependabot does not update images in run steps.
+      - env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
+        run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f git /repo --redact --log-opts="$BASE_SHA..HEAD"
+
+  # Semgrep CE: the same tool as in other BCC repos, and --error fails the job on a finding. CodeQL would only upload
+  # alerts to code scanning.
+  sast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # --error fails the job on any finding from these rule sets.
+      - run: >-
+          docker run --rm -v "$PWD:/src" -w /src
+          semgrep/semgrep:1.180.0@sha256:529ee8a277ec8adc5b534d7c74eea0a47e9de21d62852b6ba7ac6ba9566845c3
+          semgrep scan --metrics=off --error
+          --config p/default --config p/csharp
