@@ -60,11 +60,6 @@
           "Newtonsoft.Json": "13.0.1"
         }
       },
-      "System.ComponentModel.Annotations": {
-        "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "dMkqfy2el8A8/I76n2Hi1oBFEbG1SfxD2l5nhwXV3XjlnOmwxJlQbYpJH4W51odnU9sARCSAgv7S3CyAFMkpYg=="
-      },
       "xunit.abstractions": {
         "type": "Transitive",
         "resolved": "2.0.3",
@@ -108,23 +103,22 @@
       "bcccode.linq": {
         "type": "Project",
         "dependencies": {
-          "BccCode.Platform.Contracts": "[1.0.0.114, )"
+          "BccCode.Platform.Contracts": "[2.0.0.20, )"
         }
       },
       "bcccode.linq.server": {
         "type": "Project",
         "dependencies": {
-          "BccCode.Platform.Contracts": "[1.0.0.114, )"
+          "BccCode.Platform.Contracts": "[2.0.0.20, )"
         }
       },
       "BccCode.Platform.Contracts": {
         "type": "CentralTransitive",
-        "requested": "[1.0.0.114, )",
-        "resolved": "1.0.0.114",
-        "contentHash": "JFKgJjdEF2cw7+F2BBLjIZfheYZhxF0S+nuyryl4NOvIreaCKW6K9NqYihd7YxLCLe9SFTWV8Yjm65JT2aH88g==",
+        "requested": "[2.0.0.20, )",
+        "resolved": "2.0.0.20",
+        "contentHash": "HjcxR1xZlBu1oKiktwjrHRVxGaf+75l5868YPy95wB07wt64qs5Rjd/GXOzxW0lZ/d9XCPPdqTnaMN5ApbB/Zg==",
         "dependencies": {
-          "Newtonsoft.Json": "13.0.3",
-          "System.ComponentModel.Annotations": "5.0.0"
+          "Newtonsoft.Json": "13.0.4"
         }
       }
     }

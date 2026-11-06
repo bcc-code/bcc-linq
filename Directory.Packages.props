@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup Label="Libraries">
-    <PackageVersion Include="BccCode.Platform.Contracts" Version="1.0.0.114" />
+    <PackageVersion Include="BccCode.Platform.Contracts" Version="2.0.0.20" />
   </ItemGroup>
 
   <ItemGroup Label="Tests">
