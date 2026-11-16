@@ -4,9 +4,9 @@
     "net10.0": {
       "BccCode.Platform.Contracts": {
         "type": "Direct",
-        "requested": "[2.0.0.20, )",
-        "resolved": "2.0.0.20",
-        "contentHash": "HjcxR1xZlBu1oKiktwjrHRVxGaf+75l5868YPy95wB07wt64qs5Rjd/GXOzxW0lZ/d9XCPPdqTnaMN5ApbB/Zg==",
+        "requested": "[2.0.0.24, )",
+        "resolved": "2.0.0.24",
+        "contentHash": "qfKB/86QHWmn9Mps/VB25eiHwHG2GWIVCFBubXIhLcOdJyWBh7gWdISd4R4YQ2Ods2j4zuRr72LDpoekowujlA==",
         "dependencies": {
           "Microsoft.Extensions.Http": "10.0.12",
           "Newtonsoft.Json": "13.0.4"
